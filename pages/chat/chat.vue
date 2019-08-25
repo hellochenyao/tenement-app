@@ -187,6 +187,7 @@
 </template>
 <script>
 	import configUrl from "../../utils/config_utils.js";
+	import getStorage from "../../utils/getStorage.js"
 	export default {
 		data() {
 			return {
@@ -243,7 +244,9 @@
 					blessing:null,
 					money:null
 				},
-				imageUrl:configUrl.requestUrl
+				imageUrl:configUrl.requestUrl,
+				socketOpen:false,
+				msgQueue:[]
 			};
 		},
 		onLoad(option) {
@@ -261,6 +264,7 @@
 			this.RECORDER.onStop((e)=>{
 				this.recordEnd(e);
 			})
+			this.connectMsg();
 			// #endif
 		},
 		onShow(){
@@ -322,7 +326,32 @@
 					this.scrollToView = 'msg'+msg.msg.id
 				});
 			},
-			
+			connectMsg(){
+				let userId = getStorage('userId');
+				let url = configUrl.requestUrl
+				let _this = this;
+				uni.connectSocket({
+					url: `ws://localhost:8888/im/${userId}`,
+				
+				});
+				let msgArr = this.msgQueue;
+				uni.onSocketOpen(function (res) {
+				  _this.socketOpen = true;
+				  for (var i = 0; i < msgArr.length; i++) {
+					_this.sendSocketMsg(msgArr[i]);
+				  }
+				  msgArr = [];
+				});
+			},
+			sendSocketMsg(msg){
+				if (this.socketOpen) {
+					uni.sendSocketMessage({
+					  data: JSON.stringify(msg)
+					});
+				} else {
+					this.msgQueue.push(msg);
+				}
+			},
 			//触发滑动到顶部(加载历史信息记录)
 			loadHistory(e){
 				if(this.isHistoryLoading){
@@ -531,6 +560,11 @@
 				lastid++;
 				let msg = {type:'user',msg:{id:lastid,time:nowDate.getHours()+":"+nowDate.getMinutes(),type:type,userinfo:{uid:0,username:"大黑哥",face:"/images/app/face.jpg"},content:content}}
 				// 发送消息
+				let msgA={
+					toUserId:10000,
+					contentText:"aaaaaaaaaaaa"
+				}
+				this.sendSocketMsg([msgA])
 				this.screenMsg(msg);
 				// 定时器模拟对方回复,三秒
 				setTimeout(()=>{
