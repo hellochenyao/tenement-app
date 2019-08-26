@@ -188,6 +188,11 @@
 <script>
 	import configUrl from "../../utils/config_utils.js";
 	import getStorage from "../../utils/getStorage.js"
+	import {  
+	    mapState,  
+	    mapMutations, 
+		mapActions
+	} from 'vuex';
 	export default {
 		data() {
 			return {
@@ -245,8 +250,7 @@
 					money:null
 				},
 				imageUrl:configUrl.requestUrl,
-				socketOpen:false,
-				msgQueue:[]
+				
 			};
 		},
 		onLoad(option) {
@@ -264,8 +268,13 @@
 			this.RECORDER.onStop((e)=>{
 				this.recordEnd(e);
 			})
-			this.connectMsg();
 			// #endif
+		},
+		computed:{
+			...mapState({ 
+				socketOpen:state=>state.privateMsgStore.socketOpen,
+				msgQueue:state=>state.privateMsgStore.msgQueue
+			})
 		},
 		onShow(){
 			this.scrollTop = 9999999;
@@ -326,32 +335,17 @@
 					this.scrollToView = 'msg'+msg.msg.id
 				});
 			},
-			connectMsg(){
-				let userId = getStorage('userId');
-				let url = configUrl.requestUrl
-				let _this = this;
-				uni.connectSocket({
-					url: `ws://localhost:8888/im/${userId}`,
-				
-				});
-				let msgArr = this.msgQueue;
-				uni.onSocketOpen(function (res) {
-				  _this.socketOpen = true;
-				  for (var i = 0; i < msgArr.length; i++) {
-					_this.sendSocketMsg(msgArr[i]);
-				  }
-				  msgArr = [];
-				});
-			},
 			sendSocketMsg(msg){
+				console.log(this.socketOpen)
 				if (this.socketOpen) {
-					uni.sendSocketMessage({
-					  data: JSON.stringify(msg)
-					});
+					let postData={msg:msg};
+					this.$store.dispatch("sendSocketMsg",postData)
 				} else {
-					this.msgQueue.push(msg);
+					let payload = {msgQueue:msg};
+					this.$store.dispatch("storeMsgQueue",payload)
 				}
 			},
+			
 			//触发滑动到顶部(加载历史信息记录)
 			loadHistory(e){
 				if(this.isHistoryLoading){
@@ -561,7 +555,7 @@
 				let msg = {type:'user',msg:{id:lastid,time:nowDate.getHours()+":"+nowDate.getMinutes(),type:type,userinfo:{uid:0,username:"大黑哥",face:"/images/app/face.jpg"},content:content}}
 				// 发送消息
 				let msgA={
-					toUserId:10000,
+					toUserId:10001,
 					contentText:"aaaaaaaaaaaa"
 				}
 				this.sendSocketMsg([msgA])
@@ -753,6 +747,15 @@
 			},
 			discard(){
 				return;
+			},
+			watch:{
+				socketOpen(value){
+					if(value){
+						let payload={msg:this.msgQueue};
+						this.$store.dispatch("sendSocketMsg",payload);
+						this.$store.dispatch("storeMsgQueue",false);
+					}
+				}
 			}
 		}
 	}
