@@ -250,11 +250,11 @@
 					money:null
 				},
 				imageUrl:configUrl.requestUrl,
-				
+				fromUserId:""
 			};
 		},
 		onLoad(option) {
-			this.getMsgList();
+			this.getMsgList(option.fromUserId);
 			//语音自然播放结束
 			this.AUDIO.onEnded((res)=>{
 				this.playMsgid=null;
@@ -269,6 +269,9 @@
 				this.recordEnd(e);
 			})
 			// #endif
+			if(option.fromUserId){
+				this.fromUserId = option.fromUserId;
+			}
 		},
 		computed:{
 			...mapState({ 
@@ -345,7 +348,6 @@
 					this.$store.dispatch("storeMsgQueue",payload)
 				}
 			},
-			
 			//触发滑动到顶部(加载历史信息记录)
 			loadHistory(e){
 				if(this.isHistoryLoading){
@@ -387,7 +389,8 @@
 				},1000)
 			},
 			// 加载初始页面消息
-			getMsgList(){
+			getMsgList(fromUserId){
+				let userId = getStorage("userId");
 				// 消息列表
 				let list = [
 					{type:"system",msg:{id:0,type:"text",content:{text:"欢迎进入chat聊天室"}}},
@@ -402,6 +405,17 @@
 					{type:"user",msg:{id:10,type:"redEnvelope",time:"12:56",userinfo:{uid:0,username:"大黑哥",face:"/images/app/face.jpg"},content:{blessing:"恭喜发财，大吉大利，万事如意",rid:0,isReceived:false}}},
 					{type:"user",msg:{id:11,type:"redEnvelope",time:"12:56",userinfo:{uid:1,username:"售后客服008",face:"/images/app/im/face/face_2.jpg"},content:{blessing:"恭喜发财",rid:1,isReceived:false}}},
 				]
+				let postData={
+					userId,
+					receiveUserid:fromUserId
+				}
+				this.$store.dispatch("findHistoryMsg",postData)
+				.then(res=>{
+					console.log(res)
+				})
+				.catch(e=>{
+					console.log(e)
+				})
 				// 获取消息中的图片,并处理显示尺寸
 				for(let i=0;i<list.length;i++){
 					if(list[i].type=='user'&&list[i].msg.type=="img"){

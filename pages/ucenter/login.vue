@@ -45,7 +45,6 @@
 				setTimeout((e=>{
 					this.login.loading = false;
 				}),1500);
-				console.log(JSON.stringify(this.login)); 
 			},
 			BindInput:function(e){
 				var dataval = e.currentTarget.dataset.val;

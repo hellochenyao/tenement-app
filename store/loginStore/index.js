@@ -71,8 +71,20 @@ const loginStore = {
 			});
 		},
 		//更新用户最后使用时间
-		updateLastLogin({commit,dispath},payload){
+		updateLastLogin({commit,dispatch},payload){
 			return RestApi.request(`/app/user/${payload.userId}/wx/last/login`,null,"PUT",true);
+		},
+		getUserInfo({commit,dispatch}){
+			uni.getUserInfo({
+			  provider: 'weixin',
+			  success: function (infoRes) { 
+				commit("loginMutations",infoRes);
+			  },
+			  fail:function(infoRes){ 
+				  info.toast("加载用户信息失败！");
+				  console.log("getInfo",infoRes)
+			  }
+			});
 		}
     }
 }

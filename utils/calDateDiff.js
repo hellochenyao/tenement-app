@@ -35,7 +35,13 @@ function calloginDate(loginDate,to){
 	}
 	return dif + "分钟前";
 } 
+function formatDate(date,type){
+	if(type==0){
+		return date.getHours() + ":" +date.getMinutes() ;
+	}
+}
 
 export{
-	calloginDate
+	calloginDate,
+	formatDate
 }

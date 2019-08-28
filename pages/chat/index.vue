@@ -1,6 +1,6 @@
 <template>
 	<view>
-		<msg-detail :msgQueue = "msgQueue" @setMsgQueue="setMsgQueue"></msg-detail>
+		<msg-detail v-for="(item,index) in connectUsers" :info ="item"></msg-detail>
 	</view>
 </template>
 
@@ -15,6 +15,7 @@
 	export default {
 		data() {
 			return {	
+				connectUsers:[]
 			};
 		},
 		computed:{
@@ -33,6 +34,13 @@
 				msgQueue:this.msgQueue
 			}
 			this.$store.dispatch("connectWebSocketMsg",req);
+			this.$store.dispatch("findConnectingUsers",{userId})
+			.then(res=>{
+				this.connectUsers = res.messages;
+			})
+			.catch(e=>{
+				console.log(e)
+			});
 		},
 		methods:{
 		

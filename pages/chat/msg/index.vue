@@ -4,22 +4,23 @@
 		 @touchmove="handletouchmove" 
 		 @touchstart="handletouchstart"
 		 @touchend="handletouchend"
-		 @tap="gotoDetailMsg" 
+		 @tap="gotoDetailMsg(info.fromUserid)" 
 	 >
-		<image src="../../../static/add.png" class="avatar"></image>
+		<image :src="info.fromUserAvatar" class="avatar"></image>
 		<view class="detail">
-			<text class="user-name">at</text>
-			<text class="msg">a</text>
+			<text class="user-name">{{info.fromUserNickName}}</text>
+			<text class="msg">{{info.content}}</text>
 		</view>
 		<view class="other">
-			<text class="date">09:30</text>
-			<uni-badge text="2" type="error"></uni-badge>
+			<text class="date">{{formateDate(info.createTime)}}</text>
+			<uni-badge :text="info.noReadNums" type="error"></uni-badge>
 		</view>
 		<view class="delete-btn">删除</view>
 	</view>
 </template>
 
 <script>
+	import {formatDate} from "../../../utils/calDateDiff.js";
 	import uniBadge from "@/components/uni-badge/uni-badge.vue"
 	export default {
 		data() {
@@ -30,6 +31,9 @@
 				    lastY: 0,
 					wid:0
 			};
+		},
+		props:{
+			info:Object
 		},
 		methods: {
 		   handletouchmove(event) {
@@ -69,11 +73,13 @@
 		    this.flag = 0;
 		    this.text = '没有滑动';
 		},
-		gotoDetailMsg(){
-			console.log("a")
+		gotoDetailMsg(id){
 			uni.navigateTo({
-				url:"../chat/chat"
+				url:"../chat/chat?fromUserId="+id
 			});
+		},
+		formateDate(dateStr){
+			return formatDate(new Date(dateStr),0)
 		}
 	},
 	components:{

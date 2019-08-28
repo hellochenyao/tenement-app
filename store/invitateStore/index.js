@@ -38,7 +38,6 @@ const invitateStore = {
 			console.log(payload)
 			RestApi.request(`/app/tenement/${payload.id}/invitations`,payload,'get')
 			.then(res=>{
-				console.log(res)
 				commit("findInvitationMutions",res);
 			})
 			.catch(err=>{
@@ -53,11 +52,9 @@ const invitateStore = {
 			return RestApi.request(`/app/tenement/${payload.id}/leave/words-items`,payload,'get')
 		},
 		responseUserAction(action,payload){
-			console.log(payload)
 			action.commit("responsetToUser",payload);
 		},
 		responseMsg({commit,dispatch},payload){
-			console.log("a",payload)
 			return RestApi.request(`/app/tenement/${payload.userId}/leave/words/${payload.invitationId}`,{answerMsgId:payload.answerMsgId,msg:payload.msg,invitationId:payload.invitationId,responseUserId:payload.responseUserId},'POST')
 		}
     }

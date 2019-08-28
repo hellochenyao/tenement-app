@@ -103,7 +103,6 @@
 		},
 		//注册滚动到底部的事件,用于上拉加载
 		onReachBottom() {
-			console.log("aaaa")
 			this.mescroll && this.mescroll.onReachBottom();
 		},
 		//注册列表滚动事件,用于下拉刷新
@@ -122,6 +121,7 @@
 					}
 				}
 			});
+			
 		},
 		onShow(event) {
 			let pages = getCurrentPages();
