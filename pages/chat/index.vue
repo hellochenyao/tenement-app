@@ -34,7 +34,7 @@
 				msgQueue:this.msgQueue
 			}
 			this.$store.dispatch("connectWebSocketMsg",req);
-			this.$store.dispatch("findConnectingUsers",{userId})
+			this.$store.dispatch("findConnectingUsers",{userId,pageNo:1,pageSize:10})
 			.then(res=>{
 				this.connectUsers = res.messages;
 			})

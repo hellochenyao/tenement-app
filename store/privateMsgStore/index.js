@@ -46,6 +46,9 @@ const privateMsgStore = {
 			let {msg} = payload;
 			uni.sendSocketMessage({
 			  data: JSON.stringify(msg)
+			})
+			.then(res=>{
+				console.log("aa")
 			});
 		},
 		storeMsgQueue({commit,dispatch},payload){
@@ -57,19 +60,20 @@ const privateMsgStore = {
 			}
 		},
 		findConnectingUsers({commit,dispatch},payload){
-			let {userId} = payload;
+			let {userId,pageNo,pageSize} = payload;
 			let post = {
-				pageNo:1,
-				pageSize:10
+				pageNo,
+				pageSize
 			}
 			return RestApi.request(`/app/tenement/${userId}/find/user/receive/last/msg`,post,'get')
 		},
 		findHistoryMsg({commit,dispatch},payload){
-			let {userId,receiveUserid} = payload;
+			let {userId,receiveUserid,pageNo,pageSize} = payload;
+			console.log(pageNo)
 			let postData = {
 				receiveUserid,
-				pageNo:1,
-				pageSize:10
+				pageNo,
+				pageSize
 			}
 			return RestApi.request(`/app/tenement/${userId}/find/msg`,postData,'get')
 		}

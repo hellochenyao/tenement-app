@@ -3,7 +3,7 @@
 		<view class="content" @touchstart="hideDrawer">
 			<scroll-view class="msg-list" scroll-y="true" :scroll-with-animation="scrollAnimation" :scroll-top="scrollTop" :scroll-into-view="scrollToView" @scrolltoupper="loadHistory" upper-threshold="50">
 				<!-- 加载历史数据waitingUI -->
-				<view class="loading">
+				<view class="loading" v-if="!scrollAnimation&&!haveLoad">
 					<view class="spinner">
 						<view class="rect1"></view>
 						<view class="rect2"></view>
@@ -11,6 +11,9 @@
 						<view class="rect4"></view>
 						<view class="rect5"></view>
 					</view>
+				</view>
+				<view class="load" v-if="scrollAnimation&&haveLoad">
+					<text class="text-value">没有更多了</text>
 				</view>
 				<view class="row" v-for="(row,index) in msgList" :key="index" :id="'msg'+row.msg.id">
 					<!-- 系统消息 -->
@@ -30,7 +33,7 @@
 					<!-- 用户消息 -->
 					<block v-if="row.type=='user'">
 						<!-- 自己发出的消息 -->
-						<view class="my" v-if="row.msg.userinfo.uid==myuid">
+						<view class="my" v-if="row.msg.userinfo.uid!=fromUserId">
 							<!-- 左-消息 -->
 							<view class="left">
 								<!-- 文字消息 -->
@@ -60,14 +63,14 @@
 							</view>
 							<!-- 右-头像 -->
 							<view class="right">
-								<image :src="imageUrl+row.msg.userinfo.face"></image>
+								<image :src="row.msg.userinfo.face"></image>
 							</view>
 						</view>
 						<!-- 别人发出的消息 -->
-						<view class="other" v-if="row.msg.userinfo.uid!=myuid">
+						<view class="other" v-if="row.msg.userinfo.uid==fromUserId">
 							<!-- 左-头像 -->
 							<view class="left">
-								<image :src="imageUrl+row.msg.userinfo.face"></image>
+								<image :src="row.msg.userinfo.face"></image>
 							</view>
 							<!-- 右-用户名称-时间-消息 -->
 							<view class="right">
@@ -188,6 +191,7 @@
 <script>
 	import configUrl from "../../utils/config_utils.js";
 	import getStorage from "../../utils/getStorage.js"
+	import {formatDate} from "../../utils/calDateDiff.js";
 	import {  
 	    mapState,  
 	    mapMutations, 
@@ -250,7 +254,11 @@
 					money:null
 				},
 				imageUrl:configUrl.requestUrl,
-				fromUserId:""
+				fromUserId:"",
+				pageNo:1,
+				pageSize:10,
+				total:0,
+				haveLoad:false
 			};
 		},
 		onLoad(option) {
@@ -343,87 +351,81 @@
 				if (this.socketOpen) {
 					let postData={msg:msg};
 					this.$store.dispatch("sendSocketMsg",postData)
+					.then(res=>{
+						console.log(res)
+						this.pageNo = 1;
+						this.getMsgList(this.fromUserId);
+					})
 				} else {
 					let payload = {msgQueue:msg};
 					this.$store.dispatch("storeMsgQueue",payload)
 				}
 			},
 			//触发滑动到顶部(加载历史信息记录)
-			loadHistory(e){
+			async loadHistory(e){
 				if(this.isHistoryLoading){
 					return ;
 				}
 				this.isHistoryLoading = true;//参数作为进入请求标识，防止重复请求
-				this.scrollAnimation = false;//关闭滑动动画
+		        this.scrollAnimation = false;
 				let Viewid = this.msgList[0].msg.id;//记住第一个信息ID
 				//本地模拟请求历史记录效果
-				setTimeout(()=>{
-					// 消息列表
-					let list = [
-						{type:"user",msg:{id:1,type:"text",time:"12:56",userinfo:{uid:0,username:"大黑哥",face:"/images/app/face.jpg"},content:{text:"为什么温度会相差那么大？"}}},
-						{type:"user",msg:{id:2,type:"text",time:"12:57",userinfo:{uid:1,username:"售后客服008",face:"/images/app/im/face/face_2.jpg"},content:{text:"这个是有偏差的，两个温度相差十几二十度是很正常的，如果相差五十度，那即是质量问题了。"}}},
-						{type:"user",msg:{id:3,type:"voice",time:"12:59",userinfo:{uid:1,username:"售后客服008",face:"/images/app/im/face/face_2.jpg"},content:{url:"/static/voice/1.mp3",length:"00:06"}}},
-						{type:"user",msg:{id:4,type:"voice",time:"13:05",userinfo:{uid:0,username:"大黑哥",face:"/images/app/face.jpg"},content:{url:"/static/voice/2.mp3",length:"00:06"}}},
-					]
-					// 获取消息中的图片,并处理显示尺寸
-					for(let i=0;i<list.length;i++){
-						if(list[i].type=='user'&&list[i].msg.type=="img"){
-							list[i].msg.content = this.setPicSize(list[i].msg.content);
-							this.msgImgList.unshift(list[i].msg.content.url);
-						}
-						list[i].msg.id = Math.floor(Math.random()*1000+1);
-						this.msgList.unshift(list[i]);
-					}
-					
-					//这段代码很重要，不然每次加载历史数据都会跳到顶部
-					this.$nextTick(function() {
-						console.log("a")
-						this.scrollToView = 'msg'+Viewid;//跳转上次的第一行信息位置
-						this.$nextTick(function() {
-							this.scrollAnimation = true;//恢复滚动动画
-						});
-						
-					});
+				if(this.msgList.length==this.total){
 					this.isHistoryLoading = false;
-					
-				},1000)
-			},
-			// 加载初始页面消息
-			getMsgList(fromUserId){
+					this.scrollAnimation = true;
+					this.haveLoad = true;
+					return
+				}
 				let userId = getStorage("userId");
 				// 消息列表
-				let list = [
-					{type:"system",msg:{id:0,type:"text",content:{text:"欢迎进入chat聊天室"}}},
-					{type:"user",msg:{id:1,type:"text",time:"12:56",userinfo:{uid:0,username:"大黑哥",face:"/images/app/face.jpg"},content:{text:"为什么温度会相差那么大？"}}},
-					{type:"user",msg:{id:2,type:"text",time:"12:57",userinfo:{uid:1,username:"售后客服008",face:"/images/app/im/face/face_2.jpg"},content:{text:"这个是有偏差的，两个温度相差十几二十度是很正常的，如果相差五十度，那即是质量问题了。"}}},
-					{type:"user",msg:{id:3,type:"voice",time:"12:59",userinfo:{uid:1,username:"售后客服008",face:"/images/app/im/face/face_2.jpg"},content:{url:"/static/voice/1.mp3",length:"00:06"}}},
-					{type:"user",msg:{id:4,type:"voice",time:"13:05",userinfo:{uid:0,username:"大黑哥",face:"/images/app/face.jpg"},content:{url:"/static/voice/2.mp3",length:"00:06"}}},
-					{type:"user",msg:{id:5,type:"img",time:"13:05",userinfo:{uid:0,username:"大黑哥",face:"/images/app/face.jpg"},content:{url:"/images/app/p10.jpg",w:200,h:200}}},
-					{type:"user",msg:{id:6,type:"img",time:"12:59",userinfo:{uid:1,username:"售后客服008",face:"/images/app/im/face/face_2.jpg"},content:{url:"/images/app/q.jpg",w:1920,h:1080}}},
-					{type:"system",msg:{id:7,type:"text",content:{text:"欢迎进入chat聊天室"}}},	
-					{type:"system",msg:{id:9,type:"redEnvelope",content:{text:"售后客服008领取了你的红包"}}},
-					{type:"user",msg:{id:10,type:"redEnvelope",time:"12:56",userinfo:{uid:0,username:"大黑哥",face:"/images/app/face.jpg"},content:{blessing:"恭喜发财，大吉大利，万事如意",rid:0,isReceived:false}}},
-					{type:"user",msg:{id:11,type:"redEnvelope",time:"12:56",userinfo:{uid:1,username:"售后客服008",face:"/images/app/im/face/face_2.jpg"},content:{blessing:"恭喜发财",rid:1,isReceived:false}}},
-				]
 				let postData={
 					userId,
-					receiveUserid:fromUserId
+					receiveUserid:this.fromUserId,
+					pageNo:this.pageNo,
+					pageSize:this.pageSize
 				}
-				this.$store.dispatch("findHistoryMsg",postData)
-				.then(res=>{
-					console.log(res)
-				})
-				.catch(e=>{
-					console.log(e)
-				})
-				// 获取消息中的图片,并处理显示尺寸
+				console.log(postData)
+				let list= await this.requestMsg(postData);
+				console.log(list)
+					// 获取消息中的图片,并处理显示尺寸
 				for(let i=0;i<list.length;i++){
+					if(list[i].type=='user'&&list[i].msg.type=="img"){
+						list[i].msg.content = this.setPicSize(list[i].msg.content);
+						this.msgImgList.unshift(list[i].msg.content.url);
+					}
+					list[i].msg.id = Math.floor(Math.random()*1000+1);
+					this.msgList.unshift(list[i]);
+				}
+					
+				//这段代码很重要，不然每次加载历史数据都会跳到顶部
+				this.$nextTick(function() {
+					console.log("a")
+					this.scrollToView = 'msg'+Viewid;//跳转上次的第一行信息位置
+					this.$nextTick(function() {
+						this.scrollAnimation = true;//恢复滚动动画
+					});
+				});
+				this.isHistoryLoading = false;
+			},
+			// 加载初始页面消息
+		async getMsgList(fromUserId){
+				let userId = getStorage("userId");
+				// 消息列表
+				let postData={
+					userId,
+					receiveUserid:fromUserId,
+					pageNo:this.pageNo,
+					pageSize:this.pageSize
+				}
+				let list = await this.requestMsg(postData);
+					// 获取消息中的图片,并处理显示尺寸
+			    for(let i=0;i<list.length;i++){
 					if(list[i].type=='user'&&list[i].msg.type=="img"){
 						list[i].msg.content = this.setPicSize(list[i].msg.content);
 						this.msgImgList.push(list[i].msg.content.url);
 					}
 				}
-				this.msgList = list;
+				this.msgList = list.reverse();
 				// 滚动到底部
 				this.$nextTick(function() {
 					//进入页面滚动到底部
@@ -432,7 +434,51 @@
 						this.scrollAnimation = true;
 					});
 					
-				});
+				 });
+
+			},
+			requestMsg(postData){
+				return new Promise((rev,rej)=>{
+
+						this.$store.dispatch("findHistoryMsg",postData)
+						.then(res=>{
+							console.log(res)
+							this.pageNo = this.pageNo+1;
+							let {messages} = res;
+							this.total = res.total;
+							 let list = messages.map(v=>{
+								let message={
+										  type:"user",
+										  msg:{
+											  type:v.type,
+											  time:formatDate(v.createTime),
+											  userinfo:{
+												  uid:v.userid,
+												  username:v.userNickName,
+												  face:v.userAvatar
+												  
+											  },
+											  content:{}
+										  }
+									  };
+								switch(v.type){
+									case "text":
+									   message.msg["content"]["text"] = v.content;
+									   break;
+									   default:
+									   message.msg["content"]["url"] = v.content;
+									   break;
+								}
+								return message;
+							});
+							rev(list);
+					})
+					.catch(e=>{
+						console.log(e)
+						rej(e);
+					})
+	
+				})
 			},
 			//处理图片尺寸，如果不处理宽高，新进入页面加载图片时候会闪
 			setPicSize(content){
@@ -562,26 +608,13 @@
 			
 			// 发送消息
 			sendMsg(content,type){
-				//实际应用中，此处应该提交长连接，模板仅做本地处理。
-				var nowDate = new Date();
-				let lastid = this.msgList[this.msgList.length-1].msg.id;
-				lastid++;
-				let msg = {type:'user',msg:{id:lastid,time:nowDate.getHours()+":"+nowDate.getMinutes(),type:type,userinfo:{uid:0,username:"大黑哥",face:"/images/app/face.jpg"},content:content}}
 				// 发送消息
 				let msgA={
-					toUserId:10001,
-					contentText:"aaaaaaaaaaaa"
+					toUserId:this.fromUserId,
+					contentText:content
 				}
 				this.sendSocketMsg([msgA])
 				this.screenMsg(msg);
-				// 定时器模拟对方回复,三秒
-				setTimeout(()=>{
-					lastid = this.msgList[this.msgList.length-1].msg.id;
-					lastid++;
-					msg = {type:'user',msg:{id:lastid,time:nowDate.getHours()+":"+nowDate.getMinutes(),type:type,userinfo:{uid:1,username:"售后客服008",face:"/images/app/im/face/face_2.jpg"},content:content}}
-					// 本地模拟发送消息
-					this.screenMsg(msg);
-				},3000)
 			},
 			
 			// 添加文字消息到列表
@@ -775,5 +808,17 @@
 	}
 </script>
 <style lang="scss">
+	.load{
+		width:100%;
+		height: 60upx;
+		display: flex;
+		flex-direction: row;
+		justify-content: center;
+		align-items: center;
+	}
+	.text-value{
+		color: #CCC;
+		font-size: 26upx;
+	}
 	@import "@/static/css/style.scss"; 
 </style>
