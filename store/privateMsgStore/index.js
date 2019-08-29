@@ -4,7 +4,8 @@ import configUrl from "../../utils/config_utils";
 const privateMsgStore = {
 	state:{ //存放组件之间共享的数据
 	   socketOpen:false,
-	   msgQueue:[]
+	   msgQueue:[],
+	   refreshMsgList:false
     },
     mutations:{//显式的更改state里的数据
 	   setSocketOpen(state,res){
@@ -16,8 +17,12 @@ const privateMsgStore = {
 		   }else{
 			   state.msgQueue=[]
 		   }
+	   },
+	   setRefreshMsgList(state,res){
+		   console.log(res)
+		   state.refreshMsgList = res;
 	   }
-    },
+    }, 
     getters:{
 	
     },
@@ -27,7 +32,7 @@ const privateMsgStore = {
 			let url = configUrl.wbUrl
 			let _this = this;
 			uni.connectSocket({
-				url: `ws://${url}/ws/im/${userId}`,
+				url: `ws://${url}/im/${userId}`,
 			});
 			let msgArr = msgQueue;
 			uni.onSocketOpen(function (res) {
@@ -39,17 +44,27 @@ const privateMsgStore = {
 			});
 			uni.onSocketMessage(function (res) {
 			  console.log('收到服务器内容：' + res.data);
+			  let response = JSON.parse(res.data);
+			  if(response.code&&(response.code=="success"||response.code=="newMsg")){
+				  console.log("a")
+				  commit("setRefreshMsgList",new Boolean(true));
+			  }
 			});
 		},
+		
 		sendSocketMsg({commit,dispatch},payload){
-			console.log(payload)
 			let {msg} = payload;
-			uni.sendSocketMessage({
-			  data: JSON.stringify(msg)
+			return new Promise((rev,rec)=>{
+				uni.sendSocketMessage({
+				  data: JSON.stringify(msg),
+				  complete:(res)=>{
+					  rev(res);
+				  },
+				  fail:(e)=>{
+					  rec(e);
+				  }
+				})
 			})
-			.then(res=>{
-				console.log("aa")
-			});
 		},
 		storeMsgQueue({commit,dispatch},payload){
 			if(payload){
