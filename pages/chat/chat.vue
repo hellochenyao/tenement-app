@@ -25,7 +25,7 @@
 							</view>
 							<!-- 领取红包消息 -->
 							<view v-if="row.msg.type=='redEnvelope'" class="red-envelope">
-								<image :src="imageUrl+'/images/app/red-envelope-chat.png'"></image>
+								<image :src="imageUrl+'red-envelope-chat.png'"></image>
 								{{row.msg.content.text}}
 							</view>
 						</view>
@@ -41,17 +41,17 @@
 									<rich-text :nodes="row.msg.content.text"></rich-text>
 								</view>
 								<!-- 语言消息 -->
-								<view v-if="row.msg.type=='voice'" class="bubble voice" @tap="playVoice(row.msg)" :class="playMsgid == row.msg.id?'play':''">
-									<view class="length">{{row.msg.content.length}}</view>
+								<view v-if="row.msg.type=='voice'" class="bubble voice" @tap="playVoice(row.msg)" :class="playMsgid == row.msg.content.url?'play':''">
+									<view class="length">{{playMsgid == row.msg.content.url?currentPlayDate:row.msg.content.length}}</view>
 									<view class="icon my-voice"></view>
 								</view>
 								<!-- 图片消息 -->
 								<view v-if="row.msg.type=='img'" class="bubble img" @tap="showPic(row.msg)">
-									<image :src="row.msg.content.url" :style="{'width': row.msg.content.w+'px','height': row.msg.content.h+'px'}"></image>
+									<image :src="imageUrl+row.msg.content.url" :style="{'width': row.msg.content.w+'px','height': row.msg.content.h+'px'}"></image>
 								</view>
 								<!-- 红包 -->
 								<view v-if="row.msg.type=='redEnvelope'" class="bubble red-envelope" @tap="openRedEnvelope(row.msg,index)">
-									<image :src="imageUrl+'/images/app/red-envelope.png'"></image>
+									<image :src="imageUrl+'red-envelope.png'"></image>
 									<view class="tis">
 										<!-- 点击开红包 -->
 									</view>
@@ -82,17 +82,17 @@
 									<rich-text :nodes="row.msg.content.text"></rich-text>
 								</view>
 								<!-- 语音消息 -->
-								<view v-if="row.msg.type=='voice'" class="bubble voice" @tap="playVoice(row.msg)" :class="playMsgid == row.msg.id?'play':''">
+								<view v-if="row.msg.type=='voice'" class="bubble voice" @tap="playVoice(row.msg)" :class="playMsgid == row.msg.content.url?'play':''">
 									<view class="icon other-voice"></view>
-									<view class="length">{{row.msg.content.length}}</view>
+									<view class="length">{{playMsgid == row.msg.content.url?currentPlayDate:row.msg.content.length}}</view>
 								</view>
 								<!-- 图片消息 -->
 								<view v-if="row.msg.type=='img'" class="bubble img" @tap="showPic(row.msg)">
-									<image :src="row.msg.content.url" :style="{'width': row.msg.content.w+'px','height': row.msg.content.h+'px'}"></image>
+									<image :src="imageUrl+row.msg.content.url" :style="{'width': row.msg.content.w+'px','height': row.msg.content.h+'px'}"></image>
 								</view>
 								<!-- 红包 -->
 								<view v-if="row.msg.type=='redEnvelope'" class="bubble red-envelope" @tap="openRedEnvelope(row.msg,index)">
-									<image :src="imageUrl+'/images/app/red-envelope.png'"></image>
+									<image :src="imageUrl+'red-envelope.png'"></image>
 									<view class="tis">
 										<!-- 点击开红包 -->
 									</view>
@@ -112,7 +112,7 @@
 			<swiper class="emoji-swiper" :class="{hidden:hideEmoji}" indicator-dots="true" duration="150">
 				<swiper-item v-for="(page,pid) in emojiList" :key="pid">
 					<view v-for="(em,eid) in page" :key="eid" @tap="addEmoji(em)">
-						<image mode="widthFix" :src="imageUrl+'/images/app/emoji/'+em.url"></image>
+						<image mode="widthFix" :src="imageUrl+'emoji/'+em.url"></image>
 					</view>
 				</swiper-item>
 			</swiper>
@@ -174,7 +174,7 @@
 						<view class="close-btn">
 							<view class="icon close" @tap="closeRedEnvelope"></view>
 						</view>
-						<image :src="imageUrl+'/images/app/im/face/face_1.jpg'"></image>
+						<image :src="imageUrl+'im/face/face_1.jpg'"></image>
 					</view>
 					<view class="from">来自{{redenvelopeData.from}}</view>
 					<view class="blessing">{{redenvelopeData.blessing}}</view>
@@ -253,12 +253,13 @@
 					blessing:null,
 					money:null
 				},
-				imageUrl:configUrl.requestUrl,
+				imageUrl:configUrl.imagesUrl,
 				fromUserId:"",
 				pageNo:1,
 				pageSize:10,
 				total:0,
-				haveLoad:false
+				haveLoad:false,
+				currentPlayDate:"00:00"
 			};
 		},
 		onLoad(option) {
@@ -470,6 +471,10 @@
 									   message.msg["content"]["w"] = JSON.parse(v.content).w;
 									   message.msg["content"]["h"] = JSON.parse(v.content).h;
 									   break;
+									case "voice":
+									   message.msg["content"]["url"] = JSON.parse(v.content).url;
+									   message.msg["content"]["length"] = JSON.parse(v.content).length;
+									   break;
 								}
 								return message;
 							});
@@ -535,21 +540,41 @@
 			},
 			//选照片 or 拍照
 			getImage(type){
+				let userId = getStorage("userId");
 				this.hideDrawer();
 				uni.chooseImage({
 					sourceType:[type],
 					sizeType: ['original', 'compressed'], //可以指定是原图还是压缩图，默认二者都有
 					success: (res)=>{
-						console.log(res)
 						for(let i=0;i<res.tempFilePaths.length;i++){
-							uni.getImageInfo({
-								src: res.tempFilePaths[i],
-								success: (image)=>{
-									console.log(image.width);
-									console.log(image.height);
-									let msg = {url:res.tempFilePaths[i],w:image.width,h:image.height};
-									this.sendMsg(msg,'img');
+							let uploadTask=[]
+						    uploadTask[i] = uni.uploadFile({
+								url: configUrl.requestUrl+`/app/tenement/${userId}/picture/message/upload/0`,
+								filePath: res.tempFilePaths[i],
+								name: 'fileResource',
+								formData: {
+									'toUserid': this.fromUserId
+								},
+								success: (uploadFileRes) => {
+									console.log(uploadFileRes)
+									let imgstr = JSON.parse(uploadFileRes.data).resourceUrl
+									uni.getImageInfo({
+										src: res.tempFilePaths[i],
+										success: (image)=>{
+											let msg = {url:imgstr,w:image.width,h:image.height};
+											this.sendMsg(msg,'img');
+										}
+									});
+								},
+								fail:(e)=>{
+									console.log()
 								}
+							});
+
+							uploadTask[i].onProgressUpdate((res) => {
+								console.log('上传进度' + res.progress);
+								console.log('已经上传的数据长度' + res.totalBytesSent);
+								console.log('预期需要上传的数据总长度' + res.totalBytesExpectedToSend);
 							});
 						}
 					}
@@ -707,16 +732,36 @@
 			showPic(msg){
 				uni.previewImage({
 					indicator:"none",
-					current:msg.content.url,
-					urls: this.msgImgList
+					current:this.imageUrl + msg.content.url,
+					urls: this.msgImgList.map(v=>this.imageUrl+v)
 				});
 			},
 			// 播放语音
 			playVoice(msg){
-				this.playMsgid=msg.id;
-				this.AUDIO.src = msg.content.url;
+				if(this.playMsgid){
+					return;
+				}
+				this.playMsgid=msg.content.url;
+				this.AUDIO.src = this.imageUrl + msg.content.url;
 				this.$nextTick(function() {
+					let _this = this;
 					this.AUDIO.play();
+					this.AUDIO.onTimeUpdate(function(e){
+						let date = Math.floor(_this.AUDIO.currentTime)
+						let min = parseInt(date/60);
+						let sec = date%60;
+						min = min<10?'0'+min:min;
+						sec = sec<10?'0'+sec:sec;
+						let length = min+':'+sec;
+						_this.currentPlayDate = length;
+					})
+					
+					this.AUDIO.onEnded(()=>{
+						this.AUDIO.offTimeUpdate()
+						this.AUDIO = uni.createInnerAudioContext();
+						this.currentPlayDate="00:00";
+						this.playMsgid = "";
+					})
 				});
 			},
 			// 录音开始
@@ -772,19 +817,35 @@
 			},
 			//录音结束(回调文件)
 			recordEnd(e){
+				let userId = getStorage("userId");
 				clearInterval(this.recordTimer);
 				if(!this.willStop){
-					console.log("e: " + JSON.stringify(e));
-					let msg = {
-						length:0,
-						url:e.tempFilePath
-					}
-					let min = parseInt(this.recordLength/60);
-					let sec = this.recordLength%60;
-					min = min<10?'0'+min:min;
-					sec = sec<10?'0'+sec:sec;
-					msg.length = min+':'+sec;
-					this.sendMsg(msg,'voice');
+					uni.uploadFile({
+						url: configUrl.requestUrl+`/app/tenement/${userId}/picture/message/upload/-1`,
+						filePath: e.tempFilePath,
+						name: 'fileResource',
+						formData: {
+							'toUserid': this.fromUserId
+						},
+						success: (uploadFileRes) => {
+							console.log(uploadFileRes)
+							let voicestr = JSON.parse(uploadFileRes.data).resourceUrl
+							let msg = {
+								length:0,
+								url:voicestr
+							}
+							let min = parseInt(this.recordLength/60);
+							let sec = this.recordLength%60;
+							min = min<10?'0'+min:min;
+							sec = sec<10?'0'+sec:sec;
+							msg.length = min+':'+sec;
+							this.sendMsg(msg,'voice');
+							
+						},
+						fail:(e)=>{
+							console.log()
+						}
+					});
 				}else{
 					console.log('取消发送录音');
 				}
@@ -811,6 +872,7 @@
 			refreshMsg(value){
 				console.log(value,"aaaaaaa")
 				if(value){
+					this.pageNo=1;
 					this.getMsgList(this.fromUserId);
 				}
 			}

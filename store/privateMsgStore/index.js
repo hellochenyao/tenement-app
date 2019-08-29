@@ -54,16 +54,8 @@ const privateMsgStore = {
 		
 		sendSocketMsg({commit,dispatch},payload){
 			let {msg} = payload;
-			return new Promise((rev,rec)=>{
-				uni.sendSocketMessage({
-				  data: JSON.stringify(msg),
-				  complete:(res)=>{
-					  rev(res);
-				  },
-				  fail:(e)=>{
-					  rec(e);
-				  }
-				})
+			uni.sendSocketMessage({
+				 data: JSON.stringify(msg)
 			})
 		},
 		storeMsgQueue({commit,dispatch},payload){

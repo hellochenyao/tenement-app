@@ -1,7 +1,7 @@
 export default {   
-	uploadFileUrl : "http://localhost:8888/uploadResource/",//本地   
+	uploadFileUrl : "http://182.61.48.161:8080/images/",//本地   
 	requestUrl : "http://182.61.48.161:8080",
-	wbUrl:"localhost:8888",
+	wbUrl:"182.61.48.161:8080/ws",
 	imagesUrl:"http://182.61.48.161:8080/images/app/"
 }
 //户型
