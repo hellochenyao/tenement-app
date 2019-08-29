@@ -1,5 +1,5 @@
 <template>
-	<view>
+	<view class="contain">
 		<msg-detail v-for="(item,index) in connectUsers" :info ="item"></msg-detail>
 	</view>
 </template>
@@ -52,4 +52,9 @@
 </script>
 
 <style>
+	.contain{
+		width:100%;
+		height:100%;
+		overflow: hidden;
+	}
 </style>

@@ -20,7 +20,7 @@ let getSystem = ()=>{
 				return res(data);
 			},
 			fail(e) {
-				return rej(e)
+				return rej(e) 
 			}
 		})
 	})

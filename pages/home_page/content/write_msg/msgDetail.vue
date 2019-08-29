@@ -31,7 +31,7 @@
 				height:"0px"
 			}
 		},
-		props:{ 
+		props:{  
 			res:{},
 			detailType:Boolean
 		},

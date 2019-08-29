@@ -47,7 +47,7 @@
 								</view>
 								<!-- 图片消息 -->
 								<view v-if="row.msg.type=='img'" class="bubble img" @tap="showPic(row.msg)">
-									<image :src="imageUrl+row.msg.content.url" :style="{'width': row.msg.content.w+'px','height': row.msg.content.h+'px'}"></image>
+									<image :src="row.msg.content.url" :style="{'width': row.msg.content.w+'px','height': row.msg.content.h+'px'}"></image>
 								</view>
 								<!-- 红包 -->
 								<view v-if="row.msg.type=='redEnvelope'" class="bubble red-envelope" @tap="openRedEnvelope(row.msg,index)">
@@ -88,7 +88,7 @@
 								</view>
 								<!-- 图片消息 -->
 								<view v-if="row.msg.type=='img'" class="bubble img" @tap="showPic(row.msg)">
-									<image :src="imageUrl+row.msg.content.url" :style="{'width': row.msg.content.w+'px','height': row.msg.content.h+'px'}"></image>
+									<image :src="row.msg.content.url" :style="{'width': row.msg.content.w+'px','height': row.msg.content.h+'px'}"></image>
 								</view>
 								<!-- 红包 -->
 								<view v-if="row.msg.type=='redEnvelope'" class="bubble red-envelope" @tap="openRedEnvelope(row.msg,index)">
@@ -280,11 +280,18 @@
 			if(option.fromUserId){
 				this.fromUserId = option.fromUserId;
 			}
+			uni.setNavigationBarTitle({
+			　　title:option.nickName
+			})
 		},
 		computed:{
 			...mapState({ 
 				socketOpen:state=>state.privateMsgStore.socketOpen,
-				msgQueue:state=>state.privateMsgStore.msgQueue
+				msgQueue:state=>state.privateMsgStore.msgQueue,
+				refreshMsg:state=>{
+					console.log(state.privateMsgStore.refreshMsgList)
+					return state.privateMsgStore.refreshMsgList
+				}
 			})
 		},
 		onShow(){
@@ -347,15 +354,9 @@
 				});
 			},
 			sendSocketMsg(msg){
-				console.log(this.socketOpen)
 				if (this.socketOpen) {
 					let postData={msg:msg};
 					this.$store.dispatch("sendSocketMsg",postData)
-					.then(res=>{
-						console.log(res)
-						this.pageNo = 1;
-						this.getMsgList(this.fromUserId);
-					})
 				} else {
 					let payload = {msgQueue:msg};
 					this.$store.dispatch("storeMsgQueue",payload)
@@ -384,9 +385,7 @@
 					pageNo:this.pageNo,
 					pageSize:this.pageSize
 				}
-				console.log(postData)
 				let list= await this.requestMsg(postData);
-				console.log(list)
 					// 获取消息中的图片,并处理显示尺寸
 				for(let i=0;i<list.length;i++){
 					if(list[i].type=='user'&&list[i].msg.type=="img"){
@@ -465,8 +464,11 @@
 									case "text":
 									   message.msg["content"]["text"] = v.content;
 									   break;
-									   default:
-									   message.msg["content"]["url"] = v.content;
+									case "img":
+									console.log(JSON.parse(v.content))
+									   message.msg["content"]["url"] = JSON.parse(v.content).url;
+									   message.msg["content"]["w"] = JSON.parse(v.content).w;
+									   message.msg["content"]["h"] = JSON.parse(v.content).h;
 									   break;
 								}
 								return message;
@@ -538,6 +540,7 @@
 					sourceType:[type],
 					sizeType: ['original', 'compressed'], //可以指定是原图还是压缩图，默认二者都有
 					success: (res)=>{
+						console.log(res)
 						for(let i=0;i<res.tempFilePaths.length;i++){
 							uni.getImageInfo({
 								src: res.tempFilePaths[i],
@@ -579,9 +582,9 @@
 				if(!this.textMsg){
 					return;
 				}
+				console.log(this.textMsg)
 				let content = this.replaceEmoji(this.textMsg);
-				let msg = {text:content}
-				this.sendMsg(msg,'text');
+				this.sendMsg(content,'text');
 				this.textMsg = '';//清空输入框
 			},
 			//替换表情符号为图片
@@ -595,9 +598,8 @@
 							if(EM.alt==item){
 								//在线表情路径，图文混排必须使用网络路径，请上传一份表情到你的服务器后再替换此路径 
 								//比如你上传服务器后，你的100.gif路径为https://www.xxx.com/emoji/100.gif 则替换onlinePath填写为https://www.xxx.com/emoji/
-								let onlinePath = 'https://s2.ax1x.com/2019/04/12/'
-								let imgstr = '<img src="'+onlinePath+this.onlineEmoji[EM.url]+'">';
-								console.log("imgstr: " + imgstr);
+								let onlinePath = configUrl.imagesUrl+"emoji/"
+								let imgstr = '<img src="'+onlinePath+EM.url+'">';
 								return imgstr;
 							}
 						}
@@ -611,10 +613,10 @@
 				// 发送消息
 				let msgA={
 					toUserId:this.fromUserId,
-					contentText:content
+					contentText:content,
+					type
 				}
 				this.sendSocketMsg([msgA])
-				this.screenMsg(msg);
 			},
 			
 			// 添加文字消息到列表
@@ -627,6 +629,7 @@
 			},
 			// 添加图片消息到列表
 			addImgMsg(msg){
+				console.log(msg,"aaaaaaaaaaa")
 				msg.msg.content = this.setPicSize(msg.msg.content);
 				this.msgImgList.push(msg.msg.content.url);
 				this.msgList.push(msg);
@@ -794,14 +797,21 @@
 			},
 			discard(){
 				return;
+			}
+		},
+		watch:{
+			socketOpen(value){
+				console.log(value,"aaaaaaaaaaaaaaaaaaaaaa")
+				if(value){
+					let payload={msg:this.msgQueue};
+					this.$store.dispatch("sendSocketMsg",payload);
+					this.$store.dispatch("storeMsgQueue",false);
+				}
 			},
-			watch:{
-				socketOpen(value){
-					if(value){
-						let payload={msg:this.msgQueue};
-						this.$store.dispatch("sendSocketMsg",payload);
-						this.$store.dispatch("storeMsgQueue",false);
-					}
+			refreshMsg(value){
+				console.log(value,"aaaaaaa")
+				if(value){
+					this.getMsgList(this.fromUserId);
 				}
 			}
 		}

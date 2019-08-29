@@ -4,7 +4,7 @@
 		 @touchmove="handletouchmove" 
 		 @touchstart="handletouchstart"
 		 @touchend="handletouchend"
-		 @tap="gotoDetailMsg(info.fromUserid)" 
+		 @tap="gotoDetailMsg(info.fromUserid,info.fromUserNickName)" 
 	 >
 		<image :src="info.fromUserAvatar" class="avatar"></image>
 		<view class="detail">
@@ -13,7 +13,7 @@
 		</view>
 		<view class="other">
 			<text class="date">{{formateDate(info.createTime)}}</text>
-			<uni-badge :text="info.noReadNums" type="error"></uni-badge>
+			<uni-badge :text="info.noReadNums" v-if="info.noReadNums>0" type="error"></uni-badge>
 		</view>
 		<view class="delete-btn">删除</view>
 	</view>
@@ -73,9 +73,9 @@
 		    this.flag = 0;
 		    this.text = '没有滑动';
 		},
-		gotoDetailMsg(id){
+		gotoDetailMsg(id,nickName){
 			uni.navigateTo({
-				url:"../chat/chat?fromUserId="+id
+				url:"../chat/chat?fromUserId="+id+"&nickName="+nickName
 			});
 		},
 		formateDate(dateStr){
@@ -117,8 +117,12 @@
 				font-size: 40upx;
 			}
 			.msg{
+				width:100%;
 				color:#808a87;
 				font-size: 36upx;
+				overflow:hidden; //超出一行文字自动隐藏
+				text-overflow:ellipsis;//文字隐藏后添加省略号
+				white-space:nowrap;
 			}
 		}
 		.other{
