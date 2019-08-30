@@ -43,10 +43,9 @@ const privateMsgStore = {
 			  }
 			});
 			uni.onSocketMessage(function (res) {
-			  console.log('收到服务器内容：' + res.data);
 			  let response = JSON.parse(res.data);
-			  if(response.code&&(response.code=="success"||response.code=="newMsg")){
-				  console.log("a")
+			  console.log(res)
+			  if(response.code&&response.code=="newMsg"){
 				  commit("setRefreshMsgList",new Boolean(true));
 			  }
 			});
@@ -54,8 +53,17 @@ const privateMsgStore = {
 		
 		sendSocketMsg({commit,dispatch},payload){
 			let {msg} = payload;
-			uni.sendSocketMessage({
-				 data: JSON.stringify(msg)
+			return new Promise((rev,rec)=>{
+				uni.sendSocketMessage({
+			        data: JSON.stringify(msg),
+				    complete:(res)=>{
+					  rev(res);
+					},
+					fail:(e)=>{
+						console.log(e)
+					  rec(e);
+					 }
+				})
 			})
 		},
 		storeMsgQueue({commit,dispatch},payload){
@@ -76,7 +84,6 @@ const privateMsgStore = {
 		},
 		findHistoryMsg({commit,dispatch},payload){
 			let {userId,receiveUserid,pageNo,pageSize} = payload;
-			console.log(pageNo)
 			let postData = {
 				receiveUserid,
 				pageNo,

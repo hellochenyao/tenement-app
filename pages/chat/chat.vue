@@ -31,26 +31,32 @@
 						</view>
 					</block>
 					<!-- 用户消息 -->
-					<block v-if="row.type=='user'">
+					<block v-if="row.type=='user'"> 
 						<!-- 自己发出的消息 -->
 						<view class="my" v-if="row.msg.userinfo.uid!=fromUserId">
 							<!-- 左-消息 -->
 							<view class="left">
 								<!-- 文字消息 -->
 								<view v-if="row.msg.type=='text'" class="bubble">
+									<image src="../../static/images/private/sendError.png" class="sendError" v-if="sendErrorTask.indexOf(row.msg.id)" @tap="sendSocketMsgTwice(row.msg)"></image>
 									<rich-text :nodes="row.msg.content.text"></rich-text>
 								</view>
 								<!-- 语言消息 -->
-								<view v-if="row.msg.type=='voice'" class="bubble voice" @tap="playVoice(row.msg)" :class="playMsgid == row.msg.content.url?'play':''">
+								<view v-if="row.msg.type=='voice'" class="bubble voice" @tap="playVoice(row.msg,row.msg.content.type)" :class="playMsgid == row.msg.content.url?'play':''">
+									<image src="../../static/images/private/sendError.png" class="sendError" v-if="sendErrorTask.indexOf(row.msg.id)" @tap="sendSocketMsgTwice(row.msg)"></image>
 									<view class="length">{{playMsgid == row.msg.content.url?currentPlayDate:row.msg.content.length}}</view>
 									<view class="icon my-voice"></view>
 								</view>
 								<!-- 图片消息 -->
-								<view v-if="row.msg.type=='img'" class="bubble img" @tap="showPic(row.msg)">
-									<image :src="imageUrl+row.msg.content.url" :style="{'width': row.msg.content.w+'px','height': row.msg.content.h+'px'}"></image>
+								<view v-if="row.msg.type=='img'" class="bubble img" @tap="showPic(row.msg,row.msg.content.type)">
+									<image src="../../static/images/private/sendError.png" class="sendError" v-if="sendErrorTask.indexOf(row.msg.id)" @tap="sendSocketMsgTwice(row.msg)"></image>
+									<text v-if="uploadRateTask[row.msg.id]" class="back"></text>
+									<text  v-if="uploadRateTask[row.msg.id]" class="currentUploading">{{uploadRateTask[row.msg.id]+'%'}}</text>
+									<image :src="row.msg.content.type==0?imageUrl+row.msg.content.url:row.msg.content.url" :style="{'width': row.msg.content.w+'px','height': row.msg.content.h+'px'}"></image>
 								</view>
 								<!-- 红包 -->
 								<view v-if="row.msg.type=='redEnvelope'" class="bubble red-envelope" @tap="openRedEnvelope(row.msg,index)">
+									<image src="../../static/images/private/sendError.png" class="sendError" v-if="sendErrorTask.indexOf(row.msg.id)" @tap="sendSocketMsgTwice(row.msg)"></image>
 									<image :src="imageUrl+'red-envelope.png'"></image>
 									<view class="tis">
 										<!-- 点击开红包 -->
@@ -82,13 +88,15 @@
 									<rich-text :nodes="row.msg.content.text"></rich-text>
 								</view>
 								<!-- 语音消息 -->
-								<view v-if="row.msg.type=='voice'" class="bubble voice" @tap="playVoice(row.msg)" :class="playMsgid == row.msg.content.url?'play':''">
+								<view v-if="row.msg.type=='voice'" class="bubble voice" @tap="playVoice(row.msg,row.msg.content.type)" :class="playMsgid == row.msg.content.url?'play':''">
 									<view class="icon other-voice"></view>
 									<view class="length">{{playMsgid == row.msg.content.url?currentPlayDate:row.msg.content.length}}</view>
 								</view>
 								<!-- 图片消息 -->
-								<view v-if="row.msg.type=='img'" class="bubble img" @tap="showPic(row.msg)">
-									<image :src="imageUrl+row.msg.content.url" :style="{'width': row.msg.content.w+'px','height': row.msg.content.h+'px'}"></image>
+								<view v-if="row.msg.type=='img'" class="bubble img" @tap="showPic(row.msg,row.msg.content.type)">
+									<text v-if="uploadRateTask[row.msg.id]" class="back"></text>
+									<text  v-if="uploadRateTask[row.msg.id]" class="currentUploading">{{uploadRateTask[row.msg.id]+'%'}}</text>
+									<image :src="row.msg.content.type==0?imageUrl+row.msg.content.url:row.msg.content.url" :style="{'width': row.msg.content.w+'px','height': row.msg.content.h+'px'}"></image>
 								</view>
 								<!-- 红包 -->
 								<view v-if="row.msg.type=='redEnvelope'" class="bubble red-envelope" @tap="openRedEnvelope(row.msg,index)">
@@ -191,7 +199,7 @@
 <script>
 	import configUrl from "../../utils/config_utils.js";
 	import getStorage from "../../utils/getStorage.js"
-	import {formatDate} from "../../utils/calDateDiff.js";
+	import {formatDate,format} from "../../utils/calDateDiff.js";
 	import {  
 	    mapState,  
 	    mapMutations, 
@@ -259,7 +267,9 @@
 				pageSize:10,
 				total:0,
 				haveLoad:false,
-				currentPlayDate:"00:00"
+				currentPlayDate:"00:00",
+				uploadRateTask:{},
+				sendErrorTask:[]
 			};
 		},
 		onLoad(option) {
@@ -284,26 +294,26 @@
 			uni.setNavigationBarTitle({
 			　　title:option.nickName
 			})
+			this.$store.dispatch("getUserInfo");
 		},
 		computed:{
 			...mapState({ 
 				socketOpen:state=>state.privateMsgStore.socketOpen,
 				msgQueue:state=>state.privateMsgStore.msgQueue,
 				refreshMsg:state=>{
-					console.log(state.privateMsgStore.refreshMsgList)
 					return state.privateMsgStore.refreshMsgList
-				}
+				},
+				userinfo:state=>{
+					console.log(state)
+					return state.loginStore.userinfo
+					}
 			})
-		},
+		}, 
 		onShow(){
 			this.scrollTop = 9999999;
-			
-			//模板借由本地缓存实现发红包效果，实际应用中请不要使用此方法。
-			//
 			uni.getStorage({
 				key: 'redEnvelopeData',
 				success:  (res)=>{
-					console.log(res.data);
 					let nowDate = new Date();
 					let lastid = this.msgList[this.msgList.length-1].msg.id;
 					lastid++;
@@ -316,7 +326,9 @@
 		methods:{
 			// 接受消息(筛选处理)
 			screenMsg(msg){
+				let userId = getStorage("userId");
 				//从长连接处转发给这个方法，进行筛选处理
+				console.log(msg)
 				if(msg.type=='system'){
 					// 系统消息
 					switch (msg.msg.type){
@@ -330,7 +342,7 @@
 				}else if(msg.type=='user'){
 					// 用户消息
 					switch (msg.msg.type){
-						case 'text':
+						case 'text': 
 							this.addTextMsg(msg);
 							break;
 						case 'voice':
@@ -344,7 +356,7 @@
 							break;
 					}
 					//非自己的消息震动
-					if(msg.msg.userinfo.uid!=this.myuid){
+					if(msg.msg.userinfo.uid!= userId){
 						console.log('振动');
 						uni.vibrateLong();
 					}
@@ -354,13 +366,52 @@
 					this.scrollToView = 'msg'+msg.msg.id
 				});
 			},
+			connectSocket(){
+				let userId = getStorage('userId');
+				let req={
+					userId,
+					msgQueue:this.msgQueue
+				}
+				this.$store.dispatch("connectWebSocketMsg",req);
+			},
+			//重新发送失败的消息
+			sendSocketMsgTwice(msg){
+				 console.log(msg)
+				 let message = {
+					 id:msg.id,
+					 contentText:msg.content.text,
+					 type:msg.type,
+					 toUserId:this.fromUserId
+				 }
+				 this.sendSocketMsg(msg);
+			},
 			sendSocketMsg(msg){
 				if (this.socketOpen) {
 					let postData={msg:msg};
 					this.$store.dispatch("sendSocketMsg",postData)
+					.then(res=>{
+						console.log(msg)
+						console.log(res)
+						if(this.sendErrorTask.length==0){
+							return;
+						}
+						let index = this.sendErrorTask.indexOf(msg.id);
+						if(index!==-1){
+							this.sendErrorTask.splice(index,1);
+						}
+					})
+					.catch(e=>{
+						console.log(e)
+						console.log(msg)
+						if(e.errMsg=="sendSocketMessage:fail WebSocket is not connected"){
+							this.$store.commit("sendSocketOpen",false)
+						}
+						this.sendErrorTask.push(msg.id);
+					})
 				} else {
 					let payload = {msgQueue:msg};
 					this.$store.dispatch("storeMsgQueue",payload)
+					this.connectSocket();
 				}
 			},
 			//触发滑动到顶部(加载历史信息记录)
@@ -391,7 +442,7 @@
 				for(let i=0;i<list.length;i++){
 					if(list[i].type=='user'&&list[i].msg.type=="img"){
 						list[i].msg.content = this.setPicSize(list[i].msg.content);
-						this.msgImgList.unshift(list[i].msg.content.url);
+						this.msgImgList.unshift({url:list[i].msg.content.url,type:0});
 					}
 					list[i].msg.id = Math.floor(Math.random()*1000+1);
 					this.msgList.unshift(list[i]);
@@ -422,7 +473,7 @@
 			    for(let i=0;i<list.length;i++){
 					if(list[i].type=='user'&&list[i].msg.type=="img"){
 						list[i].msg.content = this.setPicSize(list[i].msg.content);
-						this.msgImgList.push(list[i].msg.content.url);
+						this.msgImgList.push({url:list[i].msg.content.url,type:0});
 					}
 				}
 				this.msgList = list.reverse();
@@ -447,9 +498,12 @@
 							let {messages} = res;
 							this.total = res.total;
 							 let list = messages.map(v=>{
+								 let lastid =this.msgList.length>0?this.msgList[this.msgList.length-1].msg.id:1;
+								 lastid++;
 								let message={
 										  type:"user",
 										  msg:{
+											  id:lastid,
 											  type:v.type,
 											  time:formatDate(v.createTime),
 											  userinfo:{
@@ -470,10 +524,12 @@
 									   message.msg["content"]["url"] = JSON.parse(v.content).url;
 									   message.msg["content"]["w"] = JSON.parse(v.content).w;
 									   message.msg["content"]["h"] = JSON.parse(v.content).h;
+									   message.msg["content"]["type"] = 0;
 									   break;
 									case "voice":
 									   message.msg["content"]["url"] = JSON.parse(v.content).url;
 									   message.msg["content"]["length"] = JSON.parse(v.content).length;
+									   message.msg["content"]["type"] = 0;
 									   break;
 								}
 								return message;
@@ -548,33 +604,43 @@
 					success: (res)=>{
 						for(let i=0;i<res.tempFilePaths.length;i++){
 							let uploadTask=[]
-						    uploadTask[i] = uni.uploadFile({
-								url: configUrl.requestUrl+`/app/tenement/${userId}/picture/message/upload/0`,
-								filePath: res.tempFilePaths[i],
-								name: 'fileResource',
-								formData: {
-									'toUserid': this.fromUserId
-								},
-								success: (uploadFileRes) => {
-									console.log(uploadFileRes)
-									let imgstr = JSON.parse(uploadFileRes.data).resourceUrl
-									uni.getImageInfo({
-										src: res.tempFilePaths[i],
-										success: (image)=>{
-											let msg = {url:imgstr,w:image.width,h:image.height};
-											this.sendMsg(msg,'img');
+							uni.getImageInfo({
+								src: res.tempFilePaths[i],
+								success: (image)=>{
+									let msg = {url:res.tempFilePaths[i],w:image.width,h:image.height};
+									let message = this.formatMessage(msg,"img");
+									let msgid = message.msg.id;
+									this.screenMsg(message);
+									uploadTask[i] = uni.uploadFile({
+										url: configUrl.requestUrl+`/app/tenement/${userId}/picture/message/upload/0`,
+										filePath: res.tempFilePaths[i],
+										name: 'fileResource',
+										formData: {
+											'toUserid': this.fromUserId
+										},
+										success: (uploadFileRes) => {
+											let imgstr = JSON.parse(uploadFileRes.data).resourceUrl
+											msg["url"] = imgstr;
+											this.sendMsg(msg,'img',msgid);
+										},
+										fail:(e)=>{
+											console.log(e)
 										}
 									});
-								},
-								fail:(e)=>{
-									console.log()
-								}
-							});
-
-							uploadTask[i].onProgressUpdate((res) => {
-								console.log('上传进度' + res.progress);
-								console.log('已经上传的数据长度' + res.totalBytesSent);
-								console.log('预期需要上传的数据总长度' + res.totalBytesExpectedToSend);
+									uploadTask[i].onProgressUpdate((res) => {
+										console.log('上传进度' + res.progress);
+										console.log('已经上传的数据长度' + res.totalBytesSent);
+										console.log('预期需要上传的数据总长度' + res.totalBytesExpectedToSend);
+										let uploadRateTask = this.uploadRateTask;
+										let rat = res.progress;
+										uploadRateTask[message.msg.id] = rat;
+										let id = message.msg.id;
+										if(rat>=100){
+											delete uploadRateTask[id]
+										}
+										this.uploadRateTask = Object.assign({},uploadRateTask);
+									});
+							}
 							});
 						}
 					}
@@ -609,7 +675,10 @@
 				}
 				console.log(this.textMsg)
 				let content = this.replaceEmoji(this.textMsg);
-				this.sendMsg(content,'text');
+				let message = this.formatMessage(content,"text");
+				let msgid = message.msg.id;
+				this.screenMsg(message);
+				this.sendMsg(content,'text',msgid);
 				this.textMsg = '';//清空输入框
 			},
 			//替换表情符号为图片
@@ -621,8 +690,6 @@
 						for(let j=0;j<row.length;j++){
 							let EM = row[j];
 							if(EM.alt==item){
-								//在线表情路径，图文混排必须使用网络路径，请上传一份表情到你的服务器后再替换此路径 
-								//比如你上传服务器后，你的100.gif路径为https://www.xxx.com/emoji/100.gif 则替换onlinePath填写为https://www.xxx.com/emoji/
 								let onlinePath = configUrl.imagesUrl+"emoji/"
 								let imgstr = '<img src="'+onlinePath+EM.url+'">';
 								return imgstr;
@@ -630,16 +697,54 @@
 						}
 					}
 				});
-				return '<div style="display: flex;align-items: center;word-wrap:break-word;">'+replacedStr+'</div>';
+				return replacedStr;
 			},
-			
+			formatMessage(content,type){
+				let userId = getStorage("userId");
+				let lastid = this.msgList.length>0?this.msgList[this.msgList.length-1].msg.id:1;
+				lastid++;
+				let message={
+				    type:"user",
+					msg:{
+						type:type,
+						time:format(new Date(),"yyyy-MM-dd hh:mm:ss"),
+						userinfo:{
+						    uid:userId,
+						    username:this.userinfo.nickName,
+							face:this.userinfo.avatarUrl
+								  
+						},
+					    content:{},
+						id:lastid
+					}
+				};
+				switch(type){
+					case "text":
+					   message.msg["content"]["text"] = content;
+					   break;
+					case "img":
+					   message.msg["content"]["url"] = content.url;
+					   message.msg["content"]["w"] = content.w;
+					   message.msg["content"]["h"] = content.h;
+					   message.msg["content"]["type"] = -1;
+					   break;
+					case "voice":
+					   message.msg["content"]["url"] = content.url;
+					   message.msg["content"]["length"] = content.length;
+					   message.msg["content"]["type"] = -1;
+					   break;
+				}
+				return message;
+			},
 			// 发送消息
-			sendMsg(content,type){
+			sendMsg(content,type,id){
+				let userId = getStorage("userId");
 				// 发送消息
 				let msgA={
 					toUserId:this.fromUserId,
 					contentText:content,
-					type
+					type,
+					id
 				}
 				this.sendSocketMsg([msgA])
 			},
@@ -654,9 +759,8 @@
 			},
 			// 添加图片消息到列表
 			addImgMsg(msg){
-				console.log(msg,"aaaaaaaaaaa")
 				msg.msg.content = this.setPicSize(msg.msg.content);
-				this.msgImgList.push(msg.msg.content.url);
+				this.msgImgList.push({url:msg.msg.content.url,type:-1});
 				this.msgList.push(msg);
 			},
 			addRedEnvelopeMsg(msg){
@@ -729,20 +833,23 @@
 				})
 			},
 			// 预览图片
-			showPic(msg){
+			showPic(msg,type){
+				console.log(this.msgImgList)
 				uni.previewImage({
 					indicator:"none",
-					current:this.imageUrl + msg.content.url,
-					urls: this.msgImgList.map(v=>this.imageUrl+v)
+					current:type==0?(this.imageUrl + msg.content.url):msg.content.url,
+					urls: this.msgImgList.map(v=>v.type==0?(this.imageUrl+v.url):v.url)
 				});
 			},
 			// 播放语音
-			playVoice(msg){
+			playVoice(msg,type){
+				console.log(msg)
 				if(this.playMsgid){
 					return;
 				}
 				this.playMsgid=msg.content.url;
-				this.AUDIO.src = this.imageUrl + msg.content.url;
+				this.AUDIO.src = type==-1?msg.content.url:(this.imageUrl + msg.content.url);
+				console.log(type==-1?msg.content.url:(this.imageUrl + msg.content.url))
 				this.$nextTick(function() {
 					let _this = this;
 					this.AUDIO.play();
@@ -820,6 +927,15 @@
 				let userId = getStorage("userId");
 				clearInterval(this.recordTimer);
 				if(!this.willStop){
+					let msg = {url:e.tempFilePath,length:0};
+					let min = parseInt(this.recordLength/60);
+					let sec = this.recordLength%60;
+					min = min<10?'0'+min:min;
+					sec = sec<10?'0'+sec:sec;
+					msg.length = min+':'+sec;
+					let message =this.formatMessage(msg,"voice");
+					this.screenMsg(message);
+					let msgid = message.msg.id;
 					uni.uploadFile({
 						url: configUrl.requestUrl+`/app/tenement/${userId}/picture/message/upload/-1`,
 						filePath: e.tempFilePath,
@@ -828,18 +944,9 @@
 							'toUserid': this.fromUserId
 						},
 						success: (uploadFileRes) => {
-							console.log(uploadFileRes)
 							let voicestr = JSON.parse(uploadFileRes.data).resourceUrl
-							let msg = {
-								length:0,
-								url:voicestr
-							}
-							let min = parseInt(this.recordLength/60);
-							let sec = this.recordLength%60;
-							min = min<10?'0'+min:min;
-							sec = sec<10?'0'+sec:sec;
-							msg.length = min+':'+sec;
-							this.sendMsg(msg,'voice');
+							msg.url=voicestr;
+							this.sendMsg(msg,'voice',msgid);
 							
 						},
 						fail:(e)=>{
@@ -862,7 +969,6 @@
 		},
 		watch:{
 			socketOpen(value){
-				console.log(value,"aaaaaaaaaaaaaaaaaaaaaa")
 				if(value){
 					let payload={msg:this.msgQueue};
 					this.$store.dispatch("sendSocketMsg",payload);
@@ -870,7 +976,7 @@
 				}
 			},
 			refreshMsg(value){
-				console.log(value,"aaaaaaa")
+				console.log("aaaaaaaaaaaaaaaaaaaaaaa")
 				if(value){
 					this.pageNo=1;
 					this.getMsgList(this.fromUserId);

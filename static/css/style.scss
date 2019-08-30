@@ -348,10 +348,35 @@ page{
 					&.img{
 						background-color: transparent;
 						padding:0;
-						overflow: hidden;
+						// overflow: hidden;
 						image{
 							max-width: 350upx;
 							max-height: 350upx;
+						}
+						position: relative;
+						.currentUploading{
+							width:100upx;
+							height: 30upx;
+							position: absolute;
+							left:50%;
+							top:50%;
+							margin-left: -50upx;
+							margin-top: -15upx;
+							display: flex;
+							flex-direction: row;
+							justify-content: center;
+							align-items: center;
+							z-index: 1000;
+						}
+						.back{
+							width:100%;
+							height:100%;
+							background: #000;
+							opacity: 0.7;
+							left:0;
+							top:0;
+							position: absolute;
+							z-index: 999;
 						}
 					}
 					&.red-envelope{
@@ -419,13 +444,20 @@ page{
 				justify-content: flex-end;
 				.left{
 					min-height: 80upx;
-					
 					align-items: center;
 					justify-content: flex-end;
 					.bubble{
 						background-color: #f06c7a;
 						color: #fff;
-						
+						position:relative;
+						.sendError{
+							width:46upx;
+							height:46upx;
+							position: absolute;
+							left:-60upx;
+							top:50%;
+							margin-top: -23upx;
+						}
 						&.voice{
 							.icon{
 								color: #fff;
