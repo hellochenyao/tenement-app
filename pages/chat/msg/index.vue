@@ -79,6 +79,9 @@
 			});
 		},
 		formateDate(dateStr){
+			console.log(new Date(dateStr))
+			console.log(formatDate(new Date(dateStr),0))
+			console.log(this.info)
 			return formatDate(new Date(dateStr),0)
 		}
 	},

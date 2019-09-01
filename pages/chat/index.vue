@@ -27,11 +27,37 @@
 		components: {
 			msgDetail
 		},
-		onLoad() {
+		onShow(){
+			let userId = getStorage('userId');
+			this.$store.dispatch("findConnectingUsers",{userId,pageNo:1,pageSize:10})
+			.then(res=>{
+				this.connectUsers = res.messages;
+			})
+			.catch(e=>{
+				console.log(e)
+			});
+		},
+		onPullDownRefresh(){
+			uni.showLoading({
+				title: '加载中'
+			});
+			let userId = getStorage('userId');
+			this.$store.dispatch("findConnectingUsers",{userId,pageNo:1,pageSize:10})
+			.then(res=>{
+				uni.hideLoading()
+				this.connectUsers = res.messages;
+				uni.stopPullDownRefresh()
+			})
+			.catch(e=>{
+				console.log(e)
+				uni.hideLoading()
+				uni.stopPullDownRefresh()
+			});
+		},
+		onLoad(options) {
 			let userId = getStorage('userId');
 			let req={
-				userId,
-				msgQueue:this.msgQueue
+				userId
 			}
 			this.$store.dispatch("connectWebSocketMsg",req);
 			this.$store.dispatch("findConnectingUsers",{userId,pageNo:1,pageSize:10})

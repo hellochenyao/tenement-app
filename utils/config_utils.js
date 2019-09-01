@@ -1,6 +1,6 @@
 export default {   
 	uploadFileUrl : "http://182.61.48.161:8080/images/",//本地   
-	requestUrl : "http://182.61.48.161:8080",
+	requestUrl : "http://182.61.48.161:8080/api",
 	wbUrl:"182.61.48.161:8080/ws",
 	imagesUrl:"http://182.61.48.161:8080/images/app/"
 }

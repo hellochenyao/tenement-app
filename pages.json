@@ -80,11 +80,7 @@
 		    "path" : "pages/chat/chat",
 		    "style" : {
 				"navigationBarTitleText":"消息",
-				"navigationBarBackgroundColor":"#59c298",
-		         "app-plus":{
-		           "softinputNavBar":"none",
-		            "bounce":"none"
-		        }
+				"navigationBarBackgroundColor":"#59c298"
 		    }
 		}
 		,{
@@ -105,11 +101,7 @@
 		 			"navigationBarTitleText":"消息",
 		 			"backgroundColorTop":"#cf3c35",
 		 			"backgroundColorBottom":"#fff",
-					"enablePullDownRefresh": false,
-					"app-plus":{
-					// 将回弹属性关掉
-						"bounce":"none"
-					}
+					"enablePullDownRefresh": true
 		 	    }
 		  }
 		,{
