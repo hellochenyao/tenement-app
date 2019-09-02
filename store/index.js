@@ -4,6 +4,7 @@ import RestApi from "../utils/restApi/index.js"
 import {loginStore} from "./loginStore";
 import {invitateStore} from "./invitateStore";
 import {privateMsgStore} from "./privateMsgStore"
+import {userStore} from "./userStore/index.js"
 Vue.use(Vuex);
 const mainStore = new Vuex.Store({
 	state:{
@@ -18,7 +19,8 @@ const mainStore = new Vuex.Store({
 	modules:{
 		loginStore, 
 		invitateStore,
-		privateMsgStore
+		privateMsgStore,
+		userStore
 	}
 });
 export default mainStore; 

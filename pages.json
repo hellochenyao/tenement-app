@@ -129,6 +129,18 @@
 						"bounce":"none"
 			        }
 		        }
+		},{
+		    "path" : "pages/ucenter/personal",
+		        "style" : {
+		            "navigationBarTitleText":"个人主页",
+		            "navigationBarBackgroundColor":"#59c298",
+					"enablePullDownRefresh" : false, // 不开启下拉刷新, 默认就是false
+					"navigationStyle": "custom", 
+					"app-plus":{
+						"softinputNavBar":"none",
+						"bounce":"none"
+			        }
+		        }
 		}
 		
     ],

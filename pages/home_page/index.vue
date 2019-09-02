@@ -2,7 +2,7 @@
 	<view>
 		<view class="status_bar" :style="{height:statHeight}"></view>
 		<view class="navContainer" :style="{top:statHeight}">
-			<view class="navigationBar">
+			<view class="navigationBar" :style="{height:titleHeight+'px'}">
 				<view class="select-city-contain" @tap="selectCityHandler">
 					<image class="city-icon" src="../../static/images/home_page/location.png"></image>
 					<text class="city-name">{{currentCity}}</text>
@@ -87,7 +87,8 @@
 				topHeight:"300upx",
 				refreshType:0,
 				invitationList:[],
-				haveAgreedType:false
+				haveAgreedType:false,
+				titleHeight:0
 			}
 		},
 		components: {
@@ -111,6 +112,8 @@
 		},
 		onLoad(event) {
 			let _this = this;
+			let data = wx.getMenuButtonBoundingClientRect()
+			this.titleHeight = data.height
 			uni.getSystemInfo({
 				success(res) {
 					if(res.model == "iPhone X"){

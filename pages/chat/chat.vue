@@ -75,7 +75,7 @@
 						<!-- 别人发出的消息 -->
 						<view class="other" v-if="row.msg.userinfo.uid==fromUserId">
 							<!-- 左-头像 -->
-							<view class="left">
+							<view class="left" @tap="goUserDetail(row.msg.userinfo.uid)">
 								<image :src="row.msg.userinfo.face"></image>
 							</view>
 							<!-- 右-用户名称-时间-消息 -->
@@ -848,6 +848,11 @@
 					indicator:"none",
 					current:type==0?(this.imageUrl + msg.content.url):msg.content.url,
 					urls: this.msgImgList.map(v=>v.type==0?(this.imageUrl+v.url):v.url)
+				});
+			},
+			goUserDetail(userId){ 
+				uni.navigateTo({
+					url:"../../pages/ucenter/personal?fromUserId="+userId
 				});
 			},
 			// 播放语音
