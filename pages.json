@@ -101,7 +101,19 @@
 		 			"navigationBarTitleText":"消息",
 		 			"backgroundColorTop":"#cf3c35",
 		 			"backgroundColorBottom":"#fff",
-					"enablePullDownRefresh": true
+					"enablePullDownRefresh": true,
+					"app-plus":{
+						"titleNView":{
+							"buttons":[
+								{
+									"fontSrc":"/static/alifont.ttf",
+									"text":"\ue601",
+									"background":"transparent",
+									"fontSize" : "30px"
+								}
+							]
+						}
+					}
 		 	    }
 		  }
 		,{

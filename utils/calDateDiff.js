@@ -31,7 +31,7 @@ function calloginDate(loginDate,to){
 	}
 	dif = calMinDiff(loginDate,to);
 	if(dif == 0 ){
-		return "刚"
+		return "刚刚"
 	}
 	return dif + "分钟前";
 } 

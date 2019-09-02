@@ -77,8 +77,9 @@
 			info(){
 				let list = {};
 				console.log(this)
+				let dateStr = this.dat.lastLoginTime.replace(/-/g, '/')
 				let ori = {
-					   lastLoginTime:calloginDate(new Date(this.dat.lastLoginTime),new Date()),
+					   lastLoginTime:calloginDate(new Date(dateStr),new Date()),
 					   locationProvince:info.location?(info.location.split(',')[0]):"",
 					   locationCity:info.location?(info.location.split(',')[1]):""					
 					}
@@ -86,6 +87,7 @@
 					Object.assign(list,this.dat,ori);
 				}
 				console.log(this.dat)
+				console.log(list)
 				return list;
 			} 
 		},

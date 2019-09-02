@@ -69,8 +69,6 @@ const privateMsgStore = {
 			});
 			uni.onSocketMessage(function (res) {
 			  let response = JSON.parse(res.data);
-			  console.log("6")
-			  console.log(res)
 			  if(!response.code){
 				  return;
 			  }
@@ -145,6 +143,10 @@ const privateMsgStore = {
 				pageSize
 			}
 			return RestApi.request(`/app/tenement/${userId}/find/msg`,postData,'get')
+		},
+		deleteMsg({commit,dispatch},payload){
+			let {userId,receiveUserid} = payload;
+			return RestApi.request(`/app/tenement/${userId}/private/message/delete/${receiveUserid}`,null,'DELETE')
 		}
     }
 }

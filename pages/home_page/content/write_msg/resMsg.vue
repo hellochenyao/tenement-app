@@ -37,6 +37,9 @@
 		},
 		methods: {
 			calLoginDate(dateLogin,now){
+				if(dateLogin){
+					dateLogin = dateLogin.toString().replace(/-/g, '/')
+				}
 				return calloginDate(new Date(dateLogin),new Date());
 	
 			},

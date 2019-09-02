@@ -1,6 +1,6 @@
 <template>
 	<view class="contain">
-		<msg-detail v-for="(item,index) in connectUsers" :info ="item"></msg-detail>
+		<msg-detail v-for="(item,index) in connectUsers" :key="index" @getUsers="getUsers" :info ="item"></msg-detail>
 	</view>
 </template>
 
@@ -29,13 +29,7 @@
 		},
 		onShow(){
 			let userId = getStorage('userId');
-			this.$store.dispatch("findConnectingUsers",{userId,pageNo:1,pageSize:10})
-			.then(res=>{
-				this.connectUsers = res.messages;
-			})
-			.catch(e=>{
-				console.log(e)
-			});
+			this.getUsers(userId)
 		},
 		onPullDownRefresh(){
 			uni.showLoading({
@@ -60,16 +54,18 @@
 				userId
 			}
 			this.$store.dispatch("connectWebSocketMsg",req);
-			this.$store.dispatch("findConnectingUsers",{userId,pageNo:1,pageSize:10})
-			.then(res=>{
-				this.connectUsers = res.messages;
-			})
-			.catch(e=>{
-				console.log(e)
-			});
+			this.getUsers(userId);
 		},
 		methods:{
-		
+			getUsers(userId){
+				this.$store.dispatch("findConnectingUsers",{userId,pageNo:1,pageSize:10})
+				.then(res=>{
+					this.connectUsers = res.messages;
+				})
+				.catch(e=>{
+					console.log(e)
+				});
+			}
 		},
 		watch:{
 			

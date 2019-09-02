@@ -9,19 +9,21 @@
 		<image :src="info.fromUserAvatar" class="avatar"></image>
 		<view class="detail">
 			<text class="user-name">{{info.fromUserNickName}}</text>
-			<text class="msg">{{info.content}}</text>
+			<text class="msg">{{info.descText}}</text>
 		</view>
 		<view class="other">
-			<text class="date">{{formateDate(info.createTime)}}</text>
+			<text class="date">{{createTimeStr}}</text>
 			<uni-badge :text="info.noReadNums" v-if="info.noReadNums>0" type="error"></uni-badge>
 		</view>
-		<view class="delete-btn">删除</view>
+		<view class="delete-btn" @tap.stop="deleteMsg(info.fromUserid)">删除</view>
 	</view>
-</template>
+</template> 
 
 <script>
 	import {formatDate} from "../../../utils/calDateDiff.js";
+	import getStorage from "../../../utils/getStorage.js"
 	import uniBadge from "@/components/uni-badge/uni-badge.vue"
+	import info from "../../../utils/info";
 	export default {
 		data() {
 			return {	
@@ -32,9 +34,17 @@
 					wid:0
 			};
 		},
+		computed:{
+			createTimeStr(){
+				if(this.info.createTime){
+					return this.formateDate(this.info.createTime)
+				}
+			}
+		}, 
 		props:{
 			info:Object
 		},
+
 		methods: {
 		   handletouchmove(event) {
 		            // console.log(event)
@@ -69,6 +79,32 @@
 		    this.lastX = event.touches[0].pageX;
 		    this.lastY = event.touches[0].pageY;
 		},
+		deleteMsg(fromUserid){
+			let _this = this;
+			let userId = getStorage('userId');
+			let req={
+				userId,
+				receiveUserid:fromUserid
+			}
+			uni.showModal({
+			    title: '提示',
+			    content: '确定删除吗？删除后不可恢复',
+			    success: function (res) {
+			        if (res.confirm) {
+			            _this.$store.dispatch("deleteMsg",req)
+						.then(res=>{
+							console.log(res)
+							info.toast("删除成功！");
+							_this.$emit("getUsers",userId)
+							_this.wid=0;
+						})
+						.catch(e=>{
+							console.log(e)
+						});
+			        } 
+			    }
+			});
+		},
 		handletouchend(event) {
 		    this.flag = 0;
 		    this.text = '没有滑动';
@@ -79,9 +115,8 @@
 			});
 		},
 		formateDate(dateStr){
-			console.log(new Date(dateStr))
-			console.log(formatDate(new Date(dateStr),0))
-			console.log(this.info)
+			dateStr = dateStr.replace(/-/g, '/')
+			console.log(dateStr)
 			return formatDate(new Date(dateStr),0)
 		}
 	},

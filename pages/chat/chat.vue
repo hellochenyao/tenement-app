@@ -749,10 +749,10 @@
 					msgA["contentText"] = content.text;
 					msgA["desc"] = content.desc;
 				}else if(type=="img"){
-					msgA["contentText"] = content;
+					msgA["contentText"] = JSON.stringify(content);
 					msgA["desc"]="[图片]"
 				}else{
-					msgA["contentText"] = content;
+					msgA["contentText"] = JSON.stringify(content);
 					msgA["desc"]="[语音]"
 				}
 				this.sendSocketMsg(msgA)
