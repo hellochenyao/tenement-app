@@ -4,12 +4,16 @@
           <!-- 这里是状态栏 -->
       </view>
       <view class="nav_content" :style="{height:titleHeight+'px'}">
-		  <image src="../../static/back.png" class="back"></image>
+		  <image src="../../static/back.png" class="back" @tap="goBack"></image>
 		  <text class="title">{{title}}</text>
 	  </view>
 	  <image class="title-img" :src="requestUrl+'im/userBack/back.jpg'" mode="scaleToFill"></image>
 	  <view class="content" :style="{marginTop:calHeight}">
 		  <image class="userIcon" :src="userInfo.avatar?userInfo.avatar:''"></image>
+		  <view class="button-group">
+			  <button class="user-option"  type="primary" size="mini" @tap="gotoDetailMsg(userInfo.nickName)">发消息</button>
+			  <button class="user-option" type="primary" size="mini">{{isConcernType==0?'关注TA':'取消关注'}}</button>
+		  </view>
 		  <view class="userInfo">
 			  <view class="userCenter">
 				  <view class="nickName">
@@ -29,10 +33,26 @@
 			  </view>
 			  <view class="introdction">
 				  <text class="name">简介:</text>
-				  <text class="value"></text>
+				  <text class="value">aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa</text>
 			  </view>
 		  </view>
 	  </view>
+	  <view class="release_history">
+		  <view class="title">
+			  <text>TA的发布</text>
+		  </view>
+		  <view class="detail">
+			  <view class="release-detail-content">
+				  <view class="title">
+					  <text>aaa</text>
+				  </view>
+				  <view class="image-group">
+					  <image src="../../static/add.png"  mode="scaleToFill" class="invitation-pic"></image>
+				  </view>
+			  </view>
+		  </view>
+	  </view>
+	  
 	</view>
 </template>
 
@@ -45,7 +65,9 @@
 				titleHeight:0,
 				requestUrl:configUrl.imagesUrl,
 				userInfo:{},
-				title:""
+				title:"",
+				fromUserId:"",
+				isConcernType:0
 			}
 		},
 		components: {
@@ -60,6 +82,7 @@
 			let fromUserId = option.fromUserId
 			let data = wx.getMenuButtonBoundingClientRect()
 			let userId = getStorage("userId");
+			this.fromUserId = fromUserId;
 			console.log(data)
 			this.titleHeight = data.height;
 			this.reqUserInfo(fromUserId)
@@ -74,6 +97,26 @@
 				.then(res=>{
 					console.log(res);
 					this.userInfo = res;
+				})
+				.catch(e=>{
+					console.log(e)
+				})
+			},
+			goBack(){
+				uni.navigateBack();
+			},
+			gotoDetailMsg(nickName){
+				let id = this.fromUserId;
+				uni.navigateTo({
+					url:"../chat/chat?fromUserId="+id+"&nickName="+nickName
+				});
+			},
+			concernHandler(type){
+				let userid = getStorage("userId");
+				let toUserId = this.fromUserId;
+				this.$store.dispatch("concernActions",{userid,toUserId,type})
+				.then(res=>{
+					console.log(res)
 				})
 				.catch(e=>{
 					console.log(e)
@@ -97,12 +140,15 @@
 	  .back{
 		  width:60upx;
 		  height:60upx;
+		  position: relative;
+		  z-index: 1000;
 	  }
 	  .title{
 		  width:calc(100% - 60upx);
 		  margin-left: -60upx;
 		  height:60upx;
 		  line-height: 60upx;
+		  font-size: 33upx;
 		  text-align: center;
 		  color:#FFF;
 	  }
@@ -119,6 +165,23 @@
 	  width:100%;
 	  position: relative;
 	  padding-top: 100upx;
+	  padding-bottom: 60upx;
+	  border-bottom:1px solid #eaeaea;
+	  .button-group{
+	  			  display:flex;
+	  			  flex-direction: column;
+	  			  justify-content: space-around;
+	  			  align-items: center;
+	  			  position: absolute;
+	  			  right: 10upx;
+	  			  top:10upx;
+				  .user-option{
+					  background: #4c84f5;
+					  width:160upx;
+					  font-size: 26upx;
+					  margin:10upx;
+				  }
+	  }
 	  .userIcon{
 		  width:160upx;
 		  height:160upx;
@@ -129,7 +192,8 @@
 		  z-index: 100;
 	  }
 	  .userInfo{
-		  padding-left: 60upx;
+		  padding-left: 50upx;
+		  padding-right:50upx;
 		    .userCenter{
 		  		  width:100%;
 		  		  height:100upx;
@@ -137,6 +201,7 @@
 		  		  flex-direction: row;
 		  		  justify-content: flex-start;
 		  		  align-items: center;
+				  margin-bottom:10upx;
 		  		  .nickName{
 					  height:36upx;
 					  line-height: 36upx;
@@ -157,6 +222,7 @@
 			  flex-direction: row;
 			  justify-content: flex-start;
 			  align-items: center;
+			  margin-bottom:10upx;
 			  .concern{
 				  height: 60upx;
 				  margin-right: 30upx;
@@ -183,14 +249,61 @@
 			  display: flex;
 			  flex-direction: row;
 			  justify-content: flex-start;
-			  align-items: center;
+			  align-items: flex-start;
 			  .name{
 				  color:#CCC;
 				  font-size: 30upx;
 			  }
 			  .value{
+				  width:90%;
 				  color:#CCC;
 				  font-size: 30upx;
+				  word-break: break-all;
+			  }
+		  }
+	  }
+  }
+  .release_history{
+	  width:100%;
+	  display: flex;
+	  flex-direction: column;
+	  .title{
+		  width:100%;
+		  height:100upx;
+		  line-height: 100upx;
+		  text-align: left;
+		  padding-left: 50upx;
+		  font-size: 36upx;
+	  }
+	  .detail{
+		  width:100%;
+		  padding: 20upx 50upx;
+		  display: flex;
+		  flex-direction: column;
+		  .release-detail-content{
+			  width:calc(100% - 100upx);
+			  box-sizing: border-box;
+			  border:1px solid #eaeaea;
+			  padding:10upx;
+			  .title{
+				  width:100%;
+				  height:100upx;
+				  box-sizing: border-box;
+				  word-break: break-all;
+				  padding: 0;
+				  text-align: left;
+			  }
+			  .image-group{
+				  width:100%;
+				  height:230upx;
+				  display:flex;
+				  flex-direction:row;
+				  justify-content:flex-start;
+				  align-items:center;
+				  .invitation-pic{
+					  width:230upx;
+					  height: 230upx;
+				  }
 			  }
 		  }
 	  }
