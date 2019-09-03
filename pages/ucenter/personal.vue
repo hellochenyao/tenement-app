@@ -12,7 +12,7 @@
 		  <image class="userIcon" :src="userInfo.avatar?userInfo.avatar:''"></image>
 		  <view class="button-group">
 			  <button class="user-option"  type="primary" size="mini" @tap="gotoDetailMsg(userInfo.nickName)">发消息</button>
-			  <button class="user-option" type="primary" size="mini">{{isConcernType==0?'关注TA':'取消关注'}}</button>
+			  <button class="user-option" type="primary" size="mini" @tap="concern(isConcernType)">{{isConcernType==0?'关注TA':'取消关注'}}</button>
 		  </view>
 		  <view class="userInfo">
 			  <view class="userCenter">
@@ -23,17 +23,17 @@
 			  </view>
 			  <view class="relation">
 				  <view class="concern">
-					<text class="concernNum">6</text>
+					<text class="concernNum">{{concernInfo.concernNums?concernInfo.concernNums:0}}</text>
 					<text class="concernText">粉丝</text>
 				  </view>
 				  <view class="concern">
-				  	<text class="concernNum">6666</text>
+				  	<text class="concernNum">{{concernInfo.admireNums?concernInfo.admireNums:0}}</text>
 				  	<text class="concernText">关注</text>
 				  </view>
 			  </view>
 			  <view class="introdction">
 				  <text class="name">简介:</text>
-				  <text class="value">aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa</text>
+				  <text class="value">签名是一种态度，让别人更好的认识你</text>
 			  </view>
 		  </view>
 	  </view>
@@ -53,12 +53,18 @@
 		  </view>
 	  </view>
 	  
+	  <min-modal ref="modal">
+		  <view>
+			<view>确定取消关注TA吗？</view>
+		  </view>
+    </min-modal>
 	</view>
 </template>
 
 <script>
 	import getStorage from "../../utils/getStorage.js";
 	import configUrl from "../../utils/config_utils.js"
+	import minModal from '@/components/min-modal/min-modal'
 	export default {
 		data() { 
 			return {
@@ -67,12 +73,13 @@
 				userInfo:{},
 				title:"",
 				fromUserId:"",
-				isConcernType:0
+				isConcernType:0,
+				concernInfo:{}
 			}
 		},
-		components: {
-
-		},
+		 components: {
+			minModal
+		  },
 		computed:{
 			calHeight(){
 				return uni.upx2px(300) - 25 - this.titleHeight+"px";
@@ -82,6 +89,8 @@
 			let fromUserId = option.fromUserId
 			let data = wx.getMenuButtonBoundingClientRect()
 			let userId = getStorage("userId");
+			this.findConcernState(userId,fromUserId);
+			this.getConcernDetail(userId,fromUserId);
 			this.fromUserId = fromUserId;
 			console.log(data)
 			this.titleHeight = data.height;
@@ -105,18 +114,63 @@
 			goBack(){
 				uni.navigateBack();
 			},
+			getConcernDetail(userId,fromUserId){
+				this.$store.dispatch("getConcernDetail",{userId,toUserId:fromUserId})
+				.then(res=>{
+					console.log(res);
+					this.concernInfo = res;
+				})
+				.catch(e=>{
+					console.log(e)
+				})
+			},
 			gotoDetailMsg(nickName){
 				let id = this.fromUserId;
 				uni.navigateTo({
 					url:"../chat/chat?fromUserId="+id+"&nickName="+nickName
 				});
 			},
-			concernHandler(type){
+			concern(type){
 				let userid = getStorage("userId");
 				let toUserId = this.fromUserId;
-				this.$store.dispatch("concernActions",{userid,toUserId,type})
+				if(type==1){
+					this.$refs.modal.handleShow({
+						title: '温馨提示',
+						actions: [{
+						  name: '取消',
+						}, {
+						  name: '确定'
+						}, 
+						],
+						success: (res) => {
+						  if (res.id==1) {
+							this.$store.dispatch("concernActions",{userid,toUserId,type})
+							.then(res=>{
+								console.log(res)
+								this.getConcernDetail(userid,toUserId);
+								this.findConcernState(userid,toUserId);
+							}).catch(e=>{
+								console.log(e)
+							})
+						  }
+						}
+					  })
+				}else{
+					this.$store.dispatch("concernActions",{userid,toUserId,type})
+					.then(res=>{
+						console.log(res)
+						this.getConcernDetail(userid,toUserId);
+						this.findConcernState(userid,toUserId);
+					}).catch(e=>{
+						console.log(e)
+					})
+				}
+			},
+			findConcernState(userId,fromUserId){
+				this.$store.dispatch("findConcernState",{userId,toUserId:fromUserId})
 				.then(res=>{
 					console.log(res)
+					this.isConcernType = res;
 				})
 				.catch(e=>{
 					console.log(e)
@@ -177,7 +231,7 @@
 	  			  top:10upx;
 				  .user-option{
 					  background: #4c84f5;
-					  width:160upx;
+					  width:190upx;
 					  font-size: 26upx;
 					  margin:10upx;
 				  }
@@ -253,9 +307,10 @@
 			  .name{
 				  color:#CCC;
 				  font-size: 30upx;
+				  margin-right: 10upx;
 			  }
 			  .value{
-				  width:90%;
+				  width:calc(90% - 10upx);
 				  color:#CCC;
 				  font-size: 30upx;
 				  word-break: break-all;

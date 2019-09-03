@@ -12,11 +12,15 @@ const concernStore = {
     actions:{
 		concernActions({commit,dispatch},payload){
 			let {userid,toUserId,type} = payload;
-			let post = {
-				userId:userid,
-				toUserid:toUserId
-			}
-			return RestApi.request(`/app/user/concern/{userId}/save/record/{type}`,post,"POST");
+			return RestApi.request(`/app/user/concern/${userid}/save/record/${type}/${toUserId}`,null,"POST");
+		},
+		findConcernState(action,payload){
+			let {userId,toUserId} = payload;
+			return RestApi.request(`/app/user/concern/${userId}/find/concern/state`,{toUserid:toUserId},"GET");
+		},
+		getConcernDetail(action,payload){
+			let {userId,toUserId} = payload;
+			return RestApi.request(`/app/user/concern/${userId}/find/nums`,{toUserid:toUserId},"GET");
 		}
     }
 }
