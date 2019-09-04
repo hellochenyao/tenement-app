@@ -35,13 +35,11 @@ const invitateStore = {
 			});
 		},
 		findInvitation({commit,dispath},payload){
-			console.log(payload)
 			RestApi.request(`/app/tenement/${payload.id}/invitations`,payload,'get')
 			.then(res=>{
 				commit("findInvitationMutions",res);
 			})
 			.catch(err=>{
-				console.log(err)
 				commit("findInvitationMutions",err);
 			});
 		},
