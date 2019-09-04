@@ -9,7 +9,7 @@
 			<view v-if="imgSrc.length>0" class="picture_container">
 				 <view class="img-container" v-for="(item,idx) in imgSrc" :key='idx'>  
 					 <text class="close-btn" @tap.stop="deleteUpload(0,idx)">x</text>
-					<cover-image class="controls-play img" :src="uploadUrl+item"></cover-image>  
+				     <image class="controls-play img" :src="item" mode="scaleToFill"></image>  
 				</view>		
 			</view> 
 		</view>
@@ -53,7 +53,6 @@
 				let jwt = userJWTandToken.split('/')[0];
 				var self = this; 
 				uni.chooseImage({  
-					count: 1, //默认9
 					sizeType: ['original', 'compressed'], //可以指定是原图还是压缩图，默认二者都有
 					sourceType: ['camera', 'album'], 
 					success: function (res) {   
@@ -69,7 +68,7 @@
 								console.log(uploadFileRes.data);
 								if(uploadFileRes.statusCode == 200){  
 									let data = JSON.parse(uploadFileRes.data);
-									self.imgSrc.push(data.resourceUrl);
+									self.imgSrc.push(...res.tempFilePaths);
 									console.log(self.imgSrc)
 									self.$emit("setResourceUrl",{ 
 										src:self.imgSrc,
@@ -115,7 +114,7 @@
 						success: (uploadFileRes) => { 
 							if(uploadFileRes.statusCode == 200){  
 								let data = JSON.parse(uploadFileRes.data);
-								self.videoSrc=data.resourceUrl;
+								self.videoSrc=res.tempFilePaths[0];
 								console.log(self.videoSrc)
 								self.$emit("setResourceUrl",{ 
 									src:self.videoSrc,
@@ -140,6 +139,7 @@
 		overflow: hidden;
 		display: flex;
 		flex-direction: row; 
+		box-sizing: border-box;
 		border-radius: 10upx;
 		box-shadow: 1px 1px 5px #d6d6d6;
 	}
@@ -184,21 +184,8 @@
 		width:100%;
 		height:100%;
 		border-radius: 10upx;
-		position: relative;
+		overflow: hidden;
 		overflow-y:auto;
-	}
-	.easy_icon{ 
-		position: absolute;
-		left:43%;
-		bottom: 0;
-	} 
-	.sepLine{
-		width:1px;
-		height:330upx;
-		background-color: $uni-app-border-color;
-		position: absolute;
-		right: 0;
-		top:15upx;
 	}
 	.img-container{
 		width:100%;
