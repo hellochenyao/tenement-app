@@ -9,7 +9,7 @@
 			<view v-if="imgSrc.length>0" class="picture_container">
 				 <view class="img-container" v-for="(item,idx) in imgSrc" :key='idx'>  
 					 <text class="close-btn" @tap.stop="deleteUpload(0,idx)">x</text>
-					<cover-image class="controls-play img" :src="uploadUrl+item"></cover-image>  
+					<image class="controls-play img" :src="uploadUrl+item"></image>  
 				</view>		
 			</view> 
 		</view>
@@ -33,7 +33,7 @@
 	import RestApi from "../utils/restApi/index.js";
 	import urlConfig from '../utils/config_utils.js'
 	import getStorage from '../utils/getStorage.js';
-	console.log(urlConfig.requestUrl) 
+	import info from "../utils/info";
 	export default {
 		props: ["imgUrl1", "imgUrl2"
 		],
@@ -43,7 +43,7 @@
 				videoSrc:"",
 				uploadUrl:urlConfig.uploadFileUrl
 			}; 
-		},
+		}, 
 		onLoad() {
 		},
 		methods:{ 
@@ -53,7 +53,7 @@
 				let jwt = userJWTandToken.split('/')[0];
 				var self = this; 
 				uni.chooseImage({  
-					count: 1, //默认9
+					count: 6, //默认9
 					sizeType: ['original', 'compressed'], //可以指定是原图还是压缩图，默认二者都有
 					sourceType: ['camera', 'album'], 
 					success: function (res) {   
@@ -76,6 +76,10 @@
 										type:0
 									});
 								}
+							},
+							fail:(e)=>{
+								console.log(e)
+								info.toast("删除成功！");
 							}
 						}); 
 					}
@@ -135,7 +139,7 @@
 <style lang="scss">
 	.contain{  
 		width:90vw;
-		height: 330upx;
+		height: 330upx;  
 		margin:30upx auto;
 		overflow: hidden;
 		display: flex;
