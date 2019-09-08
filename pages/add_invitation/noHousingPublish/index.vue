@@ -18,7 +18,10 @@
         </view>      
 		<view class="detail-publish">  
 		    <input v-if="!hideTitle" class="detail-title-input" placeholder="加个标题哟" placeholder-class="place-title" v-model="title" />
-		    <textarea class="detail-content-input detail-text" maxlength="500" placeholder="对房子室友 有什么要求"  v-model="content"/>
+		    <textarea v-if="!popData.visible" class="detail-content-input detail-text" maxlength="500" placeholder="对房子室友 有什么要求"  v-model="content"/>
+			<view v-if="popData.visible" class="detail-content-input detail-text">
+				{{content}}
+			</view> 
 		</view> 
 		<view class="check-container">  
 		    <view class="check-content">  
@@ -53,7 +56,7 @@
 					<view class="uni-input">{{indate.date}}</view>  
 				</picker>  
 		   </view> --> 
-		  <pop-up-component v-on:choseVal="popChoose" :popData="popData"></pop-up-component>
+		  <budge-component v-on:choseVal="popChoose"  :visible="popData.visible"></budge-component>
 	 </view> 
 </template>  
  
@@ -61,7 +64,6 @@
 	import info from "../../../utils/info.js"
 	import RestApi from "../../../utils/restApi/index.js"
 	import CheckDown from '../../../components/CheckDown.vue'
-	import popUpComponent from "../../../components/popUpComponent.vue"
 	import publishButton from '../../../components/publish-button/index.vue'
 	import {  
 	    mapState,  
@@ -70,11 +72,12 @@
 	} from 'vuex';
 	import getStorage from "../../../utils/getStorage.js"
 	import  {qqmapsdk} from "../../../utils/QQMapWXConfig.js";
+	import budgeComponent from "../../../components/budge-component/index.vue"
 	export default { 
 		components: {   
-			CheckDown,
-			popUpComponent, 
-			publishButton
+			CheckDown, 
+			publishButton,
+			budgeComponent
 		},
 		data() {
 			return { 
@@ -100,7 +103,7 @@
 				showPersonalDetails:false, 
 				title:"", 
 				content:"",
-				hideTitle:true
+				hideTitle:false
 			}
 		}, 
 		computed: { 
@@ -248,20 +251,17 @@
 		url('//at.alicdn.com/t/font_1202574_28nyd4y7p8y.svg#iconfont') format('svg');
     }
 	.big-container{
-		margin-bottom: 80upx;
-		margin-top: 15upx;
+		padding-bottom: 100upx;
+		margin-top: 20upx;
 		width: 100%;
-		height: calc(100% - 95upx);
-		position: absolute;
-		display: flex;
-		flex-direction: column; 
-		align-items: center;
+		overflow-x:hidden;
+		overflow-y: auto;
 		color: $uni-text-color;
 	}
 	.invitation_basic_container{         
 		width:90%;
-		height: 20%;
-		margin: 15upx auto;
+		margin: 10upx auto;
+		padding:30upx 0;
 		background-color: #FFFFFF;
 		border-radius: 10upx;
 		display: flex;
@@ -281,7 +281,6 @@
 	}
 	.detail-publish{    
 		width: 90%;
-		height:calc(60% - 90upx);
 		margin:15upx auto; 
 		background-color: #FFF;
 		border-radius: 10upx;
@@ -300,7 +299,7 @@
 			width:calc(100% - 30upx);
 			padding:15upx 0 20upx 0; 
 			margin:0 15upx;
-			height:400upx;
+			height:500upx;
 			font-size:28upx; 
 			border: none;
 		} 

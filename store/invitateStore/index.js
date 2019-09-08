@@ -5,7 +5,8 @@ const invitateStore = {
 	  publishSuccess:false,
 	  invitationList:{},
 	  msgRes:{},
-	  currentResponseUser:{}
+	  currentResponseUser:{},
+	  loading:false
     },
     mutations:{//显式的更改state里的数据
 	    publishMutions(state,res){
@@ -16,6 +17,9 @@ const invitateStore = {
 		},
 		responsetToUser(state,res){
 			state.currentResponseUser = res;
+		},
+		setLoading(state,res){
+			state.loading = res;
 		}
     },
     getters:{
@@ -24,7 +28,7 @@ const invitateStore = {
     actions:{
 		publishInvitation({commit,dispatch},payload){
 			commit("publishMutions",false);
-			RestApi.request(`/app/operation/${payload.id}/item/0/publish`,payload,'POST',)
+			RestApi.request(`/app/operation/${payload.id}/item/${payload.type}/publish`,payload,'POST',)
 			.then(res=>{
 				commit("publishMutions",true);
 				info.toast("发布成功！");
@@ -54,6 +58,14 @@ const invitateStore = {
 		},
 		responseMsg({commit,dispatch},payload){
 			return RestApi.request(`/app/tenement/${payload.userId}/leave/words/${payload.invitationId}`,{answerMsgId:payload.answerMsgId,msg:payload.msg,invitationId:payload.invitationId,responseUserId:payload.responseUserId},'POST')
+		},
+		addViewTimes({commit,dispatch},payload){
+			let {userId,invitationId} = payload
+			return RestApi.request(`/app/tenement/${userId}/detail/${invitationId}`,null,'PUT')
+		}, 
+		getInvitationDetail({commit,dispatch},payload){
+			let {userId,id} = payload;
+			return RestApi.request(`/app/tenement/${userId}/find/invitation/${id}`,null,'get')
 		}
     }
 }

@@ -1,11 +1,14 @@
 <template>
-	<view class="has-hourse-container">
+	<view class="has-hourse-container"> 
 		<view class="roll-wrap">
 			<file-upload-component imgUrl1="../../../static/images/add/相机.png" imgUrl2="../../../static/images/add/视频.png" v-if="publishState===0"
 			 v-on:setResourceUrl="setResourceUrl"></file-upload-component>
 			<view class="detail-publish" v-if="publishState===0">
 				<input v-if="!hideTitle" class="detail-title-input" placeholder="加个标题哟" placeholder-class="place-title" v-model="title" />
-				<textarea class="detail-content-input detail-text" maxlength="500" placeholder="对房子室友 有什么要求" v-model="content" />
+				<textarea v-if="!popData.visible" class="detail-content-input detail-text" maxlength="500" placeholder="对房子室友 有什么要求" v-model="content" />
+				<view v-if="popData.visible" class="detail-content-input detail-text">
+					{{content}}
+				</view> 
 				</view>
             <view class="check-content">
                 <view class="invitation-check">
@@ -16,12 +19,12 @@
                     <view class="invitation_check_group" @tap="checkedHandler" data-type="2">
                         <image class="list-icon" src="../../../static/images/publish/hourse/预算.png"></image>
                         <check-down :btnValue="rent > 0?rent+'元':'预算'" :selected="popData.visible"></check-down>
-                    </view>
+                    </view> 
                     <picker class="invitation_check_group" @change="bindLayoutChange" mode="multiSelector"
                             :range="layoutRange">
                         <view class="invitation_check_item" @tap="checkedHandler" data-type="3">
                             <image class="list-icon" src="../../../static/images/publish/hourse/户型.png"></image>
-                            <check-down btnValue="户型"></check-down>
+                            <check-down :btnValue="selectedLayOut?selectedLayOut:'户型'"></check-down>
                         </view>
                     </picker>
                 </view>
@@ -30,14 +33,14 @@
                             :range="rentType">
                         <view class="invitation_check_item" @tap="checkedHandler" data-type="4">
                             <image class="list-icon" src="../../../static/images/publish/hourse/门禁.png"></image>
-                            <check-down btnValue="出租房间"></check-down>
+                            <check-down :btnValue="housing?housing:'出租房间'"></check-down>
                         </view>
                     </picker>
                     <picker class="invitation_check_group" @change="bindEnterChange" :value="enterIndex"
                             :range="enterNums">
                         <view class="invitation_check_item" @tap="checkedHandler" data-type="5">
                             <image class="list-icon" src="../../../static/images/publish/hourse/行李.png"></image>
-                            <check-down btnValue="入住情况"></check-down>
+                            <check-down :btnValue="enterNum?enterNum:'入住情况'"></check-down>
                         </view>
                     </picker>
                     <!-- 	<view class="invitation_check_group" @tap="checkedHandler" data-type="1">
@@ -46,18 +49,19 @@
                         </view>  -->
                 </view>
             </view>
-            <pop-up-component v-on:choseVal="popChoose" :popData="popData"></pop-up-component>
+            <!-- <pop-up-component v-on:choseVal="popChoose" :popData="popData"></pop-up-component> -->
         </view>
         <view class="bottom-option-tab">
             <view class="option-button option-title" @tap="updateTitleState">
                 <text>{{hideTitle ? '添加标题' : '隐藏标题'}}</text>
             </view>
             <view class="option-button option-publish">
-                <button class="publish-btn" :disabled="publishBtnDisabled" :class="publishBtnDisabled?'forbid':'allow'"
+                <button class="publish-btn" :disabled="publishBtnDisabled" @tap="publish" :class="publishBtnDisabled?'forbid':'allow'"
                         hover-class="none" plain>发布
                 </button>
             </view>
         </view>
+		<budge-component v-on:choseVal="popChoose"  :visible="popData.visible"></budge-component>
     </view>
 </template>
 
@@ -69,14 +73,15 @@
     import getStorage from "../../../utils/getStorage.js";
     import popUpComponent from "../../../components/popUpComponent.vue"
     import {layout, rentType, enterNums} from "../../../utils/config_utils.js";
-
+	import budgeComponent from "../../../components/budge-component/index.vue"
+	import {qqmapsdk} from "../../../utils/QQMapWXConfig.js"
     export default {
         data() {
             return {
                 src: '',
                 publishState: 0,
                 btnName: "下一步",
-                videoSrc: [],
+                videoSrc: "",
                 imgSrc: [],
                 title: "",
                 content: "",
@@ -87,7 +92,9 @@
                     name: "期望地点",
                     detail: "",
                     latitude: "",
-                    longitude: ""
+                    longitude: "",
+					city:"",
+					district:""
                 },
                 rent: 0,
                 layoutRange: layout,
@@ -96,12 +103,15 @@
                 rentTypeIndex: 0,
                 enterIndex: 0,
                 selectedLayOut: "",
-                hideTitle: true
+                hideTitle: false,
+				housing:"",
+				enterNum:0
+				
             }
         },
         computed: {
             publishBtnDisabled() {
-                if (this.publishState === 0 && (this.imgSrc.length > 0 || this.videoSrc.length > 0) && this.title && this.content) {
+                if (this.publishState === 0 && (this.imgSrc.length > 0 || this.videoSrc) && this.title && this.content&& this.currentLoc.latitude&&this.currentLoc.longitude&&this.rent > 0&&this.selectedLayOut&&this.housing&&this.enterNum) {
                     return false;
                 }
                 if (this.publishState === 1) {
@@ -114,7 +124,8 @@
             fileUploadComponent,
             publishButton,
             popUpComponent,
-            CheckDown
+            CheckDown,
+			budgeComponent
         },
         methods: {
             uploadFile() {
@@ -142,7 +153,19 @@
                 if (e.currentTarget.dataset.type == 1) {
                     uni.chooseLocation({
                         success: function (res) {
-                            console.log(self.currentLoc)
+                            qqmapsdk.reverseGeocoder({
+                            	  location: { 
+                                       latitude: res.latitude,
+                            		   longitude: res.longitude,
+                            	  },
+                            	  success: function(res) {//成功后的回调
+                            	       self.currentLoc.city = res.result.address_component.city;
+                            	       self.currentLoc.district = res.result.address_component.district;
+                            	  },
+                            	  fail:function(e){
+                            		  console.log(e)
+                            	  }
+                            })
                             self.currentLoc.name = res.name;
                             self.currentLoc.detail = res.address;
                             self.currentLoc.latitude = res.latitude;
@@ -150,9 +173,30 @@
                         },
                     });
                 } else if (e.currentTarget.dataset.type == 2) {
-                    this.popOpen();
+                     this.popOpen();
                 }
             },
+			publish(){ 
+				let userId = getStorage('userId');
+				if(userId){
+					let postData={
+						rental:this.rent,
+						location:this.currentLoc.city+','+this.currentLoc.district,
+						title:this.title,
+						content:this.content,
+						roomRentType:this.housing=="整租"?0:this.housing=="短租"?1:2,
+						enterNums:this.enterNum,
+						houseLayOut:this.selectedLayOut,
+						housingImgs:this.imgSrc.toString(),
+						housingVideos:this.videoSrc,
+						type:1,
+						id:userId,
+					};
+					this.$store.dispatch("publishInvitation",postData); 
+				}else{
+					info.toast("请先登录");
+				}
+			},
             clickHandle() {
                 if (this.publishState === 0) {
                     this.publishState = 1;
@@ -184,15 +228,17 @@
             },
             bindLayoutChange(e) {
                 let layoutIndex = e.target.value
-                this.selectedLayOut = layout[0][layoutIndex[0]] + layout[1][layoutIndex[1]] + layout[2][layoutIndex[2]];
-            },
+				console.log(layoutIndex)
+                this.selectedLayOut = this.layoutRange[0][layoutIndex[0]] + this.layoutRange[1][layoutIndex[1]] + this.layoutRange[2][layoutIndex[2]];
+                console.log(this.selectedLayOut)
+			},
             bindRentTypeChange(e) {
-                console.log(e)
-                this.rentTypeIndex = e.target.value;
+                let rentTypeIndex = e.target.value;
+				this.housing = this.rentType[rentTypeIndex]
             },
             bindEnterChange(e) {
-                console.log(e)
-                this.enterIndex = e.target.value;
+                let enterIndex = e.target.value;
+				this.enterNum = this.enterNums[enterIndex]
             },
             updateTitleState() {
                 this.hideTitle = !this.hideTitle;
@@ -213,18 +259,15 @@
     }
 
     .has-hourse-container {
-        position: absolute;
-        display: flex;
-		justify-content: space-between;
-        flex-direction: column;
-        align-items: center;
         width: 100%;
-        height: 100%;
+        overflow-x:hidden;
+		overflow-y: auto;
+		margin-top: 20upx;
+		padding-bottom: 100upx;
     }
 
     .roll-wrap {
         width: 100%;
-        height: calc(100% - 80upx);
         display: flex;
         flex-direction: column;
         align-items: center;
@@ -247,7 +290,6 @@
 
     .detail-publish {
         width: 90%;
-        height: calc(100% - 790upx);
         background-color: #FFF;
         border-radius: 10upx;
         padding-top: 10upx;
@@ -265,9 +307,19 @@
             width: calc(100% - 30upx);
             padding: 15upx 0 20upx 0;
             margin: 0 15upx;
-            height: 400upx;
+            height: 500upx;
             font-size: 28upx;
             border: none;
+			position:relative; 
+			z-index: 100;
+			.placeholder-detail{
+				font-size: 28upx;
+				font-weight: 600;
+				position: absolute;
+				left:3upx;
+				top:15upx;
+				color:#CCC;
+			}
         }
 
     }
@@ -290,7 +342,7 @@
         width: 90%;
         height: 400upx;
         background-color: #FFF;
-        margin: 30upx auto;
+        margin: 20upx auto;
         padding: 15upx 6upx;
         display: flex;
         flex-direction: column;
@@ -314,6 +366,9 @@
         width: 100%;
         height: 80upx;
         display: flex;
+		position: fixed;
+		left:0;
+		bottom:0;
         justify-content: space-between;
         align-items: center;
         flex-direction: row;

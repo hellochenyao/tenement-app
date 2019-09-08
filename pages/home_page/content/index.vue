@@ -4,8 +4,8 @@
 			<image class="avatar" src="https://ss3.bdstatic.com/70cFv8Sh_Q1YnxGkpoWK1HF6hhy/it/u=3914950518,3569645197&fm=27&gp=0.jpg"></image>
 			<view class="user-data">
 				<view class="user-content">
-					<text class="nick-name">小刷个</text>
-					<image class="sex-icon" src="../../../static/images/home_page/girl.png"></image>
+					<text class="nick-name">{{detail.publisher?detail.publisher:""}}</text>
+					<image class="sex-icon" :src="detail.gender==0?'../../../static/images/home_page/boy.png':'../../../static/images/home_page/girl.png'"></image>
 				</view>
 				<view class="come-data">
 					<text class="come-text">刚在线</text>
@@ -86,7 +86,8 @@
 				invitationId:"",
 				msgRes:{},
 				selectMsg:{},
-				detailType:false
+				detailType:false,
+		        detail:{}
 			}
 		},
 		components: {
@@ -97,7 +98,10 @@
 		onLoad(event) {
 			
 			this.invitationId = event.id;
+			let userId = getStorage('userId');
 			this.getWriteMsg(event.id);
+			this.getInvitation(userId,event.id)
+			this.viewAction(userId,event.id)
 		},
 		computed:{
 			...mapState({ 
@@ -114,6 +118,16 @@
 					},
 				});
 			},
+			getInvitation(userId,id){
+				this.$store.dispatch("getInvitationDetail",{userId,id})
+				.then(res=>{
+					console.log(res)
+					this.detail = res;
+				})
+				.catch(e=>{
+					console.log(e)
+				})
+			},
 			resClick(){
 				this.hideButton = !this.hideButton;
 				let userId = getStorage('userId');
@@ -126,10 +140,19 @@
 					console.log(e)
 				})
 			}
-			,
+			, 
 			getWriteMsg(invitationId){
 				let userId = getStorage('userId');
 				this.$store.dispatch("findMsg",{id:userId,invitationId})
+				.then(res=>{
+					this.msgRes = res;
+				})
+				.catch(err=>{
+					console.log(err)
+				});
+			},
+			viewAction(userId,invitationId){
+				this.$store.dispatch("addViewTimes",{userId,invitationId})
 				.then(res=>{
 					this.msgRes = res;
 				})

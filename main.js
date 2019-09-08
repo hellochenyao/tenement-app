@@ -2,7 +2,11 @@ import Vue from 'vue'
 import App from './App'
 import mainStore from './store';
 
+import loadingComponent from "./components/loading-component";
+
 Vue.config.productionTip = true
+
+Vue.component('loading-component',loadingComponent)
 
 App.mpType = 'app'
 import urlConfig from './utils/config_utils.js' 

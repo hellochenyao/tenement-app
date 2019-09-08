@@ -26,13 +26,14 @@
 					</view>
 				</swiper-item>
 				<swiper-item>
-					<view v-if="current==1" class="swiper-item-tab uni-bg-green">
+					<view v-if="current==1" class="swiper-item-tab uni-bg-green" :key="index" v-for="(data,index) in invitationList">
 						<invitation-component @downCallback="downCallback" @agree="haveAgreed" class="invitationId" :dat="data"></invitation-component>
 					</view>
 				</swiper-item>
 			</swiper>
 		</mescroll-uni>
 		<image v-if="haveAgreedType" src="../../static/images/home_page/agree.png" class="agree-img" :class="haveAgreedType?'agree':''"></image>
+		<loading-component :scrollAnimation="loading"></loading-component>
 	</view>
 </template>
 
@@ -99,7 +100,8 @@
 		},
 		computed:{
 			...mapState({ 
-				invitationRes:state=>state.invitateStore.invitationList
+				invitationRes:state=>state.invitateStore.invitationList,
+				loading:state=>state.invitateStore.loading
 			})
 		},
 		//注册滚动到底部的事件,用于上拉加载
@@ -183,6 +185,7 @@
 			},
 			getInvitationData(pageNo,pageSize){
 				let userId = getStorage('userId');
+				this.invitationList = []
 				this.$store.dispatch("findInvitation",{
 					id:userId,
 					type:this.current,
@@ -192,7 +195,6 @@
 				});
 			},
 			haveAgreed(){
-				console.log("a")
 				this.haveAgreedType = true;
 				setTimeout(()=>{
 					this.haveAgreedType = false;

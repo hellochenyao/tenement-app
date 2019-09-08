@@ -76,7 +76,6 @@
 		computed:{
 			info(){
 				let list = {};
-				console.log(this)
 				let dateStr = this.dat.lastLoginTime.replace(/-/g, '/')
 				let ori = {
 					   lastLoginTime:calloginDate(new Date(dateStr),new Date()),
@@ -86,8 +85,6 @@
 				if(this.dat){
 					Object.assign(list,this.dat,ori);
 				}
-				console.log(this.dat)
-				console.log(list)
 				return list;
 			} 
 		},
