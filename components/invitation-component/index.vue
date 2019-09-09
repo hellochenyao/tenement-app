@@ -1,38 +1,67 @@
 <template>
-	<view class="invitation-container">
-		<view class="user-info">
-			<image class="avatar" :src="info.avatar?info.avatar:''"></image>
-			<view class="user-text-info">
-				<view class="user-text-info-1">
-					<text class="nickn-name">{{info.publisher?info.publisher:""}}</text>
-					<image class="sex-icon" :src="info.gender==0?'../../static/images/home_page/boy.png':'../../static/images/home_page/girl.png'"></image>
+	<view class="invitation-container" :style="{height:contentHeight?contentHeight:0,opacity:contentHeight!=0?1:0}">
+		<view class="main-content" id="main"   @tap="directTo">
+			<view class="user-info">
+				<image class="avatar" :src="info.avatar?info.avatar:''"></image>
+				<view class="user-text-info">
+					<view class="user-text-info-1">
+						<text class="nickn-name">{{info.publisher?info.publisher:""}}</text>
+						<image class="sex-icon" :src="info.gender==0?'../../static/images/home_page/boy.png':'../../static/images/home_page/girl.png'"></image>
+					</view>
+					<view class="user-text-info-1">
+						<text class="come-text">{{info.lastLoginTime?info.lastLoginTime+"来过":""}}</text>
+					</view>
 				</view>
-				<view class="user-text-info-1">
-					<text class="come-text">{{info.lastLoginTime?info.lastLoginTime+"来过":""}}</text>
+				<text class="budget">¥{{info.rental?info.rental:""}}/月</text>
+			</view>
+			<view class="invitationTag">
+				<uni-tag text="标签" type="error" size="small" :circle="true" :inverted="true" class="tag"></uni-tag>
+			</view>
+			<view class="invitation-content">
+				<view class="invitation-title">
+					<text class="invitation-title-text">{{info.title?info.title:""}}</text>
+				</view>
+	<!-- 			<view class="detail-content">
+					<text class="detail-content-text">{{info.content?info.content:""}}</text>
+				</view> -->
+			</view>
+			<view class="viewResource">
+				<view class="video-content" v-if="getResourceVideoUrl.currentResource=='video'">
+				  <video v-if="getResourceVideoUrl.currentResource=='video'"
+						 objectFit="fill" :src="getResourceVideoUrl.url" 
+						 class="video" 
+						 :show-fullscreen-btn="false"
+						 :show-play-btn="false"
+						 :show-center-play-btn="false"
+						 :controls="false"
+				  />
+				  <view class="tag-content">
+					  <view class="tagBot">
+					      <view class="tag"/>
+					      <image v-if="getResourceVideoUrl.currentResource=='video'" src="../../static/images/home_page/video.png" class="icon"></image>
+					  </view>
+				  </view>
+				</view>
+				<corver-view class="img-content" v-if="getResourceImgUrl.currentResource=='img'">
+				  <image :src="item" v-for="(item,index) in getResourceImgUrl.url" :key="index" class="img"></image>
+				</corver-view>
+				<view class="goViewTap">
+					<text>查看详情</text>
 				</view>
 			</view>
-			<text class="budget">¥{{info.rental?info.rental:""}}/月</text>
-		</view>
-		<view class="invitation-content"  @tap="directTo">
-			<view class="invitation-title">
-				<text class="invitation-title-text">{{info.title?info.title:""}}</text>
-			</view>
-			<view class="detail-content">
-				<text class="detail-content-text">{{info.content?info.content:""}}</text>
-			</view>
-		</view>
-		<view class="bottom-tab">
-			<view class="location-info">
-				<image class="location-icon" src="../../static/images/home_page/local.png"></image>
-				<view class="location-detail">
-					<text class="rent-type">{{info.location?(info.location.split(',')[0]):""}}</text>
-					<text class="location">/</text>
-					<text class="location">{{info.location?(info.location.split(',')[1]):""}}</text>
-				</view> 
-			</view>
-			<view class="view-times">
-				<image class="times-icon" src="../../static/images/home_page/view.png"></image>
-				<text class="gothrough">浏览{{info.viewTimes?info.viewTimes:0}}次</text>
+			<view class="bottom-tab">
+				<view class="location-info">
+					<image class="location-icon" src="../../static/images/home_page/local.png"></image>
+					<view class="location-detail">
+						<text class="rent-type">{{info.location?(info.location.split(',')[0]):""}}</text>
+						<text class="location">/</text>
+						<text class="location">{{info.location?(info.location.split(',')[1]):""}}</text>
+					</view> 
+				</view>
+				<view class="view-times">
+					<image class="times-icon" src="../../static/images/home_page/view.png"></image>
+					<text class="gothrough">浏览{{info.viewTimes?info.viewTimes:0}}次</text>
+				</view>
 			</view>
 		</view>
 		<view class="share-bottom">  
@@ -64,10 +93,14 @@
 	import {calloginDate} from "../../utils/calDateDiff.js"
 	import {qqmapsdk} from "../../utils/QQMapWXConfig.js";
 	import info from '../../utils/info.js';
+	import {getNodeHeight} from "../../utils/config.js"
+	import configUrl from "../../utils/config_utils.js"
+	import uniTag from "@/components/uni-tag/uni-tag.vue"
 	export default {
 		data() {
 			return {
-	
+					imgUrl:configUrl.uploadFileUrl,
+					contentHeight:0
 			} 
 		}, 
 		props: {
@@ -86,14 +119,42 @@
 					Object.assign(list,this.dat,ori);
 				}
 				return list;
-			} 
+			} ,
+			getResourceVideoUrl(){ 
+				if(this.dat.housingVideos){
+					let path = this.dat.housingVideos.replace(/\\/g,"/")
+					return {
+						url:this.imgUrl+path,
+				        currentResource:"video"					
+					}
+				}
+				return ""
+			},
+			getResourceImgUrl(){
+				if(this.dat.housingImgs){
+					return {
+						url:this.dat.housingImgs.split(",").map(v=>{
+							v=v.replace(/\\/g,"/");
+							return this.imgUrl+v;
+						},
+						),
+						currentResource:"img"
+					}
+				}
+				return ""
+			}
 		},
 		components: {
-			
+			uniTag
 		},
-		mounted() {
-
-        },
+		async mounted() {
+			const query = uni.createSelectorQuery().in(this);
+			query.select('#main').boundingClientRect(data => { 
+				let contentHeight = data.height + uni.upx2px(70);
+				this.contentHeight = contentHeight +"px";
+				this.$emit("setInvitationHeight",contentHeight);
+			}).exec();
+		},
 		methods: {
 			
 			directTo() {
@@ -134,9 +195,12 @@
 		padding-top: 20upx;
 		border-radius: 10upx;
 		box-shadow: 1px 1px 5px #d6d6d6;
-		height:360upx;
 		position: relative;
+		min-height:360upx;
 		// height: 360upx;
+		.main-content{
+			width:100%;
+		}
 		.user-info {
 			width: calc(100% - 40upx);
 			height: 70upx;
@@ -211,6 +275,20 @@
 					top: 30upx;
 				}
 			}
+			
+			.invitationTag{
+				width:100%;
+				display: flex;
+				flex-direction: row;
+				justify-content: flex-start;
+				align-items: center;
+				padding:10upx 20upx;
+				box-sizing: border-box;
+				.tag{
+					width:100%;
+					height:100%;
+				}
+			}
 
 			.invitation-content {
 				width: 100%;
@@ -228,18 +306,98 @@
 					}
 				}
 
-				.detail-content {
-					display: flex;
-					flex-direction: row;
-					flex-wrap: wrap;
-					height: auto;
-					width: calc(100% - 40upx);
-					padding: 10upx 20upx;
-
-					.detail-content-text {
-						font-size: 28upx;
-						color: #333;
+// 				.detail-content {
+// 					display: flex;
+// 					flex-direction: row;
+// 					flex-wrap: wrap;
+// 					height: auto;
+// 					width: calc(100% - 40upx);
+// 					padding: 10upx 20upx;
+// 
+// 					.detail-content-text {
+// 						font-size: 28upx;
+// 						color: #333;
+// 					}
+// 				}
+			}
+			
+			.viewResource{
+				width:100%;
+				height:160upx;
+				margin:0 0 10upx 0;
+				box-sizing: border-box;
+				position: relative;
+				display:flex;
+				flex-direction:row;
+				justify-content:flex-start;
+				align-items:center;
+				padding:0 20upx;
+				.video-content{
+					width:260upx;
+					height:100%;
+					position:relative;
+					.video{
+						width:100%;
+						height:100%;
 					}
+					.tag-content{
+						min-width:60upx;
+						height:50upx;
+						display:flex;
+						flex-direction:row;
+						justify-content:center;
+						align-items:center;
+						position:absolute;
+						border-top-left-radius: 10upx;
+						border-bottom-left-radius: 10upx;
+						right:0upx;
+						bottom:50upx;
+						.tagBot{
+							position: relative;
+							.tag{
+								width:100%;
+								height:100%;
+								position: absolute;
+								left:0;
+								top:0;
+								background: #000000;
+								opacity: 0.5;
+							}
+							.icon{
+								width:50upx;
+								height:50upx;
+								position: relative;
+							}
+						}
+					}
+				}
+				.img-content{
+					width:260upx;
+					height:100%;
+					position:relative;
+					z-index:1000;
+					.img{
+						width:100%;
+						height:100%;
+						position: absolute;
+						left:0;
+						top:0;
+						z-index: 1000;
+					}
+				}
+				.goViewTap{
+					width:30upx;
+					height:100%;
+					position: absolute;
+					right:30upx;
+					top:0;
+					background: #000000;
+					opacity: 0.7;
+					color: #FFF;
+					font-size: 26upx;
+					display: flex;
+					flex-direction: column;
+					justify-content: center;
 				}
 			}
 
@@ -248,7 +406,7 @@
 				flex-direction: row;
 				justify-content: space-between;
 				align-items: center;
-				height: 70upx;
+				padding:10upx 0;
 
 				.location-info {
 					width: 100%;
@@ -313,6 +471,7 @@
 
 			.share-bottom {
 				width: calc(100% - 40upx);
+				height:50upx;
 				display: flex;
 				flex-direction: row;
 				align-items: center;

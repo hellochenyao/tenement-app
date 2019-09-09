@@ -1,40 +1,70 @@
 <template>
 	<view class="contant-container">
 		<view class="user-info">
-			<image class="avatar" src="https://ss3.bdstatic.com/70cFv8Sh_Q1YnxGkpoWK1HF6hhy/it/u=3914950518,3569645197&fm=27&gp=0.jpg"></image>
+			<image class="avatar" :src="detail.avatar?detail.avatar:''"></image>
 			<view class="user-data">
 				<view class="user-content">
 					<text class="nick-name">{{detail.publisher?detail.publisher:""}}</text>
 					<image class="sex-icon" :src="detail.gender==0?'../../../static/images/home_page/boy.png':'../../../static/images/home_page/girl.png'"></image>
 				</view>
 				<view class="come-data">
-					<text class="come-text">刚在线</text>
-					<text class="come-text">浏览6次</text>
+					<text class="come-text">{{detail.lastLoginTime?calLoginDate(detail.lastLoginTime):""}}</text>
+					<text class="come-text">浏览{{detail.viewTimes?detail.viewTimes:0}}次</text>
 				</view>
 			</view>
 			<image class="turn-icon" src="../../../static/images/home_page/turn1.png"></image>
+		</view> 
+		<view class="imgVideoContent" :style="{border:!haveLoadImg?'1px solid #eaeaea':0}"> 
+			<image v-if="getFirstUrl.currentResource=='img'" :src="getFirstUrl.url" :style="{opacity:haveLoadImg?1:0}" @load="load" class="img" mode="scaleToFill" lazy-load="true"></image>
+			<image v-if="!haveLoadImg" src="../../../static/images/home_page/timg.gif" class="loading"></image>
+			<image v-if="haveLoadImg||getFirstUrl.currentResource=='video'" :src="getFirstUrl.currentResource=='video'?'../../../static/images/home_page/video.png':'../../../static/images/home_page/img.png'" class="icon"></image>
+<!-- 			<video src="" class="video"></video> -->
+            <video v-if="getFirstUrl.currentResource=='video'"
+			       objectFit="fill" :src="getFirstUrl.url" 
+				   class="video" 
+				   :show-fullscreen-btn="false"
+				   :show-play-btn="false"
+				   :show-center-play-btn="false"
+				   :controls="false"
+		    />
+			<view class="gothrough_detail">
+				<view class="goView">
+				    <view class="go"/>
+				    <view class="gothrough_text"><image src="../../../static/images/home_page/go.png" class="goPicture"/><Text>查看</Text></view>
+				</view>
+			</view>
 		</view>
 		<view class="invitation-title">
-			<text class="title">出租印江山大楼，价格非常贵，非常诚心的请勿打扰<text class="location">/印江山</text></text>
+			<text class="title">{{detail.title?detail.title:""}}<text class="location">/{{location}}</text></text>
 		</view>
 		<view class="invitation-condition">
 			<view class="condition">
 				<view class="budget">
-					<image class="img" src="../../../static/images/home_page/budget.png"></image>
+					<image class="img" src="../../../static/images/home_page/budget.png" mode="widthFix"></image>
 					<text class="condition-name">租金</text>
-					<text class="condition-value">￥1000元/月</text>
+					<text class="condition-value">￥{{detail.rental?detail.rental:0}}元/月</text>
+				</view>
+				<view class="budget" v-if="detail.enterNums"> 
+					<image class="img" src="../../../static/images/publish/enter.png" mode="widthFix"></image>
+					<text class="condition-name">入住人数</text>
+					<text class="condition-value">{{detail.enterNums?detail.enterNums:''}}</text>
+				</view>
+				<view class="budget" v-if="detail.roomRentType!=null&&detail.roomRentType!='undefined'">
+					<image class="img" src="../../../static/images/publish/type.png" mode="widthFix"></image>
+					<text class="condition-name">出租类型</text>
+					<text class="condition-value">{{(detail.roomRentType!='undefined'&&detail.roomRentType==0?'整租':detail.roomRentType==1?'短租':detail.roomRentType==2?'合租':'')}}</text>
 				</view>
 				<view class="publish">
-					<image class="img" src="../../../static/images/home_page/publish.png"></image>
-					<text class="condition-name">发布于5月23日</text>
+					<image class="img" src="../../../static/images/home_page/publish.png" mode="widthFix"></image>
+					<text class="condition-name">发布于{{formatPublishDate}}</text>
 				</view>
 				<view class="location">
-					<image class="img" src="../../../static/images/home_page/locationContent.png"></image>
-					<text class="condition-name">印江山</text>
+					<image class="img" src="../../../static/images/home_page/locationContent.png" mode="widthFix"></image>
+					<text class="condition-name">{{currentLoc.detail?currentLoc.detail:""}}</text>
 				</view>
 			</view>
-			<view class="location-map">
-				<map class="map" :latitude="26.08198" :longitude="119.30405" :markers="covers" @tap="clickMap" :circles="circles">
+			<view class="location-map"> 
+				<map class="map" :latitude="currentLoc.latitude" :longitude="currentLoc.longitude" :markers="covers" @tap="clickMap" :circles="circles">
                 </map>
 			</view>
 		</view>
@@ -42,7 +72,7 @@
 			<view class="desc">
 				<text class="desc-text">具体要求</text>
 			</view>
-			<text class="desc-content">很好</text>
+			<text class="desc-content">{{detail.content?detail.content:''}}</text>
 		</view>
 		<view class="write-msg">
 			<view class="desc">
@@ -78,6 +108,9 @@
 	import writeMsg from './write_msg/index';
 	import getStorage from "../../../utils/getStorage.js"
 	import MsgDetail from "./write_msg/msgDetail";
+	import {calloginDate} from "../../../utils/calDateDiff.js"
+	import {qqmapsdk} from "../../../utils/QQMapWXConfig.js"
+	import configUrl from "../../../utils/config_utils.js"
 	export default {
 		data() { 
 			return {
@@ -87,14 +120,20 @@
 				msgRes:{},
 				selectMsg:{},
 				detailType:false,
-		        detail:{}
+		        detail:{},
+				currentLoc: {
+				    detail: "",
+				    latitude: "",
+				    longitude: "",
+				},
+				imgUrl:configUrl.uploadFileUrl,
+				haveLoadImg:false
 			}
 		},
 		components: {
 			writeMsg,
 			MsgDetail
 		},
-		
 		onLoad(event) {
 			
 			this.invitationId = event.id;
@@ -106,13 +145,64 @@
 		computed:{
 			...mapState({ 
 				currentResponseUser:state=>state.invitateStore.currentResponseUser
-			})
+			}),
+			
+			location(){
+				if(this.detail.location){
+					return this.detail.location.split(",")[1]
+				}
+				return ""
+			},
+			formatPublishDate(){
+				if(this.detail.createTime){
+					let date = this.detail.createTime.replace(/-/g, '/')
+					return new Date(date).getMonth()+1+"月"+new Date(date).getDate()+"日"
+				}
+				return ""
+			},
+			getFirstUrl(){
+				if(this.detail.housingVideos){
+					let path = this.detail.housingVideos.replace(/\\/g,"/")
+					return {
+						url:this.imgUrl+path,
+				        currentResource:"video"					
+					}
+				}
+				if(this.detail.housingImgs){
+					let path = this.detail.housingImgs.split(",")[0].replace(/\\/g,"/");
+					console.log(path)
+					return {
+						url:this.imgUrl+path,
+						currentResource:"img"
+					}
+				}
+			}
 		},
 		methods: {
+			load(e){
+				console.log(e)
+				this.haveLoadImg = true;
+			},
+			getLocationDetail(latitude,longitude){
+				var self = this;
+				qqmapsdk.reverseGeocoder({
+					  location: { 
+				           latitude: latitude,
+						   longitude: longitude,
+					  },
+					  success: function(res) {//成功后的回调
+					  console.log(res)
+					       self.currentLoc.detail = res.result.address;
+					  },
+					  fail:function(e){
+						  console.log(e)
+					  }
+				})
+			},
 			clickMap(){
 				 uni.openLocation({
-					latitude: 26.08198,
-					longitude: 119.30405,
+					latitude: this.currentLoc.latitude,
+					longitude: this.currentLoc.longitude,
 					success: function () {
 						console.log('success');
 					},
@@ -123,10 +213,19 @@
 				.then(res=>{
 					console.log(res)
 					this.detail = res;
+					this.currentLoc.latitude = res.latitude.split(',')[0];
+					this.currentLoc.longitude = res.latitude.split(',')[1]
+					this.getLocationDetail(res.latitude.split(',')[0],res.latitude.split(',')[1])
 				})
 				.catch(e=>{
 					console.log(e)
 				})
+			},
+			calLoginDate(dateLogin){
+				if(dateLogin){
+					dateLogin = dateLogin.toString().replace(/-/g, '/')
+				}
+				return calloginDate(new Date(dateLogin),new Date());	
 			},
 			resClick(){
 				this.hideButton = !this.hideButton;
@@ -142,7 +241,7 @@
 			}
 			, 
 			getWriteMsg(invitationId){
-				let userId = getStorage('userId');
+				let userId = getStorage('userId'); 
 				this.$store.dispatch("findMsg",{id:userId,invitationId})
 				.then(res=>{
 					this.msgRes = res;
@@ -177,7 +276,7 @@
 <style lang="scss">
 	.contant-container{
 		background: #FFF;
-		padding:10upx 20upx;
+		padding:10upx 10upx 100upx;
 		width:100%;
 		height: 100%;
 		box-sizing: border-box;
@@ -189,7 +288,7 @@
 		flex-direction: row;
 		align-items: center;
 		justify-content: space-between;
-		margin-top: 30upx;
+		margin-top: 10upx;
 		background: #FFF;
 		.avatar{
 			width:70upx;
@@ -235,15 +334,96 @@
 			height: 45upx;
 		}
 	}
+	.imgVideoContent{
+		width:100%;
+		height:360upx;
+		border-radius: 30upx;
+		margin:30upx 0 0 0;
+		box-sizing: border-box;
+		position:relative;
+		
+		.img{
+			width:100%;
+			height:100%;
+			box-shadow: 1px 1px 5px #d6d6d6;
+			border:1px solid #eaeaea;
+			border-radius: 30upx;
+		}
+		.video{
+			width:100%;
+			height:100%;
+			box-shadow: 1px 1px 5px #d6d6d6;
+			border:1px solid #eaeaea;
+			border-radius: 30upx;
+		}
+		.loading{
+			width:300upx;
+			height:300upx;
+			position:absolute;
+			left:50%;
+			top:50%;
+			margin-left: -150upx;
+			margin-top: -150upx;
+		}
+		.icon{
+			width:60upx;
+			height:60upx;
+			position: absolute;
+			left:30upx;
+			bottom:30upx;
+			z-index: 10000;
+		}
+		.gothrough_detail{
+			width:130upx;
+			height:60upx;
+			position: absolute;
+			right:30upx;
+			bottom:30upx;
+			.goView{
+				position: relative;
+				.go{
+					width:100%;
+					height:100%;
+					background: #000000;
+					opacity: 0.5;
+					position: absolute;
+					left:0;
+					top:0;
+					border-radius: 10upx;
+				}
+				.gothrough_text{
+					width:100%;
+					height:100%;
+					opacity: 1!important;
+					font-size: 26upx;
+					line-height: 60upx;
+					color:#FFF;
+					display: flex;
+					flex-direction: row;
+					justify-content: center;
+					align-items: center;
+					position: relative;
+					.goPicture{
+						width:50upx;
+						height:30upx;
+						margin-right: 10upx;
+						position: relative;
+					}
+				}
+			}
+		}
+	}
 	.invitation-title{
 		width:100%;
 		margin:40upx 0 30upx;
 		display: flex;
 		flex-direction: row;
 		align-items: flex-end;
+		padding-left:7upx;
+		box-sizing:border-box;
 		.title{
-			font-size: 32upx;
-			font-weight: bold;
+			font-size: 40upx;
+			font-weight:600;
 			color:$uni-app-font-color;
 		}
 		.location{
@@ -268,19 +448,19 @@
 				flex-direction: row;
 				align-items: center;
 				margin-top: 10upx;
-				margin-bottom: 10upx;
+				margin-bottom: 26upx;
 				.img{
-					width:35upx;
-					height: 35upx;
+					width:40upx;
+					height: 40upx;
 			     	margin-right: 10upx;
 				}
 				.condition-name{
-					font-size:28upx;
+					font-size:30upx;
 					color:#999;
 					margin-right: 10upx;
 				}
 				.condition-value{
-					font-size: 28upx;
+					font-size: 30upx;
 					color:$uni-app-other-color;
 				}
 			}
@@ -295,6 +475,7 @@
 		.map{
 			width:130upx;
 			height:130upx;
+			border-radius: 60%;
 		}
 	}
 	.invitation-desc{
@@ -309,10 +490,11 @@
 			}
 		}
 		.desc-content{
-			font-size: 27upx;
+			font-size: 33upx;
+			padding-left: 7upx;
 			color:#999;
 			margin-top: 10upx;
-			min-height: 160upx;
+			min-height: 130upx;
 		}
 	}
 	.write-msg{

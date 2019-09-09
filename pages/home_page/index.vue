@@ -19,15 +19,15 @@
 		<view :style="{marginTop:topHeight}"/>
 		<mescroll-uni :up="upOption" :down="downOption" @down="downCallback" @up="upCallback" @init="mescrollInit" >
 			<swiper :current="current" @change="currentChangeHandler" class="swiper" 
-			 :indicator-dots="indicatorDots" :interval="interval" :duration="duration" :style="{height:swiperHeight}">
+			 :indicator-dots="indicatorDots" :interval="interval" :duration="duration" :style="{height:swiperHeight,opacity:invitationHeight==0?0:1}">
 				<swiper-item key="invitationId" id="invitationId">
 					<view v-if="current==0" class="swiper-item-tab" :key="index" v-for="(data,index) in invitationList">
-						<invitation-component @downCallback="downCallback" @agree="haveAgreed" class="invitationId" :dat="data"></invitation-component>
+						<invitation-component @setInvitationHeight="setInvitationHeight" @downCallback="downCallback" @agree="haveAgreed" class="invitationId" :dat="data"></invitation-component>
 					</view>
 				</swiper-item>
 				<swiper-item>
 					<view v-if="current==1" class="swiper-item-tab uni-bg-green" :key="index" v-for="(data,index) in invitationList">
-						<invitation-component @downCallback="downCallback" @agree="haveAgreed" class="invitationId" :dat="data"></invitation-component>
+						<invitation-component @setInvitationHeight="setInvitationHeight" @downCallback="downCallback" @agree="haveAgreed" class="invitationId" :dat="data"></invitation-component>
 					</view>
 				</swiper-item>
 			</swiper>
@@ -89,7 +89,8 @@
 				refreshType:0,
 				invitationList:[],
 				haveAgreedType:false,
-				titleHeight:0
+				titleHeight:0,
+				invitationHeight:0
 			}
 		},
 		components: {
@@ -146,18 +147,19 @@
 			},
 			/*下拉刷新的回调 */
 			downCallback() {
+				console.log("aaa")
 				this.refreshType = 0;
 				this.getInvitationData(1,10);
 			},
 			/*上拉加载的回调: mescroll携带page的参数, 其中num:当前页 从1开始, size:每页数据条数,默认10 */
 			upCallback(mescroll) {
+				console.log("a")
 				//联网加载数据
 				this.refreshType = 1;
 				let _this = this;
 				if(this.currentCity ==""){
 					qqmapsdk.reverseGeocoder({
 						  success: function(res) {//成功后的回调
-						  console.log(res)
 							_this.currentCity = res.result.address_component.city;
 						    _this.getInvitationData(mescroll.num, mescroll.size);
 						  }
@@ -165,6 +167,9 @@
 				}else{
 					this.getInvitationData(mescroll.num, mescroll.size);
 				}
+			},
+			setInvitationHeight(height){
+				this.invitationHeight = height;
 			},
 			focusSearch() {
 				this.focusType = !this.focusType;
@@ -185,7 +190,6 @@
 			},
 			getInvitationData(pageNo,pageSize){
 				let userId = getStorage('userId');
-				this.invitationList = []
 				this.$store.dispatch("findInvitation",{
 					id:userId,
 					type:this.current,
@@ -203,13 +207,15 @@
 		},
 	watch:{
 		invitationRes(val){
+			console.log(this.mescroll.num)
+			let initSwiperHei = this.invitationHeight+uni.upx2px(40);
 			if(this.mescroll){
 				if(val.code){
 					this.mescroll.endErr();
 				}else{
 					if(this.refreshType ===0){
 						this.invitationList = val.data;
-						this.swiperHeight = uni.upx2px(403)*this.invitationList.length+'px';
+						this.swiperHeight = initSwiperHei*this.invitationList.length+'px';
 						this.mescroll.resetUpScroll();
 						return;
 					}else {
@@ -218,10 +224,16 @@
 						}
 						this.invitationList = this.invitationList.concat(val.data);
 					}
-						this.mescroll.endBySize(val.data.length, 2);
+					console.log(this.invitationList)
+					console.log(val.total)
+						this.mescroll.endBySize(this.invitationList.length, val.total);
 				}
 			}
-			this.swiperHeight = uni.upx2px(403)*this.invitationList.length+'px';
+			this.swiperHeight = initSwiperHei*this.invitationList.length+'px';
+		},
+		invitationHeight(v){
+			let initSwiperHei = this.invitationHeight+uni.upx2px(40);
+			this.swiperHeight = initSwiperHei*this.invitationList.length+'px';
 		}
 	}
 	}

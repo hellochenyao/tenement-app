@@ -159,6 +159,7 @@
                             		   longitude: res.longitude,
                             	  },
                             	  success: function(res) {//成功后的回调
+								  console.log(res)
                             	       self.currentLoc.city = res.result.address_component.city;
                             	       self.currentLoc.district = res.result.address_component.district;
                             	  },
@@ -170,6 +171,7 @@
                             self.currentLoc.detail = res.address;
                             self.currentLoc.latitude = res.latitude;
                             self.currentLoc.longitude = res.longitude;
+							console.log(self.currentLoc)
                         },
                     });
                 } else if (e.currentTarget.dataset.type == 2) {
@@ -182,6 +184,7 @@
 					let postData={
 						rental:this.rent,
 						location:this.currentLoc.city+','+this.currentLoc.district,
+						latitude:this.currentLoc.latitude+","+this.currentLoc.longitude,
 						title:this.title,
 						content:this.content,
 						roomRentType:this.housing=="整租"?0:this.housing=="短租"?1:2,
