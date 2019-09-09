@@ -14,23 +14,22 @@
 					<image class="search-icon" src="../../static/images/home_page/search.png"></image>
 				</view>
 			</view>
-			<top-select-bar :current="current" @changeCurrent="currentChangeHandler"></top-select-bar>
+			<top-select-bar :current="current" @changeCurrent="selectChangeHandler"></top-select-bar>
 		</view>
 		<view :style="{marginTop:topHeight}"/>
 		<mescroll-uni :up="upOption" :down="downOption" @down="downCallback" @up="upCallback" @init="mescrollInit" >
-			<swiper :current="current" @change="currentChangeHandler" class="swiper" 
-			 :indicator-dots="indicatorDots" :interval="interval" :duration="duration" :style="{height:swiperHeight,opacity:invitationHeight==0?0:1}">
-				<swiper-item key="invitationId" id="invitationId">
+			<view>
+				<view key="invitationId" id="invitationId">
 					<view v-if="current==0" class="swiper-item-tab" :key="index" v-for="(data,index) in invitationList">
 						<invitation-component @setInvitationHeight="setInvitationHeight" @downCallback="downCallback" @agree="haveAgreed" class="invitationId" :dat="data"></invitation-component>
 					</view>
-				</swiper-item>
-				<swiper-item>
+				</view>
+				<view>
 					<view v-if="current==1" class="swiper-item-tab uni-bg-green" :key="index" v-for="(data,index) in invitationList">
 						<invitation-component @setInvitationHeight="setInvitationHeight" @downCallback="downCallback" @agree="haveAgreed" class="invitationId" :dat="data"></invitation-component>
 					</view>
-				</swiper-item>
-			</swiper>
+				</view>
+			</view>
 		</mescroll-uni>
 		<image v-if="haveAgreedType" src="../../static/images/home_page/agree.png" class="agree-img" :class="haveAgreedType?'agree':''"></image>
 		<loading-component :scrollAnimation="loading"></loading-component>
@@ -116,7 +115,7 @@
 		onLoad(event) {
 			let _this = this;
 			let data = wx.getMenuButtonBoundingClientRect()
-			this.titleHeight = data.height
+			this.titleHeight = data.height 
 			uni.getSystemInfo({
 				success(res) {
 					if(res.model == "iPhone X"){
@@ -143,19 +142,15 @@
 		methods: {
 			// mescroll组件初始化的回调,可获取到mescroll对象
 			mescrollInit(mescroll) {
+				console.log(mescroll)
 				this.mescroll = mescroll;
 			},
 			/*下拉刷新的回调 */
 			downCallback() {
-				console.log("aaa")
-				this.refreshType = 0;
-				this.getInvitationData(1,10);
+				this.mescroll.resetUpScroll();
 			},
 			/*上拉加载的回调: mescroll携带page的参数, 其中num:当前页 从1开始, size:每页数据条数,默认10 */
 			upCallback(mescroll) {
-				console.log("a")
-				//联网加载数据
-				this.refreshType = 1;
 				let _this = this;
 				if(this.currentCity ==""){
 					qqmapsdk.reverseGeocoder({
@@ -168,26 +163,28 @@
 					this.getInvitationData(mescroll.num, mescroll.size);
 				}
 			},
-			setInvitationHeight(height){
-				this.invitationHeight = height;
-			},
 			focusSearch() {
 				this.focusType = !this.focusType;
+			},
+			selectChangeHandler(event){
+				this.current = event;
+				this.downCallback();
+				this.invitationList = [];
 			},
 			selectCityHandler() { 
 				uni.navigateTo({
 					url: './choose_city'
 				});
 			},
-			currentChangeHandler(event) {
-				if (event.detail) {
-					this.current = event.detail.current;
-				} else {
-					this.current = event;
-				}
-				this.downCallback();
-				
-			},
+			// currentChangeHandler(event) {
+			// 	if (event.detail) {
+			// 		this.current = event.detail.current;
+			// 	} else {
+			// 		this.current = event;
+			// 	}
+			// 	this.downCallback();
+			// 	
+			// },
 			getInvitationData(pageNo,pageSize){
 				let userId = getStorage('userId');
 				this.$store.dispatch("findInvitation",{
@@ -197,7 +194,7 @@
 					pageNo,
 					pageSize
 				});
-			},
+			}, 
 			haveAgreed(){
 				this.haveAgreedType = true;
 				setTimeout(()=>{
@@ -207,32 +204,18 @@
 		},
 	watch:{
 		invitationRes(val){
-			console.log(this.mescroll.num)
 			let initSwiperHei = this.invitationHeight+uni.upx2px(40);
 			if(this.mescroll){
 				if(val.code){
 					this.mescroll.endErr();
 				}else{
-					if(this.refreshType ===0){
-						this.invitationList = val.data;
-						this.swiperHeight = initSwiperHei*this.invitationList.length+'px';
-						this.mescroll.resetUpScroll();
-						return;
-					}else {
-						if(this.mescroll.num === 1){
-							this.invitationList = [];
-						}
-						this.invitationList = this.invitationList.concat(val.data);
+					if(this.mescroll.num === 1){
+						this.invitationList = [];
 					}
-					console.log(this.invitationList)
-					console.log(val.total)
-						this.mescroll.endBySize(this.invitationList.length, val.total);
+					this.invitationList = this.invitationList.concat(val.data);
+					this.mescroll.endBySize(this.invitationList.length, val.total);
 				}
 			}
-			this.swiperHeight = initSwiperHei*this.invitationList.length+'px';
-		},
-		invitationHeight(v){
-			let initSwiperHei = this.invitationHeight+uni.upx2px(40);
 			this.swiperHeight = initSwiperHei*this.invitationList.length+'px';
 		}
 	}
@@ -301,14 +284,6 @@
 			top: 68upx !important;
 		}
 	}
-
-	/* iPhone X in landscape */
-	@media only screen and (min-device-width : 375px) and (max-device-width : 812px) and (-webkit-device-pixel-ratio : 3) and (orientation : landscape) {
-	}
-
-	/* iPhone X in portrait */
-	@media only screen and (min-device-width : 375px) and (max-device-width : 812px) and (-webkit-device-pixel-ratio : 3) and (orientation : portrait) {
-	}
 	.navContainer{
 		width:100%;
 		position: fixed;
@@ -319,6 +294,7 @@
 	.navigationBar { 
 		width: 100%;
 		height: 44px;
+		padding:10upx 0;
 		background-color: $uni-app-basic-color;
 		display: flex;
 		flex-direction: "row"
