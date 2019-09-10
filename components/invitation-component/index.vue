@@ -7,7 +7,7 @@
 					<view class="user-text-info-1">
 						<text class="nickn-name">{{info.publisher?info.publisher:""}}</text>
 						<image class="sex-icon" :src="info.gender==0?'../../static/images/home_page/boy.png':'../../static/images/home_page/girl.png'"></image>
-					</view>
+					</view> 
 					<view class="user-text-info-1">
 						<text class="come-text">{{info.lastLoginTime?info.lastLoginTime+"来过":""}}</text>
 					</view>
@@ -77,11 +77,17 @@
 			</view>
 			<view class="comment">
 				<view class="content" @tap="agreeStepHandler(0,info.status)">
-					<image class="button-icon" :src="info.status==0?'../../static/images/home_page/haveAgree.png':'../../static/images/home_page/agree.png'"></image>
+					<view class="button-content">
+						<image :class="'likeAnimation '+ (likeType==0?' getlike':'')" src="../../static/images/home_page/haveAgree.png"/>
+						<image class="button-icon" :src="info.status==0?'../../static/images/home_page/haveAgree.png':'../../static/images/home_page/agree.png'"></image>
+					</view>
 					<text class="button-name agree-button">{{info.supportNums?info.supportNums:0}}</text>
 				</view>
 				<view class="content" @tap="agreeStepHandler(1,info.status)">
-					<image class="button-icon" :src="info.status==1?'../../static/images/home_page/haveStep.png':'../../static/images/home_page/step.png'"></image>
+					<view class="button-content">
+					  <image :class="'toLikeAnimation '+ (likeType==-1?' getStep':'')" src="../../static/images/home_page/haveStep.png"/>
+					  <image class="button-icon" :src="info.status==1?'../../static/images/home_page/haveStep.png':'../../static/images/home_page/step.png'"></image>
+				    </view>
 				</view>
 			</view>
 		</view>
@@ -100,7 +106,9 @@
 		data() {
 			return {
 					imgUrl:configUrl.uploadFileUrl,
-					contentHeight:0
+					contentHeight:0,
+					likeType:1,
+					likeInvitation:{}
 			} 
 		}, 
 		props: {
@@ -108,7 +116,13 @@
 		},
 		computed:{
 			info(){
+				console.log(this.likeInvitation)
 				let list = {};
+				let likeObj = {}
+				if(Object.keys(this.likeInvitation).length>0){
+					likeObj["status"] = this.likeInvitation.status;
+					likeObj["supportNums"] = this.likeInvitation.supportNums;
+				}
 				let dateStr = this.dat.lastLoginTime.replace(/-/g, '/')
 				let ori = {
 					   lastLoginTime:calloginDate(new Date(dateStr),new Date()),
@@ -116,7 +130,7 @@
 					   locationCity:info.location?(info.location.split(',')[1]):""					
 					}
 				if(this.dat){
-					Object.assign(list,this.dat,ori);
+					Object.assign(list,this.dat,ori,likeObj);
 				}
 				return list;
 			} ,
@@ -156,17 +170,45 @@
 					url: "../../pages/home_page/content/index?id="+this.info.id
 				})
 			},
+			getDeitailInvitation(userId,invitationId){
+				this.$store.dispatch("getInvitationDetail",{
+					userId,
+					id:invitationId
+				}).then(res=>{
+					console.log(res)
+					this.likeInvitation = res;
+				}).catch(e=>{
+					console.log(e)
+				})
+			},
 			agreeStepHandler(status,preStatus){
 				const userId = uni.getStorageSync('userId');
+				let invitationId= this.info.id;
 				this.$store.dispatch("agreeStepAction",{
 					likeUserId:userId,
 					likeInvitationId:this.info.id,
 					status
 				}).then(res=>{
-					this.$emit("downCallback");
+					console.log(status)
+					console.log(preStatus)
 					if(status==0&&preStatus!=0){
-						this.$emit("agree");
+						this.likeType=0;
+						let timeInterval = setTimeout(()=>{
+							this.likeType = 1;
+							console.log(this.likeType)
+							clearTimeout(timeInterval)
+						},1500)
+						console.log(this.likeType)
 					}
+					if(status==1&&preStatus!=1){
+						this.likeType=-1;
+						let timeInterval = setTimeout(()=>{
+							this.likeType = 1;
+							clearTimeout(timeInterval)
+						},1500)
+						console.log(this.likeType)
+					}
+					this.getDeitailInvitation(userId,invitationId)
 					console.log(res)
 					
 				}).catch(e=>{
@@ -327,7 +369,7 @@
 				align-items:center;
 				padding:0 20upx;
 				.video-content{
-					width:260upx;
+					width:33.3%;
 					height:100%;
 					position:relative;
 					.video{
@@ -366,7 +408,7 @@
 					}
 				}
 				.img-content{
-					width:260upx;
+					width:33.3%;
 					height:100%;
 					position:relative;
 					.img{
@@ -480,9 +522,48 @@
 						flex-direction: row;
 						align-items: center;
 						justify-content: space-around;
+						position:relative;
+						.button-content{
+							width:45upx;
+							height:45upx;
+							position:relative;
+							.likeAnimation{
+								width:100%;
+								height:100%;
+								position:absolute;
+								left:0;
+								top:0;
+								opacity: 1;
+							}
+							.toLikeAnimation{
+								width:100%;
+								height:100%;
+								position:absolute;
+								left:0;
+								bottom:0;
+								opacity: 1;
+							}
+							.getlike{
+								top:-100upx;
+								opacity:0;
+								transition: all 1.5s;
+							}
+							.getStep{
+								bottom:-100upx;
+								opacity:0;
+								transition: all 1.5s;
+							}
+							.button-icon {
+								position:absolute;
+								left:0;
+								top:0;
+								width: 100%;
+								height: 100%;
+							}
+						}
 						.button-icon {
-							width: 45upx;
-							height: 45upx;
+							width:45upx;
+							height:45upx;
 						}
 						.button-name {
 							width:100upx;

@@ -19,13 +19,13 @@
 		<view :style="{marginTop:topHeight+'px'}"/>
 		<mescroll-uni :up="upOption" :down="downOption" @down="downCallback" @up="upCallback" @init="mescrollInit" >
 			<view v-if="current==0" class="swiper-item-tab" :key="index" v-for="(data,index) in invitationList">
-				<invitation-component @downCallback="downCallback" @agree="haveAgreed" class="invitationId" :dat="data"></invitation-component>
+				<invitation-component  class="invitationId" :dat="data"></invitation-component>
 			</view>
 			<view v-if="current==1" class="swiper-item-tab uni-bg-green" :key="index" v-for="(data,index) in invitationList">
-				<invitation-component @downCallback="downCallback" @agree="haveAgreed" class="invitationId" :dat="data"></invitation-component>
+				<invitation-component  class="invitationId" :dat="data"></invitation-component>
 			</view>
 		</mescroll-uni>
-		<image v-if="haveAgreedType" src="../../static/images/home_page/agree.png" class="agree-img" :class="haveAgreedType?'agree':''"></image>
+		<!-- <image v-if="haveAgreedType" src="../../static/images/home_page/agree.png" class="agree-img" :class="haveAgreedType?'agree':''"></image> -->
 		<loading-component :scrollAnimation="loading"></loading-component>
 	</view>
 </template>
@@ -108,7 +108,6 @@
 		onLoad(event) {
 			let _this = this;
 			let data = wx.getMenuButtonBoundingClientRect()
-			console.log(data)
 			this.titleHeight = data.height 
 			uni.getSystemInfo({
 				success(res) { 
@@ -194,13 +193,13 @@
 					pageNo,
 					pageSize
 				});
-			}, 
-			haveAgreed(){
-				this.haveAgreedType = true;
-				setTimeout(()=>{
-					this.haveAgreedType = false;
-				},1000)
 			}
+			// haveAgreed(){
+			// 	this.haveAgreedType = true;
+			// 	setTimeout(()=>{
+			// 		this.haveAgreedType = false;
+			// 	},1000)
+			// }
 		},
 	watch:{
 		invitationRes(val){

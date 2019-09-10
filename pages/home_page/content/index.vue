@@ -201,8 +201,8 @@
 			},
 			clickMap(){
 				 uni.openLocation({
-					latitude: this.currentLoc.latitude,
-					longitude: this.currentLoc.longitude,
+					latitude: parseInt(this.currentLoc.latitude),
+					longitude: parseInt(this.currentLoc.longitude),
 					success: function () {
 						console.log('success');
 					},
