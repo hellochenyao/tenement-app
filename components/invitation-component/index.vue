@@ -1,5 +1,5 @@
 <template>
-	<view class="invitation-container" :style="{height:contentHeight?contentHeight:0,opacity:contentHeight!=0?1:0}">
+	<view class="invitation-container" >
 		<view class="main-content" id="main"   @tap="directTo">
 			<view class="user-info">
 				<image class="avatar" :src="info.avatar?info.avatar:''"></image>
@@ -147,13 +147,7 @@
 		components: {
 			uniTag
 		},
-		async mounted() {
-			const query = uni.createSelectorQuery().in(this);
-			query.select('#main').boundingClientRect(data => { 
-				let contentHeight = data.height + uni.upx2px(70);
-				this.contentHeight = contentHeight +"px";
-				this.$emit("setInvitationHeight",contentHeight);
-			}).exec();
+	    mounted() {
 		},
 		methods: {
 			
@@ -475,9 +469,6 @@
 				align-items: center;
 				border-top: 1px solid $uni-app-border-color;
 				padding: 10upx 20upx;
-				position: absolute;
-				left:0;
-				bottom:0;
 				.comment{
 					width:50%;
 					display: flex;

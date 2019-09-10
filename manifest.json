@@ -1,6 +1,6 @@
 {
     "name" : "tenement-app",
-    "appid" : "__UNI__7F5CFC2",
+    "appid" : "__UNI__0291EE4",
     "description" : "基于uni-app开发的新闻/资讯类App模板",
     "versionName" : "1.0.0",
     "versionCode" : "100",
@@ -50,22 +50,22 @@
         "usingComponents" : true,
         "permission" : {
             "scope.userLocation" : {
-                 "desc": "你的位置信息将用于小程序位置接口的效果展示"
+                "desc" : "你的位置信息将用于小程序位置接口的效果展示"
             }
         },
-		"devServer": { 
-			"port":8888,
-		    "proxy": {  
-		         "/api": {  
-		            "target": "http://182.61.48.161:8888",  
-		            "changeOrigin": true,  
-		            "ws": true,  
-		            "pathRewrite": {  
-		                "^/ksy": ""  
-		            }  
-		        }  
-		    }  
-		}  
+        "devServer" : {
+            "port" : 8888,
+            "proxy" : {
+                "/api" : {
+                    "target" : "http://182.61.48.161:8888",
+                    "changeOrigin" : true,
+                    "ws" : true,
+                    "pathRewrite" : {
+                        "^/ksy" : ""
+                    }
+                }
+            }
+        }
     },
     "h5" : {
         "router" : {

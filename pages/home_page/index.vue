@@ -1,7 +1,7 @@
 <template>
 	<view>
-		<view class="status_bar" :style="{height:statHeight}"></view>
-		<view class="navContainer" :style="{top:statHeight}">
+		<view class="status_bar" :style="{height:statHeight+'px'}"></view>
+		<view class="navContainer" id="nav" :style="{top:statHeight+'px'}">
 			<view class="navigationBar" :style="{height:titleHeight+'px'}">
 				<view class="select-city-contain" @tap="selectCityHandler">
 					<image class="city-icon" src="../../static/images/home_page/location.png"></image>
@@ -16,19 +16,13 @@
 			</view>
 			<top-select-bar :current="current" @changeCurrent="selectChangeHandler"></top-select-bar>
 		</view>
-		<view :style="{marginTop:topHeight}"/>
+		<view :style="{marginTop:topHeight+'px'}"/>
 		<mescroll-uni :up="upOption" :down="downOption" @down="downCallback" @up="upCallback" @init="mescrollInit" >
-			<view>
-				<view key="invitationId" id="invitationId">
-					<view v-if="current==0" class="swiper-item-tab" :key="index" v-for="(data,index) in invitationList">
-						<invitation-component @setInvitationHeight="setInvitationHeight" @downCallback="downCallback" @agree="haveAgreed" class="invitationId" :dat="data"></invitation-component>
-					</view>
-				</view>
-				<view>
-					<view v-if="current==1" class="swiper-item-tab uni-bg-green" :key="index" v-for="(data,index) in invitationList">
-						<invitation-component @setInvitationHeight="setInvitationHeight" @downCallback="downCallback" @agree="haveAgreed" class="invitationId" :dat="data"></invitation-component>
-					</view>
-				</view>
+			<view v-if="current==0" class="swiper-item-tab" :key="index" v-for="(data,index) in invitationList">
+				<invitation-component @downCallback="downCallback" @agree="haveAgreed" class="invitationId" :dat="data"></invitation-component>
+			</view>
+			<view v-if="current==1" class="swiper-item-tab uni-bg-green" :key="index" v-for="(data,index) in invitationList">
+				<invitation-component @downCallback="downCallback" @agree="haveAgreed" class="invitationId" :dat="data"></invitation-component>
 			</view>
 		</mescroll-uni>
 		<image v-if="haveAgreedType" src="../../static/images/home_page/agree.png" class="agree-img" :class="haveAgreedType?'agree':''"></image>
@@ -46,7 +40,7 @@
 	import {  
 	    mapState,  
 	    mapMutations, 
-		mapActions
+		mapActions 
 	} from 'vuex';
 	
 	import {qqmapsdk} from "../../utils/QQMapWXConfig.js";
@@ -58,7 +52,6 @@
 				indicatorDots: false,
 				interval: 2000,
 				duration: 500, 
-				swiperHeight:uni.upx2px(400)*10+'px',
 				mescroll: null, //mescroll实例对象
 				downOption: {
 					auto: false, //是否在初始化完毕之后自动执行下拉回调callback; 默认true
@@ -83,8 +76,8 @@
 				currentCity: "",
 				amapPlugin: null,
 				current: 0,
-				statHeight:'25px',
-				topHeight:"300upx",
+				statHeight:25,
+				topHeight:0,
 				refreshType:0,
 				invitationList:[],
 				haveAgreedType:false,
@@ -115,14 +108,12 @@
 		onLoad(event) {
 			let _this = this;
 			let data = wx.getMenuButtonBoundingClientRect()
+			console.log(data)
 			this.titleHeight = data.height 
 			uni.getSystemInfo({
-				success(res) {
+				success(res) { 
 					if(res.model == "iPhone X"){
-						_this.statHeight = uni.upx2px(100)+'px';
-						_this.topHeight = uni.upx2px(260)+"px";
-					}else{
-						_this.topHeight = uni.upx2px(210)+"px";
+						_this.statHeight = res.statusBarHeight ; //兼容iphonex
 					}
 				}
 			});
@@ -134,11 +125,13 @@
 			if (currPage.data.isDoRefresh == true) {
 				currPage.data.isDoRefresh = false;
 				this.currentCity = currPage.data.city;
-				console.log(this.currentCity)
 				this.refreshType = 0;
 				this.getInvitationData(1,10);
 			}
 		},
+		 onReady(){
+		      this.calNavigationHeight("nav")
+	    },
 		methods: {
 			// mescroll组件初始化的回调,可获取到mescroll对象
 			mescrollInit(mescroll) {
@@ -162,6 +155,13 @@
 				}else{
 					this.getInvitationData(mescroll.num, mescroll.size);
 				}
+			},
+			calNavigationHeight(id){
+				let _this = this; 
+				const query = uni.createSelectorQuery().in(this); 
+				query.select('#'+id).boundingClientRect(data => {
+					_this.topHeight = data.height + _this.statHeight + uni.upx2px(20);
+				}).exec();
 			},
 			focusSearch() {
 				this.focusType = !this.focusType;
@@ -204,7 +204,7 @@
 		},
 	watch:{
 		invitationRes(val){
-			let initSwiperHei = this.invitationHeight+uni.upx2px(40);
+			let haveNext=true;
 			if(this.mescroll){
 				if(val.code){
 					this.mescroll.endErr();
@@ -213,10 +213,12 @@
 						this.invitationList = [];
 					}
 					this.invitationList = this.invitationList.concat(val.data);
-					this.mescroll.endBySize(this.invitationList.length, val.total);
+					if(this.invitationList.length==val.total){
+						haveNext = false;
+					}
+					this.mescroll.endSuccess(this.invitationList.length, haveNext);
 				}
 			}
-			this.swiperHeight = initSwiperHei*this.invitationList.length+'px';
 		}
 	}
 	}

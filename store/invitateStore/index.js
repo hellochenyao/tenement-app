@@ -25,7 +25,7 @@ const invitateStore = {
     getters:{
 	
     },
-    actions:{
+    actions:{ 
 		publishInvitation({commit,dispatch},payload){
 			commit("publishMutions",false);
 			RestApi.request(`/app/operation/${payload.id}/item/${payload.type}/publish`,payload,'POST',)
@@ -46,6 +46,9 @@ const invitateStore = {
 			.catch(err=>{
 				commit("findInvitationMutions",err);
 			});
+		},
+		findInvitationRest(action,payload){
+			return RestApi.request(`/app/tenement/${payload.id}/invitations`,payload,'get');
 		},
 		agreeStepAction({commit,dispatch},payload){
 			return RestApi.request(`/app/tenement/${payload.likeUserId}/like/give/invitation`,payload,'post');
