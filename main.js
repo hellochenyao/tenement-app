@@ -10,13 +10,13 @@ Vue.component('loading-component',loadingComponent)
 
 App.mpType = 'app'
 import urlConfig from './utils/config_utils.js' 
+import info from "./utils/info";
 import RestAPI from './utils/restApi/index.js';
 import jwt from 'jsonwebtoken'
 let dateDiff = "";
 RestAPI.init((responseJson) => new Promise((resolve, reject) => {//简单的AOP扩展
         if (responseJson.code) {
 			if (responseJson.code) {
-				console.log(responseJson.code )
             let flag=false;
             if (responseJson.code == 'auth-token-time-out') {
                 flag=true;
@@ -27,6 +27,9 @@ RestAPI.init((responseJson) => new Promise((resolve, reject) => {//简单的AOP�
             if (responseJson.code =='invalid-auth-token') {
                 flag=true;
             }
+			if(responseJson.code == "error"){
+				info.toast("网络连接异常！");
+			}
             if(flag){
 				uni.removeStorageSync('userId');
                 uni.removeStorageSync('userJWTandToken');

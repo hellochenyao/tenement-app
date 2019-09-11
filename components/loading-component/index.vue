@@ -15,10 +15,13 @@
 			return {
 			}
 		},
+		props: {
+			show:Boolean
+		},
 		computed:{
 			...mapState({ 
 				loading:state=>{
-					console.log(state)
+					console.log(state.invitateStore.loading)
 					return state.invitateStore.loading
 				}
 			})
@@ -43,11 +46,13 @@
 		height:100%;
 		display: flex;
 		flex-direction: row;
+		z-index: 10000;
 		justify-content: center;
 		align-items: center;
 		position:fixed;
 		left:0;
 		top:0;
+		background:#FFF;
 		.loading-img{
 			width:300upx;
 			height:300upx;

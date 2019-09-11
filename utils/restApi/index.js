@@ -40,13 +40,17 @@ export default (() => {
                     }
                 } 
             }
-            isValidateJwt=isValidateJwt===false?isValidateJwt:true;
+            isValidateJwt=isValidateJwt===false?isValidateJwt:true; 
             return refreshNewToken(isValidateJwt).then((jwt) => {   
                 head.header.Authorization = jwt;
                 let isSuccess=true; 
 				url = config.requestUrl + url;
                 return uni.request({url, ...head}).then(function (response) { 
 					let [err,data] = response;
+					if(err!=null){
+						isSuccess = false;
+						return {code:"error",msg:err.errMsg};
+					}
                     if (data.statusCode !== 200) {
                         isSuccess = false;
                     }

@@ -15,7 +15,7 @@
 				<text class="budget">¥{{info.rental?info.rental:""}}/月</text>
 			</view>
 			<view class="invitationTag">
-				<uni-tag text="标签" type="error" size="small" :circle="true" :inverted="true" class="tag"></uni-tag>
+				<uni-tag :text="item" type="error" :key="index" size="small" :circle="true" :inverted="true" class="tag" v-for="(item,index) in info.remark"></uni-tag>
 			</view>
 			<view class="invitation-content">
 				<view class="invitation-title">
@@ -126,8 +126,9 @@
 				let dateStr = this.dat.lastLoginTime.replace(/-/g, '/')
 				let ori = {
 					   lastLoginTime:calloginDate(new Date(dateStr),new Date()),
-					   locationProvince:info.location?(info.location.split(',')[0]):"",
-					   locationCity:info.location?(info.location.split(',')[1]):""					
+					   locationProvince:this.dat.location?(this.dat.location.split(',')[0]):"",
+					   locationCity:this.dat.location?(this.dat.location.split(',')[1]):""		,
+					   remark:this.dat.remark?this.dat.remark.split(','):[]
 					}
 				if(this.dat){
 					Object.assign(list,this.dat,ori,likeObj);
@@ -193,19 +194,19 @@
 					console.log(preStatus)
 					if(status==0&&preStatus!=0){
 						this.likeType=0;
-						let timeInterval = setTimeout(()=>{
+						let timeGetLikeInterval = setTimeout(()=>{
 							this.likeType = 1;
 							console.log(this.likeType)
-							clearTimeout(timeInterval)
-						},1500)
+							clearTimeout(timeGetLikeInterval)
+						},1000)
 						console.log(this.likeType)
 					}
 					if(status==1&&preStatus!=1){
 						this.likeType=-1;
-						let timeInterval = setTimeout(()=>{
+						let timeHaveLikeInterval = setTimeout(()=>{
 							this.likeType = 1;
-							clearTimeout(timeInterval)
-						},1500)
+							clearTimeout(timeHaveLikeInterval)
+						},1000)
 						console.log(this.likeType)
 					}
 					this.getDeitailInvitation(userId,invitationId)
@@ -546,12 +547,12 @@
 							.getlike{
 								top:-100upx;
 								opacity:0;
-								transition: all 1.5s;
+								transition: all 1s;
 							}
 							.getStep{
 								bottom:-100upx;
 								opacity:0;
-								transition: all 1.5s;
+								transition: all 1s;
 							}
 							.button-icon {
 								position:absolute;

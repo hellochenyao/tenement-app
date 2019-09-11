@@ -11,7 +11,7 @@
 				<text class="come-text">{{list.lastLoginTime?calLoginDate(list.lastLoginTime):""}}</text>
 			</view>
 		</view> 
-		<text class="response-btn" @tap="setCurrentSelect({id:list.userId,nickName:list.nickname,invitationId:list.id})">回复</text>  
+		<text class="response-btn"  v-if="loginUserId!=list.userId" @tap="setCurrentSelect({id:list.userId,nickName:list.nickname,invitationId:list.id})">回复</text>  
 	</view> 
 	<view class="write-content">
 		<text class="wirte-content-text">{{list.msg}}</text> 
@@ -21,6 +21,7 @@
 
 <script> 
 	import {calloginDate} from "../../../../utils/calDateDiff.js"
+		import getStorage from "../../../../utils/getStorage.js"
 	export default { 
 		data() { 
 			return {
@@ -34,6 +35,9 @@
 			
 		},
 		computed:{
+			loginUserId(){
+				return  getStorage('userId');
+			}
 		},
 		methods: {
 			calLoginDate(dateLogin,now){
@@ -51,7 +55,6 @@
 		},
 		watch:{
 			msg(value){
-				console.log(value," ")
 				this.list = value;
 			}
 		}

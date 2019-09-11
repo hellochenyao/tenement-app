@@ -9,7 +9,15 @@
 				<view v-if="popData.visible" class="detail-content-input detail-text">
 					{{content}}
 				</view> 
+				<view>
+					<checkbox-group class="check-group" @change="checkboxChange">
+					    <view class="check-container" :key="index" v-for="(item,index) in checkItemArr">
+					          <checkbox :value="index" color="#FFCC33" class="check-btn" style="{borderRadius: 50%}" />
+							  <text class="check-text">{{item}}</text>
+					    </view>
+					</checkbox-group>
 				</view>
+			</view>
             <view class="check-content">
                 <view class="invitation-check">
                     <view class="invitation_check_group" @tap="checkedHandler" data-type="1">
@@ -105,7 +113,9 @@
                 selectedLayOut: "",
                 hideTitle: false,
 				housing:"",
-				enterNum:0
+				enterNum:0,
+				checkItemArr:["可短租","包宽带费","无中介费"],
+				remark:""
 				
             }
         },
@@ -147,6 +157,11 @@
                     }
                 });
             },
+			checkboxChange(e){
+				let checkArr = e.detail.value;
+				checkArr = checkArr.sort();
+				this.remark = checkArr.map(v=>this.checkItemArr[v]).toString()
+			},
             checkedHandler(e) {
                 var self = this;
                 console.log(e.currentTarget.dataset.type)
@@ -178,6 +193,25 @@
                      this.popOpen();
                 }
             },
+			clearState(){
+				this.rent = 0;
+				let currentLoc = {
+				    name: "期望地点",
+				    detail: "",
+				    latitude: "",
+				    longitude: "",
+					city:"",
+					district:""
+				};
+				this.currentLoc = currentLoc;
+				this.title = "";
+				this.content ="";
+				this.housing="";
+				this.enterNum=0;
+				this.selectedLayOut="";
+				this.imgSrc=[];
+				this.videoSrc="";
+			},
 			publish(){ 
 				let userId = getStorage('userId');
 				if(userId){
@@ -186,8 +220,9 @@
 						location:this.currentLoc.city+','+this.currentLoc.district,
 						latitude:this.currentLoc.latitude+","+this.currentLoc.longitude,
 						title:this.title,
+						remark:this.remark,
 						content:this.content,
-						roomRentType:this.housing=="整租"?0:this.housing=="短租"?1:2,
+						roomRentType:this.housing=="整租"?0:this.housing=="主卧"?1:this.housing=="次卧"?2:3,
 						enterNums:this.enterNum,
 						houseLayOut:this.selectedLayOut,
 						housingImgs:this.imgSrc.toString(),
@@ -293,6 +328,7 @@
 
     .detail-publish {
         width: 90%;
+		position: relative;
         background-color: #FFF;
         border-radius: 10upx;
         padding-top: 10upx;
@@ -324,7 +360,28 @@
 				color:#CCC;
 			}
         }
-
+		.check-group{
+			width:100%;
+			display: flex;
+			flex-direction: row;
+			justify-content: space-around;
+			align-items: center;
+			.check-container{
+				height:60upx;
+				display:flex;
+				flex-direction:row;
+				justify-content:center;
+				align-items:center;
+				.check-btn{
+					color: rgb(255, 204, 51);
+					border-radius: 50%;
+					transform:scale(0.6);
+				}
+				.check-text{
+					font-size: 26upx;
+				}
+			}
+		}
     }
 
     .list-icon {

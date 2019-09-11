@@ -81,7 +81,8 @@
 			<view v-if="false" class="haveno-msg">
 				<image src="../../../static/wenju-mescroll/mescroll-empty.png"/>
 			</view>
-			<write-msg v-for="(item,idx) in msgRes.details" :key="idx" :vid="idx===0?true:false" @setCurrentSelectMsg="setCurrentSelectMsg" :dat="item"></write-msg>
+			<write-msg v-for="(item,idx) in msgRes" :key="idx" :vid="idx===0?true:false" @setCurrentSelectMsg="setCurrentSelectMsg" :dat="item"></write-msg>
+			<uni-load-more :loadingType="1" :status="downMoreStatus" :content-text="downMoreOptions"></uni-load-more>
 		</view>
 		<view class="invitation-bottom-tab">
 			<view v-if="!currentResponseUser.nickName" class="tab-content">
@@ -93,11 +94,13 @@
 				<text class="tab-text">收藏</text>
 			</view>
 			<input v-if="currentResponseUser.nickName" class="response-input" :placeholder="'回复:'+(currentResponseUser.nickName?currentResponseUser.nickName:'')" v-model="res" />
-			<button class="return" @tap="resClick">{{!currentResponseUser.nickName?'回复ta':'发送'}}</button>
+			<button class="return" @tap="resClick(detail.userId,detail.publisher)">{{!currentResponseUser.nickName?'回复ta':'发送'}}</button>
 		</view>
 		<msg-detail :res="selectMsg" :detailType="detailType" @changeType="changeDetailTypeValue"></msg-detail>
+		<loading-component :show="Object.keys(detail).length==0"></loading-component>
+	    </view>
 	</view>
-</template>
+</template> 
 
 <script>
 	import {  
@@ -111,13 +114,15 @@
 	import {calloginDate} from "../../../utils/calDateDiff.js"
 	import {qqmapsdk} from "../../../utils/QQMapWXConfig.js"
 	import configUrl from "../../../utils/config_utils.js"
+	import info from "../../../utils/info.js"
+	import uniLoadMore from "@/components/uni-load-more/uni-load-more.vue"
 	export default {
 		data() { 
 			return {
 				res:'',
 				hideButton:false,
 				invitationId:"",
-				msgRes:{},
+				msgRes:[],
 				selectMsg:{},
 				detailType:false,
 		        detail:{},
@@ -127,12 +132,22 @@
 				    longitude: "",
 				},
 				imgUrl:configUrl.uploadFileUrl,
-				haveLoadImg:false
+				haveLoadImg:false,
+				downMoreStatus:"more",
+				downMoreOptions:{
+					contentdown: "上拉显示更多",
+					contentrefresh: "正在加载...",
+					contentnomore: "没有更多数据了"
+				},
+				pageNo:1,
+				pageSize:10,
+				total:0
 			}
 		},
 		components: {
 			writeMsg,
-			MsgDetail
+			MsgDetail,
+			uniLoadMore
 		},
 		onLoad(event) {
 			
@@ -142,9 +157,16 @@
 			this.getInvitation(userId,event.id)
 			this.viewAction(userId,event.id)
 		},
+		onUnload(){
+			this.$store.commit("setLoading",false)
+		},
+		onReachBottom(){
+			this.downReachBottom()
+		},
 		computed:{
 			...mapState({ 
-				currentResponseUser:state=>state.invitateStore.currentResponseUser
+				currentResponseUser:state=>state.invitateStore.currentResponseUser,
+				userinfo:state=>state.loginStore.userinfo
 			}),
 			
 			location(){
@@ -170,7 +192,6 @@
 				}
 				if(this.detail.housingImgs){
 					let path = this.detail.housingImgs.split(",")[0].replace(/\\/g,"/");
-					console.log(path)
 					return {
 						url:this.imgUrl+path,
 						currentResource:"img"
@@ -183,6 +204,16 @@
 				console.log(e)
 				this.haveLoadImg = true;
 			},
+			downReachBottom(){
+				this.pageNo = this.pageNo+1;
+				let invitationId = this.invitationId;
+				let pageNo = this.pageNo;
+				let pageSize = this.pageSize;
+				if(this.changeDownMoreStatus()){
+					return;
+				}
+				this.getWriteMsg(invitationId,pageNo,pageSize);
+			},
 			getLocationDetail(latitude,longitude){
 				var self = this;
 				qqmapsdk.reverseGeocoder({
@@ -191,7 +222,6 @@
 						   longitude: longitude,
 					  },
 					  success: function(res) {//成功后的回调
-					  console.log(res)
 					       self.currentLoc.detail = res.result.address;
 					  },
 					  fail:function(e){
@@ -202,16 +232,29 @@
 			clickMap(){
 				 uni.openLocation({
 					latitude: parseInt(this.currentLoc.latitude),
-					longitude: parseInt(this.currentLoc.longitude),
+					longitude: parseInt(this.currentLoc.longitude), 
 					success: function () {
 						console.log('success');
 					},
 				});
 			},
+			changeDownMoreStatus(){
+				if(this.msgRes.length == this.total){
+					this.downMoreStatus = "noMore";
+				}else{
+					this.downMoreStatus = "more"
+				}
+				if(this.downMoreStatus == "noMore"){
+					return true;
+				}
+				return false
+			},
 			getInvitation(userId,id){
+				this.$store.commit("setLoading",true)
 				this.$store.dispatch("getInvitationDetail",{userId,id})
 				.then(res=>{
 					console.log(res)
+					this.$store.commit("setLoading",false)
 					this.detail = res;
 					this.currentLoc.latitude = res.latitude.split(',')[0];
 					this.currentLoc.longitude = res.latitude.split(',')[1]
@@ -227,30 +270,41 @@
 				}
 				return calloginDate(new Date(dateLogin),new Date());	
 			},
-			resClick(){
-				this.hideButton = !this.hideButton;
-				let userId = getStorage('userId');
+			resClick(userId,nickName){
+				if(!this.currentResponseUser.nickName){
+					let user={
+						id:userId,
+						nickName:nickName
+					}
+					this.$store.dispatch("responseUserAction",user)
+					return;
+				}
 				this.$store.dispatch("responseMsg",{userId:userId,invitationId:parseInt(this.invitationId),answerMsgId:this.currentResponseUser.invitationId,msg:this.res,responseUserId:this.currentResponseUser.id})
 				.then(res=>{
-					console.log(res)
 					this.getWriteMsg(this.invitationId)
+					this.$store.dispatch("responseUserAction",{})
+					this.res=""
+					info.toast("发送成功！")
 				})
 				.catch(e=>{
 					console.log(e)
 				})
 			}
 			, 
-			getWriteMsg(invitationId){
+			getWriteMsg(invitationId,pageNo,pageSize){
 				let userId = getStorage('userId'); 
-				this.$store.dispatch("findMsg",{id:userId,invitationId})
+				this.downMoreStatus ="loading"
+				this.$store.dispatch("findMsg",{id:userId,invitationId,pageNo,pageSize})
 				.then(res=>{
-					this.msgRes = res;
+					this.msgRes.concat( res.details);
+					this.total = res.total;
+					this.changeDownMoreStatus()
 				})
 				.catch(err=>{
 					console.log(err)
 				});
 			},
-			viewAction(userId,invitationId){
+			viewAction(userId,invitationId){ 
 				this.$store.dispatch("addViewTimes",{userId,invitationId})
 				.then(res=>{
 					this.msgRes = res;
@@ -265,6 +319,7 @@
 			},
 			changeDetailTypeValue(type){
 				this.detailType = type;
+				this.res=""
 			}
 		},
 		watch:{
@@ -530,7 +585,7 @@
 		left:0;
 		bottom:0;
 		.response-input{
-			width:calc(100% - 160upx);
+			width:calc(100% - 200upx);
 			height:60upx;
 			border:1px solid $uni-app-border-color;
 			border-radius: 5px;
