@@ -69,6 +69,14 @@ const invitateStore = {
 		getInvitationDetail({commit,dispatch},payload){
 			let {userId,id} = payload;
 			return RestApi.request(`/app/tenement/${userId}/find/invitation/${id}`,null,'get')
+		},
+		getResponseMsgContent({commit,dispatch},payload){
+			let {userId,msgId} = payload;
+			return RestApi.request(`/app/tenement/${userId}/find/main/response/msg/${msgId}/content`,null,'get')
+		},
+		getReponseToUserMsg({commit,dispatch},payload){//根据pid找某个帖子留言的所有回复内容
+			let {userId,invitationId,pid,pageNo,pageSize} = payload;
+			return RestApi.request(`/app/tenement/${userId}/find/all/response/msg/${pid}`,{invitationId,pageNo,pageSize},'get')
 		}
     }
 }

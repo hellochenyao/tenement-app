@@ -8,7 +8,7 @@
 				<image class="sex-icon" :src="list.gender==0?'../../../../static/images/home_page/boy.png':'../../../../static/images/home_page/girl.png'"></image>
 			</view>
 			<view class="come-data">
-				<text class="come-text">{{list.lastLoginTime?calLoginDate(list.lastLoginTime):""}}</text>
+				<text class="come-text">{{list.createTime?calLoginDate(list.createTime):""}}</text>
 			</view>
 		</view> 
 		<text class="response-btn"  v-if="loginUserId!=list.userId" @tap="setCurrentSelect({id:list.userId,nickName:list.nickname,invitationId:list.id})">回复</text>  

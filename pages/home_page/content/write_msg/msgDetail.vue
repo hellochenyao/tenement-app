@@ -14,7 +14,8 @@
 				<image src="../../../../static/wenju-mescroll/mescroll-empty.png" class="no-data" mode='aspectFit'></image>
 				<text class="noDataDetail">别让楼主寂寞太久哦</text>
 				</view>
-				<res-msg :key="index" :msg="item" v-for="(item,index) in res.resDetail"></res-msg>
+				<res-msg :key="index" :msg="item" v-for="(item,index) in msgArr"></res-msg>
+				<uni-load-more :loadingType="1" :status="downMoreStatus" :content-text="downMoreOptions"></uni-load-more>
 			</view>
 		</view>
 	</view>
@@ -23,40 +24,94 @@
 <script>
 	import ResMsg from "./resMsg"
 	import {getNodeHeight,getSystem} from "../../../../utils/config.js"
+	import getStorage from "../../../../utils/getStorage.js"
+	import uniLoadMore from "@/components/uni-load-more/uni-load-more.vue"
 	export default {
 		data() { 
-			console.log(this.res)
 			return {
 				type:false,
-				height:"0px"
+				height:"0px",
+				downMoreStatus:"more",
+				downMoreOptions:{
+					contentdown: "上拉显示更多",
+					contentrefresh: "正在加载...",
+					contentnomore: "没有更多数据了"
+				},
+				pageNo:1,
+				pageSize:10,
+				total:0,
+				msgArr:[]
 			}
 		},
 		props:{  
 			res:{},
-			detailType:Boolean
+			detailType:Boolean,
+			inivitationid:String
 		},
 		components: {
-			ResMsg
+			ResMsg,
+			uniLoadMore
 		},
 		async mounted() {
 			let systeminfo =await getSystem();
-			console.log(systeminfo)
 			const query = uni.createSelectorQuery().in(this);
 			query.select('#view').boundingClientRect(data => {
 			  this.height = systeminfo.windowHeight*0.7 - data.height - uni.upx2px(90) - 1 +"px";
-			  console.log(this.height)
 			}).exec();
+			setTimeout(()=>{
+				console.log(this.res)
+			},3000)
+		},
+		onReachBottom(){
+			this.downReachBottom()
 		},
 		methods: {
 			showDetailHandler(type){
 				this.type = type;
 				this.$emit("changeType",type);
 				this.$store.dispatch("responseUserAction",{})
+			},
+			downReachBottom(){
+				let userId = getStorage('userId');
+				let invitationId = this.res.inivitationid;
+				let msgId = this.res.id;
+				let pageNo = this.pageNo;
+				let pageSize = this.pageSize;
+				if(this.changeDownMoreStatus()){
+					return;
+				}
+				this.getResponseMsg(userId,invitationId,msgId);
+			},
+			getResponseMsg(userId,invitationId,pid){
+				let {pageNo,pageSize} = this;
+				this.downMoreStatus = "loading"
+				this.$store.dispatch("getReponseToUserMsg",{userId,invitationId,pid,pageNo,pageSize})
+				.then(res=>{
+					console.log(res)
+					this.msgArr =this.msgArr.concat(res.data);
+					this.total = res.total
+					this.changeDownMoreStatus()
+				})
+			},
+			changeDownMoreStatus(){
+				if(this.msgArr.length>=this.total){
+					this.downMoreStatus = "noMore";
+				}else{
+					this.downMoreStatus = "more"
+				}
+				if(this.downMoreStatus=="noMore"){
+					return true
+				}
+				return false
 			}
 		},
 		watch:{
 			detailType(value){
 				this.type = value;
+				if(value){
+					let userId = getStorage('userId');
+					this.getResponseMsg(userId,this.res.inivitationid,this.res.id);
+				}
 			}
 		}
 	}

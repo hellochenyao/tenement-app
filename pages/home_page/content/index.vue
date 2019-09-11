@@ -76,7 +76,7 @@
 		</view>
 		<view class="write-msg">
 			<view class="desc">
-				<text class="desc-text">留言（{{msgRes.total?msgRes.total:0}}）</text>
+				<text class="desc-text">留言（{{total?total:0}}）</text>
 			</view>
 			<view v-if="false" class="haveno-msg">
 				<image src="../../../static/wenju-mescroll/mescroll-empty.png"/>
@@ -96,7 +96,7 @@
 			<input v-if="currentResponseUser.nickName" class="response-input" :placeholder="'回复:'+(currentResponseUser.nickName?currentResponseUser.nickName:'')" v-model="res" />
 			<button class="return" @tap="resClick(detail.userId,detail.publisher)">{{!currentResponseUser.nickName?'回复ta':'发送'}}</button>
 		</view>
-		<msg-detail :res="selectMsg" :detailType="detailType" @changeType="changeDetailTypeValue"></msg-detail>
+		<msg-detail :invitationid="invitationId" :res="selectMsg" :detailType="detailType" @changeType="changeDetailTypeValue"></msg-detail>
 		<loading-component :show="Object.keys(detail).length==0"></loading-component>
 	    </view>
 	</view>
@@ -133,7 +133,7 @@
 				},
 				imgUrl:configUrl.uploadFileUrl,
 				haveLoadImg:false,
-				downMoreStatus:"more",
+				downMoreStatus:"more", 
 				downMoreOptions:{
 					contentdown: "上拉显示更多",
 					contentrefresh: "正在加载...",
@@ -152,10 +152,12 @@
 		onLoad(event) {
 			
 			this.invitationId = event.id;
+			console.log(this.invitationId)
 			let userId = getStorage('userId');
-			this.getWriteMsg(event.id);
+			this.getWriteMsg(event.id,this.pageNo,this.pageSize);
 			this.getInvitation(userId,event.id)
 			this.viewAction(userId,event.id)
+			this.$store.dispatch("getUserInfo")
 		},
 		onUnload(){
 			this.$store.commit("setLoading",false)
@@ -175,7 +177,7 @@
 				}
 				return ""
 			},
-			formatPublishDate(){
+			formatPublishDate(){ 
 				if(this.detail.createTime){
 					let date = this.detail.createTime.replace(/-/g, '/')
 					return new Date(date).getMonth()+1+"月"+new Date(date).getDate()+"日"
@@ -205,7 +207,6 @@
 				this.haveLoadImg = true;
 			},
 			downReachBottom(){
-				this.pageNo = this.pageNo+1;
 				let invitationId = this.invitationId;
 				let pageNo = this.pageNo;
 				let pageSize = this.pageSize;
@@ -213,6 +214,34 @@
 					return;
 				}
 				this.getWriteMsg(invitationId,pageNo,pageSize);
+			},
+			addResponseContent(userId,msgId){
+				if(this.msgRes.length >= this.total){
+					this.$store.dispatch("getResponseMsgContent",{userId,msgId})
+					.then(res=>{
+						console.log(res)
+						console.log(this.userinfo)
+						let newMsg = {
+							avatar:this.userinfo.avatarUrl,
+							createTime:res.createTime,
+							gender:this.userinfo.gender,
+							id:res.id,
+							lastLoginTime:this.userinfo.lastLoginTime,
+							msg:res.msg,
+							nickname:this.userinfo.nickName,
+							resDetail:[],
+							resTotal:0,
+							userId:res.userId
+						}
+						this.msgRes.push(newMsg)
+						console.log(this.msgRes)
+					}) 
+					.catch(e=>{
+						console.log(e)
+					})
+				}else{
+					return
+				}
 			},
 			getLocationDetail(latitude,longitude){
 				var self = this;
@@ -239,7 +268,7 @@
 				});
 			},
 			changeDownMoreStatus(){
-				if(this.msgRes.length == this.total){
+				if(this.msgRes.length >= this.total){
 					this.downMoreStatus = "noMore";
 				}else{
 					this.downMoreStatus = "more"
@@ -281,10 +310,10 @@
 				}
 				this.$store.dispatch("responseMsg",{userId:userId,invitationId:parseInt(this.invitationId),answerMsgId:this.currentResponseUser.invitationId,msg:this.res,responseUserId:this.currentResponseUser.id})
 				.then(res=>{
-					this.getWriteMsg(this.invitationId)
 					this.$store.dispatch("responseUserAction",{})
 					this.res=""
 					info.toast("发送成功！")
+					this.addResponseContent(userId,res.msgId);
 				})
 				.catch(e=>{
 					console.log(e)
@@ -296,7 +325,11 @@
 				this.downMoreStatus ="loading"
 				this.$store.dispatch("findMsg",{id:userId,invitationId,pageNo,pageSize})
 				.then(res=>{
-					this.msgRes.concat( res.details);
+					console.log(res.details)
+					if(res.details.length==this.pageSize){
+						this.pageNo = this.pageNo+1;
+					}
+					this.msgRes = this.msgRes.concat(res.details);
 					this.total = res.total;
 					this.changeDownMoreStatus()
 				})
@@ -307,13 +340,13 @@
 			viewAction(userId,invitationId){ 
 				this.$store.dispatch("addViewTimes",{userId,invitationId})
 				.then(res=>{
-					this.msgRes = res;
 				})
 				.catch(err=>{
 					console.log(err)
 				});
 			},
 			setCurrentSelectMsg(data){
+				data["inivitationid"] = this.invitationId;
 				this.selectMsg = data;
 				this.detailType = true;
 			},
