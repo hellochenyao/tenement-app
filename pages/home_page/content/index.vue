@@ -76,7 +76,7 @@
 		</view>
 		<view class="write-msg">
 			<view class="desc">
-				<text class="desc-text">留言（{{total?total:0}}）</text>
+				<text class="desc-text">留言（{{downMoreStatus=='noMore'?msgRes.length:total}}）</text>
 			</view>
 			<view v-if="false" class="haveno-msg">
 				<image src="../../../static/wenju-mescroll/mescroll-empty.png"/>
@@ -96,7 +96,7 @@
 			<input v-if="currentResponseUser.nickName" class="response-input" :placeholder="'回复:'+(currentResponseUser.nickName?currentResponseUser.nickName:'')" v-model="res" />
 			<button class="return" @tap="resClick(detail.userId,detail.publisher)">{{!currentResponseUser.nickName?'回复ta':'发送'}}</button>
 		</view>
-		<msg-detail :invitationid="invitationId" :res="selectMsg" :detailType="detailType" @changeType="changeDetailTypeValue"></msg-detail>
+		<msg-detail :responseToUserMsgId="responseToUserMsgId" :res="selectMsg" :detailType="detailType" @changeType="changeDetailTypeValue"></msg-detail>
 		<loading-component :show="Object.keys(detail).length==0"></loading-component>
 	    </view>
 	</view>
@@ -137,11 +137,12 @@
 				downMoreOptions:{
 					contentdown: "上拉显示更多",
 					contentrefresh: "正在加载...",
-					contentnomore: "没有更多数据了"
+					contentnomore: "暂无更多回复"
 				},
 				pageNo:1,
 				pageSize:10,
-				total:0
+				total:0,
+				responseToUserMsgId:""
 			}
 		},
 		components: {
@@ -152,7 +153,6 @@
 		onLoad(event) {
 			
 			this.invitationId = event.id;
-			console.log(this.invitationId)
 			let userId = getStorage('userId');
 			this.getWriteMsg(event.id,this.pageNo,this.pageSize);
 			this.getInvitation(userId,event.id)
@@ -200,10 +200,9 @@
 					}
 				}
 			}
-		},
+		}, 
 		methods: {
 			load(e){
-				console.log(e)
 				this.haveLoadImg = true;
 			},
 			downReachBottom(){
@@ -219,8 +218,6 @@
 				if(this.msgRes.length >= this.total){
 					this.$store.dispatch("getResponseMsgContent",{userId,msgId})
 					.then(res=>{
-						console.log(res)
-						console.log(this.userinfo)
 						let newMsg = {
 							avatar:this.userinfo.avatarUrl,
 							createTime:res.createTime,
@@ -234,7 +231,6 @@
 							userId:res.userId
 						}
 						this.msgRes.push(newMsg)
-						console.log(this.msgRes)
 					}) 
 					.catch(e=>{
 						console.log(e)
@@ -303,17 +299,28 @@
 				if(!this.currentResponseUser.nickName){
 					let user={
 						id:userId,
-						nickName:nickName
+						nickName:nickName,
+						invitationId:0
 					}
 					this.$store.dispatch("responseUserAction",user)
 					return;
 				}
-				this.$store.dispatch("responseMsg",{userId:userId,invitationId:parseInt(this.invitationId),answerMsgId:this.currentResponseUser.invitationId,msg:this.res,responseUserId:this.currentResponseUser.id})
+				console.log(this.selectMsg)
+				let msgId=this.currentResponseUser.invitationId;//回复帖子0 回复其他人为消息id
+				let responseUserId=this.currentResponseUser.id //回复对象的id
+				this.$store.dispatch("responseMsg",{userId:userId,invitationId:parseInt(this.invitationId),answerMsgId:msgId,msg:this.res,responseUserId:responseUserId})
 				.then(res=>{
-					this.$store.dispatch("responseUserAction",{})
+					if(!this.detailType){
+						this.$store.dispatch("responseUserAction",{})
+					}
 					this.res=""
 					info.toast("发送成功！")
-					this.addResponseContent(userId,res.msgId);
+					if(msgId==0){
+						this.addResponseContent(userId,res.msgId);
+					}else{
+						this.responseToUserMsgId=res.msgId
+						console.log(this.responseToUserMsgId)
+					}
 				})
 				.catch(e=>{
 					console.log(e)
@@ -587,7 +594,6 @@
 	}
 	.write-msg{
 		width:100%;
-		margin-bottom: 60upx;
 		display: flex;
 		flex-direction: column;
 		.desc{

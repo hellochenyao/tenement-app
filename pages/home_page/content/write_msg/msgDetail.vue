@@ -26,6 +26,11 @@
 	import {getNodeHeight,getSystem} from "../../../../utils/config.js"
 	import getStorage from "../../../../utils/getStorage.js"
 	import uniLoadMore from "@/components/uni-load-more/uni-load-more.vue"
+	import {
+	    mapState,  
+	    mapMutations, 
+		mapActions
+	} from 'vuex';
 	export default {
 		data() { 
 			return {
@@ -35,7 +40,7 @@
 				downMoreOptions:{
 					contentdown: "上拉显示更多",
 					contentrefresh: "正在加载...",
-					contentnomore: "没有更多数据了"
+					contentnomore: "暂无更多回复"
 				},
 				pageNo:1,
 				pageSize:10,
@@ -46,11 +51,17 @@
 		props:{  
 			res:{},
 			detailType:Boolean,
-			inivitationid:String
+			responseToUserMsgId:""
 		},
 		components: {
 			ResMsg,
 			uniLoadMore
+		},
+		computed:{
+			...mapState({ 
+				currentResponseUser:state=>state.invitateStore.currentResponseUser,
+				userinfo:state=>state.loginStore.userinfo
+			}),
 		},
 		async mounted() {
 			let systeminfo =await getSystem();
@@ -68,8 +79,17 @@
 		methods: {
 			showDetailHandler(type){
 				this.type = type;
+				this.resetState();
 				this.$emit("changeType",type);
 				this.$store.dispatch("responseUserAction",{})
+			},
+			resetState(){
+				this.msgArr=[]
+				this.pageNo=1;
+				this.downMoreStatus="more";
+			},
+			changeMsgTotal(num){
+				this.responseTotal = num;
 			},
 			downReachBottom(){
 				let userId = getStorage('userId');
@@ -82,12 +102,54 @@
 				}
 				this.getResponseMsg(userId,invitationId,msgId);
 			},
+			addResponseContent(userId,msgId){
+				console.log(this.userinfo)
+				if(this.msgArr.length >= this.total){
+					let responseToUserId=this.currentResponseUser.id;
+					let responseToUserNickName=this.currentResponseUser.nickName;
+					this.$store.dispatch("getResponseMsgContent",{userId,msgId})
+					.then(res=>{
+						let newResMsg = {
+							answerUserId:responseToUserId,
+							answerUserNickname:responseToUserNickName,
+							avatar:this.userinfo.avatarUrl,
+							createTime:res.createTime,
+							gender:this.userinfo.gender,
+							msg:res.msg,
+							nickname:this.userinfo.nickName,
+							userId:userId
+						}
+						this.msgArr.push(newResMsg)
+						let responseMsgTotal=0;
+						if(this.downMoreStatus =="noMore"){
+							responseMsgTotal = this.msgArr.length;
+						}else{
+							responseMsgTotal = total
+						}
+						this.$store.commit("setResponseMsgTotal",responseMsgTotal)
+					}) 
+					.catch(e=>{
+						console.log(e)
+					})
+				}else{
+					return
+				}
+			},
 			getResponseMsg(userId,invitationId,pid){
 				let {pageNo,pageSize} = this;
 				this.downMoreStatus = "loading"
-				this.$store.dispatch("getReponseToUserMsg",{userId,invitationId,pid,pageNo,pageSize})
+				this.$store.dispatch("getReponseToUserMsg",{
+					userId,
+					invitationId,
+					pid,
+					pageNo,
+					pageSize
+				})
 				.then(res=>{
 					console.log(res)
+					if(res.data.length==this.pageSize){
+						this.pageNo = this.pageNo+1;
+					}
 					this.msgArr =this.msgArr.concat(res.data);
 					this.total = res.total
 					this.changeDownMoreStatus()
@@ -112,6 +174,11 @@
 					let userId = getStorage('userId');
 					this.getResponseMsg(userId,this.res.inivitationid,this.res.id);
 				}
+			},
+			responseToUserMsgId(v){
+				let msgId = parseInt(v);
+				let userId = getStorage('userId');
+				this.addResponseContent(userId,msgId)
 			}
 		}
 	}

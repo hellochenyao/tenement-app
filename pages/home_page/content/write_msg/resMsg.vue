@@ -118,8 +118,8 @@
 		min-height: 100upx;
 		padding: 20upx 0;
 		.wirte-content-text{
-			font-size:29upx;
-			color:#999;
+			font-size:33upx;
+			color:#000;
 		}
 	}
 </style>

@@ -6,7 +6,12 @@
 			<view class="res-msg" :key="index" v-for="(resMsg,index) in dat.resDetail">
 				<text class="user">{{resMsg.nickname}}：</text>
 				<text class="response-text">回复</text>
-				<text class="user">{{resMsg.answerUserNickname}}：</text>{{resMsg.msg}}
+				<text class="user">{{resMsg.answerUserNickname}}：</text>
+				<text class="content">{{resMsg.msg}}</text>
+			</view>
+			<view class="more-response">
+				<text>查看{{responseMsgTotal}}条回复</text>
+				<image src="../../../../static/images/home_page/right.png" class="getDetail"></image>
 			</view>
 		</view>
 	</view>
@@ -14,12 +19,17 @@
 
 <script> 
 	import ResMsg from "./resMsg";
+	import {
+	    mapState,  
+	    mapMutations, 
+		mapActions
+	} from 'vuex';
 	export default { 
 		data() { 
 			return {
 				res:'',
 				hideButton:false,
-				msgRes:{},
+				msgRes:{}
 			}
 		},
 		props:{ 
@@ -31,6 +41,9 @@
 			
 		},
 		computed:{
+			...mapState({
+			    responseMsgTotal:state=>state.invitateStore.responseMsgTotal
+			}),
 		},
 		components: {
 			ResMsg
@@ -38,12 +51,17 @@
 		methods: {
 			setCurrentSelect(data){
 				this.$emit("setCurrentSelectMsg",data);
+				this.$store.dispatch("responseUserAction",{
+					id:data.userId,
+					nickName:data.nickname,
+					invitationId:data.id
+				});
 			}
 		},
 		watch:{
 			dat(v){
 				console.log(v,"aaa")
-			}
+			} 
 		}
 	}
 </script>
@@ -63,15 +81,32 @@
 		.res-msg{
 			width:100%;
 			word-break: break-all;
-			font-size: 26upx;
+			font-size: 29upx;
+			color:#000;
+			margin:10upx 0;
 			.user{
 				width:30%;
 				height: 20px;
-				font-size: 26upx;
+				font-size: 29upx;
 				color:#1796f9;
+			}
+			.content{
+				color:#000!important;
 			}
 			.response-text{
 				margin-right: 1upx;
+			}
+		}
+		.more-response{ 
+			width:100%;
+		    display: flex;
+			flex-direction: row;
+			justify-content: flex-start;
+			align-items: center;
+			font-size: 27upx;
+			.getDetail{
+				width:30upx;
+				height:30upx;
 			}
 		}
 	}
