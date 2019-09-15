@@ -8,7 +8,7 @@
 					<text class="city-name">{{currentCity}}</text>
 					<image class="city-icon" src="../../static/images/home_page/down.png"></image>
 				</view>
-				<view class="search-container" :class="{'focus-search':focusType}">
+				<view class="search-container" @tap="getSearch" :class="{'focus-search':focusType}">
 					<input class="search-input" @blur="focusSearch" @focus="focusSearch" placeholder="搜帖子" placeholder-class="search-place"
 					 v-model="searchContent"></input>
 					<image class="search-icon" src="../../static/images/home_page/search.png"></image>
@@ -134,12 +134,17 @@
 		methods: {
 			// mescroll组件初始化的回调,可获取到mescroll对象
 			mescrollInit(mescroll) {
-				console.log(mescroll)
+				console.log(mescroll) 
 				this.mescroll = mescroll;
 			},
 			/*下拉刷新的回调 */
 			downCallback() {
 				this.mescroll.resetUpScroll();
+			},
+			getSearch(){
+				uni.navigateTo({
+					url: './search'
+				});
 			},
 			/*上拉加载的回调: mescroll携带page的参数, 其中num:当前页 从1开始, size:每页数据条数,默认10 */
 			upCallback(mescroll) {
@@ -295,10 +300,10 @@
 	.navigationBar { 
 		width: 100%;
 		height: 44px;
-		padding:10upx 0;
 		background-color: $uni-app-basic-color;
 		display: flex;
-		flex-direction: "row"
+		flex-direction: row;
+		align-items: center;
 	}
 
 	.swiper {
@@ -365,7 +370,7 @@
 
 	.select-city-contain {
 		width: 30%;
-		height: 30px;
+		height: 30upx;
 		padding-left: 20upx;
 		display: flex;
 		flex-direction: row;
@@ -386,31 +391,31 @@
 
 	.search-container {
 		width: 30%;
-		height: 30px;
+		height: 55upx;
 		position: relative;
 		display: flex;
 		flex-direction: row;
 		align-items: center;
-		border-width: 1px;
+		border-width: 1upx;
 		border-style: solid;
-		border: 1px solid rgba(255, 255, 255, .5);
-		border-radius: 15px;
+		border: 1upx solid rgba(255, 255, 255, .5);
+		border-radius: 50upx;
 		transition: all .2s ease-in-out;
 		position: relative;
 
 		.search-input {
 			width: 90%;
 			height: 100%;
-			font-size: 27upx;
+			font-size:30upx;
 			padding: 10px;
 		}
 
 		.search-icon {
 			width: 40upx;
-			height: 20px;
+			height: 36upx;
 			position: absolute;
 			right: 10upx;
-			top: 5px;
+			top: 9.5upx;
 		}
 
 		.search-place {

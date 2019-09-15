@@ -7,7 +7,7 @@ const invitateStore = {
 	  msgRes:{},
 	  currentResponseUser:{},
 	  loading:false,
-	  responseMsgTotal:0
+	  responseMsg:{}
     },
     mutations:{//显式的更改state里的数据
 	    publishMutions(state,res){
@@ -22,8 +22,8 @@ const invitateStore = {
 		setLoading(state,res){
 			state.loading = res;
 		},
-		setResponseMsgTotal(state,res){
-			state.responseMsgTotal = res;
+		setResponseMsg(state,res){
+			state.responseMsg = res;
 		}
     },
     getters:{

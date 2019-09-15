@@ -130,6 +130,12 @@
 			        }
 		        }
 		},{
+		    "path" : "pages/home_page/search",
+		        "style" : {
+		            "navigationBarTitleText":"搜索",
+		            "navigationBarBackgroundColor":"#59c298"
+		        }
+		},{
 		    "path" : "pages/ucenter/personal",
 		        "style" : {
 		            "navigationBarTitleText":"个人主页",

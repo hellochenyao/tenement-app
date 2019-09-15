@@ -21,7 +21,7 @@
 	/*每个页面公共css */
 	@import "./static/css/simplepro.css";
 	page{
-		background-color: #f7f7f7;
+		/* background-color: #f7f7f7; */
 	}
 	.container{ 
 		width:100%;

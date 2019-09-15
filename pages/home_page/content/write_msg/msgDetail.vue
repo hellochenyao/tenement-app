@@ -9,14 +9,14 @@
 			<view class="msg-content" id="view">
 				<res-msg :msg="res"></res-msg>
 			</view>
-			<view class="res" :style="{height:height}">
+			<scroll-view scroll-y="true" @scrolltolower="downReachBottom" class="res" :style="{height:height}">
 				<view class="noDataContent" :style="{height:height}" v-if="res.resDetail.length==0">
 				<image src="../../../../static/wenju-mescroll/mescroll-empty.png" class="no-data" mode='aspectFit'></image>
 				<text class="noDataDetail">别让楼主寂寞太久哦</text>
 				</view>
 				<res-msg :key="index" :msg="item" v-for="(item,index) in msgArr"></res-msg>
 				<uni-load-more :loadingType="1" :status="downMoreStatus" :content-text="downMoreOptions"></uni-load-more>
-			</view>
+			</scroll-view>
 		</view>
 	</view>
 </template>
@@ -57,7 +57,7 @@
 			ResMsg,
 			uniLoadMore
 		},
-		computed:{
+		computed:{ 
 			...mapState({ 
 				currentResponseUser:state=>state.invitateStore.currentResponseUser,
 				userinfo:state=>state.loginStore.userinfo
@@ -75,6 +75,7 @@
 		},
 		onReachBottom(){
 			this.downReachBottom()
+			console.log("a")
 		},
 		methods: {
 			showDetailHandler(type){
@@ -103,12 +104,11 @@
 				this.getResponseMsg(userId,invitationId,msgId);
 			},
 			addResponseContent(userId,msgId){
-				console.log(this.userinfo)
-				if(this.msgArr.length >= this.total){
-					let responseToUserId=this.currentResponseUser.id;
-					let responseToUserNickName=this.currentResponseUser.nickName;
-					this.$store.dispatch("getResponseMsgContent",{userId,msgId})
-					.then(res=>{
+				let responseToUserId=this.currentResponseUser.id;
+				let responseToUserNickName=this.currentResponseUser.nickName;
+				this.$store.dispatch("getResponseMsgContent",{userId,msgId})
+				.then(res=>{
+					console.log(this.res)
 						let newResMsg = {
 							answerUserId:responseToUserId,
 							answerUserNickname:responseToUserNickName,
@@ -119,21 +119,24 @@
 							nickname:this.userinfo.nickName,
 							userId:userId
 						}
-						this.msgArr.push(newResMsg)
+						if(this.msgArr.length>=this.total){
+							this.msgArr.push(newResMsg)
+						}
 						let responseMsgTotal=0;
 						if(this.downMoreStatus =="noMore"){
 							responseMsgTotal = this.msgArr.length;
 						}else{
-							responseMsgTotal = total
+							responseMsgTotal = this.total+1
 						}
-						this.$store.commit("setResponseMsgTotal",responseMsgTotal)
+						this.$store.commit("setResponseMsg",{
+							msg:newResMsg,
+							total:responseMsgTotal,
+							msgId:this.res.id
+						})
 					}) 
 					.catch(e=>{
 						console.log(e)
 					})
-				}else{
-					return
-				}
 			},
 			getResponseMsg(userId,invitationId,pid){
 				let {pageNo,pageSize} = this;

@@ -29,7 +29,8 @@
 			}
 		},
 		props:{ 
-			msg:{}
+			msg:{},
+			writeIndex:0
 		},
 		mounted() {
 			
@@ -48,6 +49,7 @@
 	
 			},
 			setCurrentSelect(user){
+				console.log(this.writeIndex)
 				this.$emit("setCurrentSelect",this.list);
 				this.$store.dispatch("responseUserAction",user)
 			}

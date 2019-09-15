@@ -81,7 +81,7 @@
 			<view v-if="false" class="haveno-msg">
 				<image src="../../../static/wenju-mescroll/mescroll-empty.png"/>
 			</view>
-			<write-msg v-for="(item,idx) in msgRes" :key="idx" :vid="idx===0?true:false" @setCurrentSelectMsg="setCurrentSelectMsg" :dat="item"></write-msg>
+			<write-msg v-for="(item,idx) in msgRes" :writeIndex="idx" :key="idx" :vid="idx===0?true:false" @setCurrentSelectMsg="setCurrentSelectMsg" :dat="item"></write-msg>
 			<uni-load-more :loadingType="1" :status="downMoreStatus" :content-text="downMoreOptions"></uni-load-more>
 		</view>
 		<view class="invitation-bottom-tab">
@@ -157,7 +157,7 @@
 			this.getWriteMsg(event.id,this.pageNo,this.pageSize);
 			this.getInvitation(userId,event.id)
 			this.viewAction(userId,event.id)
-			this.$store.dispatch("getUserInfo")
+			this.$store.dispatch("getUserInfo") 
 		},
 		onUnload(){
 			this.$store.commit("setLoading",false)
@@ -168,7 +168,10 @@
 		computed:{
 			...mapState({ 
 				currentResponseUser:state=>state.invitateStore.currentResponseUser,
-				userinfo:state=>state.loginStore.userinfo
+				userinfo:state=>state.loginStore.userinfo,
+			    responseMsg:state=>{
+					return state.invitateStore.responseMsg
+				}
 			}),
 			
 			location(){
@@ -319,7 +322,6 @@
 						this.addResponseContent(userId,res.msgId);
 					}else{
 						this.responseToUserMsgId=res.msgId
-						console.log(this.responseToUserMsgId)
 					}
 				})
 				.catch(e=>{
@@ -353,6 +355,7 @@
 				});
 			},
 			setCurrentSelectMsg(data){
+				console.log(data)
 				data["inivitationid"] = this.invitationId;
 				this.selectMsg = data;
 				this.detailType = true;
@@ -363,7 +366,27 @@
 			}
 		},
 		watch:{
-			
+			responseMsg(v){
+				let responseMsgId=v.msgId
+				let msgRes = this.msgRes
+				console.log(this.msgRes)
+				let selectMsg = msgRes.filter(v=>{
+					return v.id== responseMsgId
+				});
+				console.log(selectMsg)
+				console.log(v)
+				if(selectMsg.length>0){
+					if(selectMsg[0].resDetail.length>=5){
+						console.log("a")
+						selectMsg[0].resTotal = v.total
+						return;
+					}
+					selectMsg[0].resTotal = v.total
+					selectMsg[0].resDetail.push(v.msg)
+				}
+				
+				console.log(selectMsg)
+			}
 		}
 	}
 </script>

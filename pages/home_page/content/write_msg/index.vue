@@ -8,9 +8,9 @@
 				<text class="response-text">回复</text>
 				<text class="user">{{resMsg.answerUserNickname}}：</text>
 				<text class="content">{{resMsg.msg}}</text>
-			</view>
-			<view class="more-response">
-				<text>查看{{responseMsgTotal}}条回复</text>
+			</view>  
+			<view class="more-response" v-if="dat.resTotal>2">
+				<text>查看{{dat.resTotal}}条回复</text>
 				<image src="../../../../static/images/home_page/right.png" class="getDetail"></image>
 			</view>
 		</view>
@@ -35,14 +35,17 @@
 		props:{ 
 			dat:{},
 			vid:Boolean,
-			responseTo:Function
+			responseTo:Function,
+			writeIndex:Number
 		},
 		mounted() {
 			
-		},
+		}, 
 		computed:{
 			...mapState({
-			    responseMsgTotal:state=>state.invitateStore.responseMsgTotal
+			    responseMsg:state=>{
+					return state.invitateStore.responseMsg
+				}
 			}),
 		},
 		components: {
@@ -59,9 +62,6 @@
 			}
 		},
 		watch:{
-			dat(v){
-				console.log(v,"aaa")
-			} 
 		}
 	}
 </script>
