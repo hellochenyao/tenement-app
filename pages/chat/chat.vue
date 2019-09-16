@@ -264,7 +264,8 @@
 				haveLoad:false,
 				currentPlayDate:"00:00",
 				uploadRateTask:{},
-				sendErrorTask:{}
+				sendErrorTask:{},
+				systemInfo:""
 			};
 		},
 		onLoad(option) {
@@ -290,6 +291,16 @@
 			　　title:option.nickName
 			})
 			this.$store.dispatch("getUserInfo");
+			let that = this;
+			uni.getSystemInfo({
+			    success: function (res) {
+			        console.log(res);
+					that.systemInfo = res.platform
+					
+					console.log("a")
+					console.log(that.systemInfo.indexOf("ios"))
+			    }
+			}); 
 		},
 		computed:{
 			...mapState({ 
@@ -408,7 +419,11 @@
 				if(this.isHistoryLoading){
 					return false;
 				}
-				this.scrollAnimation = false
+				if(this.systemInfo.indexOf("ios")==-1){
+					this.scrollAnimation = false
+				}else{
+					this.scrollAnimation = true
+				}
 				this.isHistoryLoading = true;//参数作为进入请求标识，防止重复请求
 				let Viewid = this.msgList[0].msg.id;//记住第一个信息ID
 				//本地模拟请求历史记录效果
@@ -436,12 +451,17 @@
 					this.msgList.unshift(list[i]);
 				} 
 				//这段代码很重要，不然每次加载历史数据都会跳到顶部
+				if(this.systemInfo.indexOf("ios")!=-1){
+					this.scrollToView = 'msg'+Viewid;
+					this.isHistoryLoading = false
+					return
+				}
 				this.$nextTick(function(){
 					console.log(this)
 					this.scrollToView = 'msg'+Viewid;//跳转上次的第一行信息位置
 					console.log("a")
 					this.$nextTick(function(){
-						// this.scrollAnimation = true
+						this.scrollAnimation = true
 					})
 				})
 				this.isHistoryLoading = false

@@ -67,6 +67,8 @@
 					success: function (res) {   
 						console.log(res)
 						for(var i =0;i<res.tempFilePaths.length;i++){
+							console.log(res.tempFilePaths[i])
+						    let img = res.tempFilePaths[i];
 							uni.uploadFile({
 								url: urlConfig.requestUrl+`/app/operation/${userId}/housing-resource/0/upload`, 
 								filePath: res.tempFilePaths[i],  
@@ -75,12 +77,10 @@
 								},
 								name: 'fileResource',  
 								success: (uploadFileRes) => {    
-									console.log(uploadFileRes.data);
 									if(uploadFileRes.statusCode == 200){  
 										let data = JSON.parse(uploadFileRes.data);
-										self.imgSrc.push(...res.tempFilePaths);
+										self.imgSrc.push(img);
 										self.imgData.push(data.resourceUrl)
-										console.log(self.imgData)
 										self.$emit("setResourceUrl",{ 
 											src:self.imgData,
 											type:0

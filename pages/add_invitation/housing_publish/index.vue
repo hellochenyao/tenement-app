@@ -9,13 +9,11 @@
 				<view v-if="popData.visible" class="detail-content-input detail-text">
 					{{content}}
 				</view> 
-				<view>
-					<checkbox-group class="check-group" @change="checkboxChange">
+				<view class="check-group">
 					    <view class="check-container" :key="index" v-for="(item,index) in checkItemArr">
-					          <checkbox :value="index" color="#FFCC33" class="check-btn" style="{borderRadius: 50%}" />
-							  <text class="check-text">{{item}}</text>
+					          <checkbox :value="index"  @tap="getCheck(index)" :checked="item.check" color="#FFCC33" class="check-btn" style="{borderRadius: 50%}" />
+							  <text class="check-text" @tap="getCheck(index)">{{item.title}}</text>
 					    </view>
-					</checkbox-group>
 				</view>
 			</view>
             <view class="check-content">
@@ -114,7 +112,7 @@
                 hideTitle: false,
 				housing:"",
 				enterNum:0,
-				checkItemArr:["可短租","包宽带费","无中介费"],
+				checkItemArr:[{title:"可短租",check:false},{title:"包宽带费",check:false},{title:"无中介费",check:false}],
 				remark:""
 				
             }
@@ -159,6 +157,7 @@
             },
 			checkboxChange(e){
 				let checkArr = e.detail.value;
+				console.log(checkArr)
 				checkArr = checkArr.sort();
 				this.remark = checkArr.map(v=>this.checkItemArr[v]).toString()
 			},
@@ -234,6 +233,11 @@
 				}else{
 					info.toast("请先登录");
 				}
+			},
+			getCheck(index){
+				this.checkItemArr[index].check = !this.checkItemArr[index].check
+				this.remark = this.checkItemArr.filter((v,i)=>v.check).map(v=>v.title).toString();
+				console.log(this.remark)
 			},
             clickHandle() {
                 if (this.publishState === 0) {
