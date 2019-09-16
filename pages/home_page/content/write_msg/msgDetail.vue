@@ -69,9 +69,6 @@
 			query.select('#view').boundingClientRect(data => {
 			  this.height = systeminfo.windowHeight*0.7 - data.height - uni.upx2px(90) - 1 +"px";
 			}).exec();
-			setTimeout(()=>{
-				console.log(this.res)
-			},3000)
 		},
 		onReachBottom(){
 			this.downReachBottom()

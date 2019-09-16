@@ -4,6 +4,7 @@
 
 <script>
 	import zySearch from "../../components/zy-search/zy-search.vue"
+	import qqmapsdk from "../../utils/QQMapWXConfig.js"
 	import {
 	    mapState,   
 	    mapMutations, 
@@ -25,7 +26,6 @@
 			zySearch
 		},
 		methods: {
-		
 		},
 		watch:{
 		}

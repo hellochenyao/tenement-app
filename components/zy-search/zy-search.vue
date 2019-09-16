@@ -1,16 +1,20 @@
 <template name="zy-search">
 	<view class="content">
 		<view class="search"> 
-			<!-- #ifdef APP-PLUS -->
-				<image src="../../static/zy-search/voice.svg" mode="aspectFit" @click="startRecognize()" class="voice-icon"></image>
-			<!-- #endif -->
 			<template v-if="isFocus">
-				<input maxlength="20" focus type="text" value="" confirm-type="search" @confirm="searchStart()" placeholder="请输入关键词搜索" v-model.trim="searchText"/>
+				<input maxlength="20" focus type="text" @input="getsuggest" confirm-type="search" @confirm="searchStart()" placeholder="请输入关键词搜索"  v-model.trim="searchText"/>
 			</template>
 			<template v-else>
-				<input maxlength="20" type="text" value="" confirm-type="search" @confirm="searchStart()" placeholder="请输入关键词搜索" v-model.trim="searchText"/>
+				<input maxlength="20" type="text" @input="getsuggest" confirm-type="search" @confirm="searchStart()" placeholder="请输入关键词搜索" v-model.trim="searchText"/>
 			</template>
 			<image src="../../static/zy-search/search.svg" mode="aspectFit" @click="searchStart()" class="search-icon"></image>
+		</view>
+		<view v-for="(item,index) in suggestion" :key="index" class="location" @tap="backfill(item.title)">
+			    <!--根据需求渲染相应数据-->
+				<!--渲染地址title-->
+				<view :id="index" class="title">{{item.title}}</view>
+				<!--渲染详细地址-->
+				<view class="value">{{item.addr}}</view>
 		</view>
 		<template v-if="isBlock">
 			<view class="s-block" v-if="hList.length > 0">
@@ -50,6 +54,7 @@
 </template>
 
 <script>
+	import {qqmapsdk} from "../../utils/QQMapWXConfig.js"
 	export default{
 		name:"zy-search",
 		props:{
@@ -70,7 +75,8 @@
 			return {
 				searchText:'',								//搜索关键词
 				hList:uni.getStorageSync('search_cache'),		//历史记录
-				wantList:['栏目1','栏目2','栏目3','栏目4']	//初始化推荐列表
+				wantList:['栏目1','栏目2','栏目3','栏目4']	,//初始化推荐列表
+				suggestion:[]
 			};
 		},
 		methods: {
@@ -122,6 +128,42 @@
 					})
 				}
 			},
+			backfill(v) {
+				this.searchText= v
+				this.suggestion=[]
+			},
+			getsuggest(e) {
+			    var _this = this;
+				console.log(qqmapsdk)
+			    //调用关键词提示接口
+			    qqmapsdk.getSuggestion({
+			      //获取输入框值并设置keyword参数
+			      keyword: e.detail.value, //用户输入的关键词，可设置固定值,如keyword:'KFC'
+			      //region:'北京', //设置城市名，限制关键词所示的地域范围，非必填参数
+			      success: function(res) {//搜索成功后的回调
+			        console.log(res);
+			        var sug = [];
+			        for (var i = 0; i < res.data.length; i++) {
+			          sug.push({ // 获取返回结果，放到sug数组中
+			            title: res.data[i].title,
+			            id: res.data[i].id,
+			            addr: res.data[i].address,
+			            city: res.data[i].city,
+			            district: res.data[i].district,
+			            latitude: res.data[i].location.lat,
+			            longitude: res.data[i].location.lng
+			          });
+			        }
+					_this.suggestion = sug
+			      },
+			      fail: function(error) {
+			        console.error(error);
+			      },
+			      complete: function(res) {
+			        console.log(res);
+			      }
+			    });
+			},
 			keywordsClick (item) {	//推荐搜索
 				this.searchText = item;
 			},
@@ -158,19 +200,18 @@
 		position: relative;
 		input{
 			background: #F7F7F7;
-			padding: 10upx 74upx;
-			font-size: 28upx;
-			border-radius: 50upx;
+			padding: 10upx 15upx;
+			font-size: 36upx;
 		}
-		.voice-icon{
-			width: 36upx;
-			height: 36upx;
-			padding: 16upx 20upx 16upx 0;
-			position: absolute;
-			left: 16upx;
-			top: 4upx;
-			z-index: 10;
-		}
+		// .voice-icon{
+		// 	width: 36upx;
+		// 	height: 36upx;
+		// 	padding: 16upx 20upx 16upx 0;
+		// 	position: absolute;
+		// 	left: 16upx;
+		// 	top: 4upx;
+		// 	z-index: 10;
+		// }
 		.search-icon{
 			width: 36upx;
 			height: 36upx;
@@ -179,6 +220,39 @@
 			right: 0;
 			top: 4upx;
 			z-index: 10;
+		}
+	}
+	.location{
+		width:640upx;
+		height:100upx;
+		background: #F7F7F7;
+		box-sizing: border-box;
+		display: flex;
+		flex-direction: column;
+		justify-content: center;
+		padding:5upx 15upx;
+		align-items: flex-start;
+		border:1px solid #eaeaea;
+		margin:0 auto;
+		border-top:0;
+		&:first-of-type{
+			margin-top: 30upx;
+			border-top: 1px solid #eaeaea;
+		}
+		.title{
+			width:100%;
+			overflow: hidden;
+			text-overflow:ellipsis;
+			white-space: nowrap;
+			font-size: 30upx;
+		}
+		.value{
+			width:100%;
+			overflow: hidden;
+			text-overflow:ellipsis;
+			white-space: nowrap;
+			font-size: 26upx;
+			color:#666;
 		}
 	}
 	.s-block{

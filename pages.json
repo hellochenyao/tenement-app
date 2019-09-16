@@ -80,6 +80,7 @@
 		    "path" : "pages/chat/chat",
 		    "style" : {
 				"navigationBarTitleText":"消息",
+				"enablePullDownRefresh": false,
 				"navigationBarBackgroundColor":"#59c298"
 		    }
 		}
@@ -101,7 +102,7 @@
 		 			"navigationBarTitleText":"消息",
 		 			"backgroundColorTop":"#cf3c35",
 		 			"backgroundColorBottom":"#fff",
-					"enablePullDownRefresh": true,
+					"enablePullDownRefresh": false,
 					"app-plus":{
 						"titleNView":{
 							"buttons":[

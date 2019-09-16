@@ -1,9 +1,9 @@
-<template>
+<template> 
 	<view>
 		<view class="content" @touchstart="hideDrawer">
-			<scroll-view class="msg-list" scroll-y="true" :scroll-with-animation="scrollAnimation" :scroll-top="scrollTop" :scroll-into-view="scrollToView" @scrolltoupper="loadHistory" upper-threshold="50">
+			<scroll-view class="msg-list" scroll-y="true" :scroll-with-animation="scrollAnimation" :scroll-into-view="scrollToView" @scrolltoupper="loadHistory" :upper-threshold="50">
 				<!-- 加载历史数据waitingUI -->
-				<view class="loading" v-if="!scrollAnimation&&!haveLoad">
+				<view class="loading" v-if="!haveLoad">
 					<view class="spinner">
 						<view class="rect1"></view>
 						<view class="rect2"></view>
@@ -12,7 +12,7 @@
 						<view class="rect5"></view>
 					</view>
 				</view>
-				<view class="load" v-if="scrollAnimation&&haveLoad">
+				<view class="load" v-if="haveLoad">
 					<text class="text-value">没有更多了</text>
 				</view>
 				<view class="row" v-for="(row,index) in msgList" :key="index" :id="'msg'+row.msg.id">
@@ -402,18 +402,20 @@
 				})
 			},
 			//触发滑动到顶部(加载历史信息记录)
-			async loadHistory(e){
+			async loadHistory(e){  
+				console.log(e)
+				console.log(this.scrollTop)
 				if(this.isHistoryLoading){
-					return ;
+					return false;
 				}
+				this.scrollAnimation = false
 				this.isHistoryLoading = true;//参数作为进入请求标识，防止重复请求
-		        this.scrollAnimation = false;
 				let Viewid = this.msgList[0].msg.id;//记住第一个信息ID
 				//本地模拟请求历史记录效果
 				if(this.msgList.length==this.total){
 					this.isHistoryLoading = false;
-					this.scrollAnimation = true;
 					this.haveLoad = true;
+					console.log("aaaaaaaa")
 					return
 				}
 				let userId = getStorage("userId");
@@ -433,18 +435,16 @@
 					}
 					this.msgList.unshift(list[i]);
 				} 
-					
 				//这段代码很重要，不然每次加载历史数据都会跳到顶部
-				// this.$nextTick(function() {
-				// 	console.log("a")
-				// 	this.scrollToView = 'msg'+Viewid;//跳转上次的第一行信息位置
-				// 	this.$nextTick(function() {
-				// 		this.scrollAnimation = true;//恢复滚动动画
-				// 	});
-				// });
-				this.scrollToView = 'msg'+Viewid;
-				this.scrollAnimation = true;
-				this.isHistoryLoading = false;
+				this.$nextTick(function(){
+					console.log(this)
+					this.scrollToView = 'msg'+Viewid;//跳转上次的第一行信息位置
+					console.log("a")
+					this.$nextTick(function(){
+						// this.scrollAnimation = true
+					})
+				})
+				this.isHistoryLoading = false
 			},
 			// 加载初始页面消息
 		async getMsgList(fromUserId){
@@ -470,9 +470,6 @@
 					//进入页面滚动到底部
 					//this.scrollTop = 9999;
 					this.scrollToView = 'msg'+this.msgList[this.msgList.length-1].msg.id
-					this.$nextTick(function() {
-						this.scrollAnimation = true;
-					});
 					
 				 });
 
