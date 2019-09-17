@@ -60,7 +60,7 @@
 				</view>
 				<view class="location">
 					<image class="img" src="../../../static/images/home_page/locationContent.png" mode="widthFix"></image>
-					<text class="condition-name">{{currentLoc.detail?currentLoc.detail:""}}</text>
+					<text class="condition-name">{{currentLoc.detail}}</text>
 				</view>
 			</view>
 			<view class="location-map"> 
@@ -242,15 +242,15 @@
 					return
 				}
 			},
-			getLocationDetail(latitude,longitude){
+			getLocationDetail(detail){
 				var self = this;
-				qqmapsdk.reverseGeocoder({
-					  location: { 
-				           latitude: latitude,
-						   longitude: longitude,
-					  },
+				qqmapsdk.geocoder({
+					  address:detail,
 					  success: function(res) {//成功后的回调
-					       self.currentLoc.detail = res.result.address;
+					       var res = res.result
+						   console.log(res)
+					       self.currentLoc.latitude= res.location.lat;
+				           self.currentLoc.longitude= res.location.lng;
 					  },
 					  fail:function(e){
 						  console.log(e)
@@ -284,9 +284,8 @@
 					console.log(res)
 					this.$store.commit("setLoading",false)
 					this.detail = res;
-					this.currentLoc.latitude = res.latitude.split(',')[0];
-					this.currentLoc.longitude = res.latitude.split(',')[1]
-					this.getLocationDetail(res.latitude.split(',')[0],res.latitude.split(',')[1])
+					this.currentLoc.detail = res.detailLocation
+					this.getLocationDetail(res.detailLocation)
 				})
 				.catch(e=>{
 					console.log(e)

@@ -322,8 +322,7 @@
 				padding:10upx 20upx;
 				box-sizing: border-box;
 				.tag{
-					width:100%;
-					height:100%;
+					margin-right: 30upx;
 				}
 			}
 
