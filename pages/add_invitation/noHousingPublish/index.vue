@@ -203,7 +203,7 @@
 					desiredDate:this.indate.date,
 					rental:this.budget,
 					location:this.currentLoc.city+','+this.currentLoc.district,
-					latitude:this.currentLoc.latitude+','+this.currentLoc.longitude,
+					detailLocation:this.currentLoc.detail,
 					title:this.title,
 					content:this.content,
 					id:userId,

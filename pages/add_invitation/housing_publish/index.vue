@@ -211,13 +211,13 @@
 				this.imgSrc=[];
 				this.videoSrc="";
 			},
-			publish(){ 
+			publish(){  
 				let userId = getStorage('userId');
 				if(userId){
 					let postData={
 						rental:this.rent,
 						location:this.currentLoc.city+','+this.currentLoc.district,
-						latitude:this.currentLoc.latitude+","+this.currentLoc.longitude,
+						detailLocation:this.currentLoc.detail,
 						title:this.title,
 						remark:this.remark,
 						content:this.content,

@@ -118,20 +118,20 @@
 		 	    }
 		  }
 		,{
-		    "path" : "pages/chat/hand/hand",
+		    "path" : "pages/chat/hand/hand", 
 		        "style" : {
 		            "navigationBarBackgroundColor":"#cf3c35",
 		            "navigationBarTextStyle":"white",
 		            "navigationBarTitleText":"发红包",
 		            "backgroundColorTop":"#cf3c35",
-		            "backgroundColorBottom":"#fff",
+		            "backgroundColorBottom":"#fff", 
 					"app-plus":{
 						"softinputNavBar":"none",
 						"bounce":"none"
 			        }
-		        }
+		        } 
 		},{
-		    "path" : "pages/home_page/search",
+		    "path" : "pages/search/search",
 		        "style" : {
 		            "navigationBarTitleText":"搜索",
 		            "navigationBarBackgroundColor":"#59c298"

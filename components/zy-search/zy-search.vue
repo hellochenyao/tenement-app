@@ -9,12 +9,21 @@
 			</template>
 			<image src="../../static/zy-search/search.svg" mode="aspectFit" @click="searchStart()" class="search-icon"></image>
 		</view>
-		<view v-for="(item,index) in suggestion" :key="index" class="location" @tap="backfill(item.title)">
+		<view class="location" v-if="!close">
+			<view class="invitation-search">
+				<image src="../../static/images/home_page/invitation.png" class="icon"></image>
+				<text class="content">{{searchText}}（搜帖子）</text>
+			</view>
 			    <!--根据需求渲染相应数据-->
 				<!--渲染地址title-->
+			<view class="detail"  v-for="(item,index) in suggestion" :key="index" @tap="backfill(item.title,index)">
+				<image src="../../static/images/home_page/tag.png" class="icon"></image>
+				<view class="content">
 				<view :id="index" class="title">{{item.title}}</view>
 				<!--渲染详细地址-->
 				<view class="value">{{item.addr}}</view>
+				</view>
+			</view>
 		</view>
 		<template v-if="isBlock">
 			<view class="s-block" v-if="hList.length > 0">
@@ -55,6 +64,7 @@
 
 <script>
 	import {qqmapsdk} from "../../utils/QQMapWXConfig.js"
+	import getStorage from "../../utils/getStorage.js"
 	export default{
 		name:"zy-search",
 		props:{
@@ -69,14 +79,17 @@
 			showWant:{	//是否展示推荐菜单
 				type:Boolean,
 				value:false
-			}
+			},
+			city:String,
+			current:0
 		},
 		data() {
 			return {
 				searchText:'',								//搜索关键词
 				hList:uni.getStorageSync('search_cache'),		//历史记录
 				wantList:['栏目1','栏目2','栏目3','栏目4']	,//初始化推荐列表
-				suggestion:[]
+				suggestion:[],
+				close:true
 			};
 		},
 		methods: {
@@ -128,13 +141,25 @@
 					})
 				}
 			},
-			backfill(v) {
+			backfill(v,i) {
 				this.searchText= v
 				this.suggestion=[]
+				if(i==0){
+					this.$emit("query",{
+						text:this.searchText,
+						type:"title"
+					})
+				}else{
+					this.$emit("query",{
+						text:this.searchText,
+						type:"location"
+					})
+				}
+				this.close = true;
 			},
 			getsuggest(e) {
 			    var _this = this;
-				console.log(qqmapsdk)
+				this.close = false;
 			    //调用关键词提示接口
 			    qqmapsdk.getSuggestion({
 			      //获取输入框值并设置keyword参数
@@ -188,20 +213,24 @@
 	}
 </script>
 
-<style lang="less" scoped> 
+<style lang="less" scoped>  
 	page{
 		width:100%;
 		min-height: 100%;
 		background: #FFF!important;
 	}
 	.search{
-		width: 640upx;
+		width: 95%;
 		margin: 30upx auto 0;
 		position: relative;
 		input{
+			width:100%;
+			box-sizing: border-box;
 			background: #F7F7F7;
-			padding: 10upx 15upx;
-			font-size: 36upx;
+			height: 70upx;
+			padding-left: 20upx;
+			line-height: 70upx;
+			font-size: 30upx;
 		}
 		// .voice-icon{
 		// 	width: 36upx;
@@ -218,41 +247,83 @@
 			padding: 16upx 20upx 16upx 0;
 			position: absolute;
 			right: 0;
-			top: 4upx;
+			top: 2upx;
 			z-index: 10;
 		}
 	}
 	.location{
-		width:640upx;
-		height:100upx;
+		width:95%;
+		height:600upx;
 		background: #F7F7F7;
 		box-sizing: border-box;
 		display: flex;
+		overflow: auto;
 		flex-direction: column;
-		justify-content: center;
-		padding:5upx 15upx;
+		padding:0upx 15upx;
 		align-items: flex-start;
-		border:1px solid #eaeaea;
+		border-bottom:1px solid #eaeaea;
 		margin:0 auto;
 		border-top:0;
-		&:first-of-type{
-			margin-top: 30upx;
-			border-top: 1px solid #eaeaea;
-		}
-		.title{
+		.invitation-search{
 			width:100%;
-			overflow: hidden;
-			text-overflow:ellipsis;
-			white-space: nowrap;
-			font-size: 30upx;
+			height:90upx;
+			display: flex;
+			flex-direction: row;
+			align-items: center;
+			padding:10upx 0;
+			.icon{
+				width:60upx;
+				height:60upx;
+				margin-right: 10upx;
+			}
+			.content{
+				width:calc(100% - 60upx);
+				height: 90upx;
+				line-height: 90upx;
+				font-size: 30upx;
+				border-bottom: 1px solid #eaeaea;
+			}
 		}
-		.value{
+		.detail{
 			width:100%;
-			overflow: hidden;
-			text-overflow:ellipsis;
-			white-space: nowrap;
-			font-size: 26upx;
-			color:#666;
+			height:90upx;
+			display:flex;
+			flex-direction:row;
+			align-items:center;
+			box-sizing:border-box;
+			&:last-of-type{
+				.content{
+					border-bottom: 0;
+				}
+			}
+			.icon{
+				width:60upx;
+				height:60upx;
+				margin-right: 10upx;
+			}
+			.content{
+				width:calc(100% - 70upx);
+				padding:10upx 0;
+				display:flex;
+				flex-direction:column;
+				justify-content: space-between;
+				border-bottom: 1px solid #eaeaea;
+				.title{
+					width:100%;
+					overflow: hidden;
+					text-overflow:ellipsis;
+					white-space: nowrap;
+					font-size: 30upx;
+				}
+				.value{
+					width:100%;
+					overflow: hidden;
+					text-overflow:ellipsis;
+					white-space: nowrap;
+					font-size: 26upx;
+					color:#666;
+				}
+				}
 		}
 	}
 	.s-block{

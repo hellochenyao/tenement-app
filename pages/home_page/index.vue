@@ -82,7 +82,9 @@
 				invitationList:[],
 				haveAgreedType:false,
 				titleHeight:0,
-				invitationHeight:0
+				invitationHeight:0,
+				detailLocation:"",
+				searchTitle:""
 			}
 		},
 		components: {
@@ -124,9 +126,17 @@
 			if (currPage.data.isDoRefresh == true) {
 				currPage.data.isDoRefresh = false;
 				this.currentCity = currPage.data.city;
-				this.refreshType = 0;
-				this.getInvitationData(1,10);
+				this.mescroll.resetUpScroll();
 			}
+			
+			if(currPage.data.isDoSearch){
+				currPage.data.isDoSearch = false;
+				this.detailLocation = currPage.data.detailLocation
+				this.searchTitle = currPage.data.title;
+				if(this.detailLocation!=""){}
+				this.mescroll.resetUpScroll();
+			}
+			
 		},
 		 onReady(){
 		      this.calNavigationHeight("nav")
@@ -141,9 +151,9 @@
 			downCallback() {
 				this.mescroll.resetUpScroll();
 			},
-			getSearch(){
+			getSearch(){ 
 				uni.navigateTo({
-					url: './search'
+					url: '../search/search?current='+this.current+'&city='+this.currentCity
 				});
 			},
 			/*上拉加载的回调: mescroll携带page的参数, 其中num:当前页 从1开始, size:每页数据条数,默认10 */
@@ -188,13 +198,14 @@
 			// 	}
 			// 	this.downCallback();
 			// 	
-			// },
+			// }, 
 			getInvitationData(pageNo,pageSize){
 				let userId = getStorage('userId');
 				this.$store.dispatch("findInvitation",{
 					id:userId,
 					type:this.current,
 					city:this.currentCity,
+					detailLocation:this.detailLocation==""?"":this.detailLocation,
 					pageNo,
 					pageSize
 				});
