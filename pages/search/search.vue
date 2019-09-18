@@ -1,5 +1,5 @@
 <template>
-	<view class="content"><zy-search :is-focus="false" @query="queryInvitation" :is-block="true" :show-want="false"></zy-search></view>
+	<view class="content"><zy-search :is-focus="false" @query="queryInvitation" :text="searchText" :city="city" :is-block="true" :show-want="false"></zy-search></view>
 </template>
 
 <script>
@@ -8,7 +8,8 @@
 		data() {
 			return {
 				current:0,
-				city:""
+				city:"",
+				searchText:""
 			}
 		},
 		components: {
@@ -18,6 +19,7 @@
 			console.log(event)
 			this.city = event.city;
 			this.current = event.current;
+			this.searchText = event.searchText
 		},
 		computed:{
 		},  
@@ -26,9 +28,19 @@
 				var pages = getCurrentPages();
 				var currPage = pages[pages.length - 1]; //当前页面
 				var prevPage = pages[pages.length - 2]; //上一个页面
+				if(param.type==""){
+					prevPage.setData({
+						isDoSearch:true,
+						detailLocation:param.text?param.text:"",
+						title:""
+					});
+					uni.navigateBack();
+					return
+				}
 				 prevPage.setData({
 					 isDoSearch:true,
-					 detailLocation:param.type=="title"?"":param.text
+					 detailLocation:param.type=="title"?"":param.text,
+					 title:param.type=="title"?param.text:""
 				 });
 				 uni.navigateBack();
 			}

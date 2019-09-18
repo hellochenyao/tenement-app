@@ -7,21 +7,21 @@
 			<template v-else>
 				<input maxlength="20" type="text" @input="getsuggest" confirm-type="search" @confirm="searchStart()" placeholder="请输入关键词搜索" v-model.trim="searchText"/>
 			</template>
-			<image src="../../static/zy-search/search.svg" mode="aspectFit" @click="searchStart()" class="search-icon"></image>
+			<image src="../../static/zy-search/search.svg" mode="widthFix" @click="searchStart()" class="search-icon"></image>
 		</view>
 		<view class="location" v-if="!close">
 			<view class="invitation-search">
-				<image src="../../static/images/home_page/invitation.png" class="icon"></image>
-				<text class="content">{{searchText}}（搜帖子）</text>
+				<image src="../../static/images/home_page/invitation.png" mode="widthFix" class="icon"></image>
+				<text class="content" @tap="backfill(searchText,'')">{{searchText}}（搜帖子）</text>
 			</view>
 			    <!--根据需求渲染相应数据-->
 				<!--渲染地址title-->
 			<view class="detail"  v-for="(item,index) in suggestion" :key="index" @tap="backfill(item.title,index)">
-				<image src="../../static/images/home_page/tag.png" class="icon"></image>
+				<image src="../../static/images/home_page/tag.png" mode="widthFix" class="icon"></image>
 				<view class="content">
-				<view :id="index" class="title">{{item.title}}</view>
+				<text :id="index" class="title">{{item.title}}</text>
 				<!--渲染详细地址-->
-				<view class="value">{{item.addr}}</view>
+				<text class="value">{{item.addr}}</text>
 				</view>
 			</view>
 		</view>
@@ -81,11 +81,12 @@
 				value:false
 			},
 			city:String,
-			current:0
+			current:0,
+			text:String
 		},
 		data() {
 			return {
-				searchText:'',								//搜索关键词
+				searchText:this.text,								//搜索关键词
 				hList:uni.getStorageSync('search_cache'),		//历史记录
 				wantList:['栏目1','栏目2','栏目3','栏目4']	,//初始化推荐列表
 				suggestion:[],
@@ -95,56 +96,51 @@
 		methods: {
 			searchStart: function() {	//触发搜索
 				let _this = this;
-				if (_this.searchText == '') {
-					uni.showToast({
-						title: '请输入关键字',
-						icon: 'none',
-						duration: 1000
-					});
-					return false;
-				}else{
-					uni.getStorage({
-						key:'search_cache',
-						success(res){
-							let list = res.data;
-							console.log(list);
-							if(list.length > 5){
-								for(let item of list){
-									if(item == _this.searchText){
-										return false;
-									}
+				uni.getStorage({
+					key:'search_cache',
+					success(res){
+						let list = res.data;
+						console.log(list);
+						if(list.length > 5){
+							for(let item of list){
+								if(item == _this.searchText){
+									return false;
 								}
-								list.pop();
-								list.unshift(_this.searchText);
-							}else{
-								for(let item of list){
-									if(item == _this.searchText){
-										return false;
-									}
-								}
-								list.unshift(_this.searchText);
 							}
-							_this.hList = list;
-							uni.setStorage({
-								key: 'search_cache',
-								data: _this.hList
-							});
-						},
-						fail() {
-							_this.hList = [];
-							_this.hList.push(_this.searchText);
-							uni.setStorage({
-								key: 'search_cache',
-								data: _this.hList
-							});
+							list.pop();
+							list.unshift(_this.searchText);
+						}else{
+							for(let item of list){
+								if(item == _this.searchText){
+									return false;
+								}
+							}
+							list.unshift(_this.searchText);
 						}
-					})
-				}
+						_this.hList = list;
+						uni.setStorage({
+							key: 'search_cache',
+							data: _this.hList
+						});
+					},
+					fail() {
+						_this.hList = [];
+						_this.hList.push(_this.searchText);
+						uni.setStorage({
+							key: 'search_cache',
+							data: _this.hList
+						});
+					}
+				})
+				this.$emit("query",{
+					text:this.searchText,
+					type:""
+				})
 			},
 			backfill(v,i) {
 				this.searchText= v
 				this.suggestion=[]
-				if(i==0){
+				if(i==""){
 					this.$emit("query",{
 						text:this.searchText,
 						type:"title"
@@ -155,14 +151,53 @@
 						type:"location"
 					})
 				}
+				let _this = this;
+				uni.getStorage({
+					key:'search_cache',
+					success(res){
+						let list = res.data;
+						console.log(list);
+						if(list.length > 5){
+							for(let item of list){
+								if(item == _this.searchText){
+									return false;
+								}
+							}
+							list.pop();
+							list.unshift(_this.searchText);
+						}else{
+							for(let item of list){
+								if(item == _this.searchText){
+									return false;
+								}
+							}
+							list.unshift(_this.searchText);
+						}
+						_this.hList = list;
+						uni.setStorage({
+							key: 'search_cache',
+							data: _this.hList
+						});
+					},
+					fail() {
+						_this.hList = [];
+						_this.hList.push(_this.searchText);
+						uni.setStorage({
+							key: 'search_cache',
+							data: _this.hList
+						});
+					}
+				})
 				this.close = true;
 			},
 			getsuggest(e) {
 			    var _this = this;
+				console.log(this)
 				this.close = false;
 			    //调用关键词提示接口
 			    qqmapsdk.getSuggestion({
 			      //获取输入框值并设置keyword参数
+				  region:this.city,
 			      keyword: e.detail.value, //用户输入的关键词，可设置固定值,如keyword:'KFC'
 			      //region:'北京', //设置城市名，限制关键词所示的地域范围，非必填参数
 			      success: function(res) {//搜索成功后的回调
@@ -208,6 +243,11 @@
 				plus.speech.startRecognize(options, function(s) {
 					_this.searchText = _this.searchText + s;
 				});
+			}
+		},
+		watch:{
+			text(v){
+				this.searchText=v
 			}
 		}
 	}
@@ -256,11 +296,8 @@
 		height:600upx;
 		background: #F7F7F7;
 		box-sizing: border-box;
-		display: flex;
 		overflow: auto;
-		flex-direction: column;
 		padding:0upx 15upx;
-		align-items: flex-start;
 		border-bottom:1px solid #eaeaea;
 		margin:0 auto;
 		border-top:0;
@@ -273,11 +310,11 @@
 			padding:10upx 0;
 			.icon{
 				width:60upx;
-				height:60upx;
-				margin-right: 10upx;
+				height:90upx;
+				margin-right: 20upx;
 			}
 			.content{
-				width:calc(100% - 60upx);
+				width:calc(100% - 70upx);
 				height: 90upx;
 				line-height: 90upx;
 				font-size: 30upx;
@@ -289,7 +326,7 @@
 			height:90upx;
 			display:flex;
 			flex-direction:row;
-			align-items:center;
+			align-items: center;
 			box-sizing:border-box;
 			&:last-of-type{
 				.content{
@@ -297,16 +334,16 @@
 				}
 			}
 			.icon{
-				width:60upx;
-				height:60upx;
+				width:70upx;
+				height:90upx;
 				margin-right: 10upx;
 			}
 			.content{
-				width:calc(100% - 70upx);
-				padding:10upx 0;
+				width:calc(100% - 80upx);
+				height:90upx;
 				display:flex;
 				flex-direction:column;
-				justify-content: space-between;
+				justify-content: center;
 				border-bottom: 1px solid #eaeaea;
 				.title{
 					width:100%;

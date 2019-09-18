@@ -1,4 +1,4 @@
-<template>
+<template> 
 	<view>
 		<view class="status_bar" :style="{height:statHeight+'px'}"></view>
 		<view class="navContainer" id="nav" :style="{top:statHeight+'px'}">
@@ -9,8 +9,8 @@
 					<image class="city-icon" src="../../static/images/home_page/down.png"></image>
 				</view>
 				<view class="search-container" @tap="getSearch" :class="{'focus-search':focusType}">
-					<input class="search-input" @blur="focusSearch" @focus="focusSearch" placeholder="搜帖子" placeholder-class="search-place"
-					 v-model="searchContent"></input>
+					<input class="search-input" disabled @blur="focusSearch" @focus="focusSearch" placeholder="搜帖子" placeholder-class="search-place"
+					 :value="searchTitle?searchTitle:detailLocation"></input>
 					<image class="search-icon" src="../../static/images/home_page/search.png"></image>
 				</view>
 			</view>
@@ -26,7 +26,6 @@
 			</view>
 		</mescroll-uni>
 		<!-- <image v-if="haveAgreedType" src="../../static/images/home_page/agree.png" class="agree-img" :class="haveAgreedType?'agree':''"></image> -->
-		<loading-component :scrollAnimation="loading"></loading-component>
 	</view>
 </template>
 
@@ -98,7 +97,7 @@
 				invitationRes:state=>state.invitateStore.invitationList,
 				loading:state=>state.invitateStore.loading
 			})
-		},
+		}, 
 		//注册滚动到底部的事件,用于上拉加载
 		onReachBottom() {
 			this.mescroll && this.mescroll.onReachBottom();
@@ -133,7 +132,12 @@
 				currPage.data.isDoSearch = false;
 				this.detailLocation = currPage.data.detailLocation
 				this.searchTitle = currPage.data.title;
-				if(this.detailLocation!=""){}
+				if(this.detailLocation!=""){
+					console.log(this.detailLocation)
+				}
+				if(this.searchTitle!=""){
+					console.log(this.searchTitle)
+				}
 				this.mescroll.resetUpScroll();
 			}
 			
@@ -152,8 +156,9 @@
 				this.mescroll.resetUpScroll();
 			},
 			getSearch(){ 
+				let searchText=this.detailLocation?this.detailLocation:this.searchTitle
 				uni.navigateTo({
-					url: '../search/search?current='+this.current+'&city='+this.currentCity
+					url: '../search/search?current='+this.current+'&city='+this.currentCity+"&searchText="+searchText
 				});
 			},
 			/*上拉加载的回调: mescroll携带page的参数, 其中num:当前页 从1开始, size:每页数据条数,默认10 */
@@ -206,6 +211,8 @@
 					type:this.current,
 					city:this.currentCity,
 					detailLocation:this.detailLocation==""?"":this.detailLocation,
+					title:this.searchTitle?this.searchTitle:"",
+	
 					pageNo,
 					pageSize
 				});
