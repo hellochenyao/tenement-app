@@ -8,7 +8,7 @@ const privateMsgStore = {
 	state:{ //存放组件之间共享的数据
 	   socketOpen:false,
 	   msgQueue:[],
-	   refreshMsgList:false,
+	   refreshMsgList:{},
 	   errorSendMsg:[]
     },
     mutations:{//显式的更改state里的数据
@@ -38,10 +38,7 @@ const privateMsgStore = {
 				   state.errorSendMsg=[id];
 				   return;
 			   }
-			   console.log(state.errorSendMsg.length)
 			   state.errorSendMsg.push(id);
-			   console.log("a")
-			   console.log(state)
 		   }
 	   }
     }, 
@@ -68,20 +65,18 @@ const privateMsgStore = {
 				}
 			});
 			uni.onSocketMessage(function (res) {
+				console.log(res)
 			  let response = JSON.parse(res.data);
-			  if(!response.code){
+			  if(!response.code&&!response.newMsg){
 				  return;
 			  }
-			  if(response.code=="newMsg"){
+			  if(response.newMsg){
 				  let id = response.toUserId;
-				  let newMsg = {
-					  type:new Boolean(true)
-				  }
 				  if(id!= userId){
 				  	console.log('振动');
 				  	uni.vibrateLong();
 				  }
-				  commit("setRefreshMsgList",newMsg);
+				  commit("setRefreshMsgList",response.newMsg);
 			  }
 			  if(response.code=="error"){
 				  let id = response.id;

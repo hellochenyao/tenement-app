@@ -713,7 +713,7 @@
 				});
 				return {text:replacedStr,desc:desc?desc:replacedStr};
 			},
-			formatMessage(content,type){
+			formatMessage(content,type,data){
 				let userId = getStorage("userId");
 				let lastid = this.msgList.length>0?this.msgList.length+1:1;
 				lastid++;
@@ -721,11 +721,11 @@
 				    type:"user",
 					msg:{
 						type:type,
-						time:format(new Date(),"yyyy-MM-dd hh:mm:ss"),
+						time:(data?data.createTime:format(new Date(),"yyyy-MM-dd hh:mm:ss")),
 						userinfo:{
 						    uid:userId,
-						    username:this.userinfo.nickName,
-							face:this.userinfo.avatarUrl
+						    username:(data?data.nickName:this.userinfo.nickName),
+							face:(data?data.avatar:this.userinfo.avatarUrl)
 								  
 						},
 					    content:{},
@@ -1002,13 +1002,31 @@
 			discard(){
 				return;
 			}
-		},
+		}, 
 		watch:{
 			refreshMsg(value){
-				if(value.type){
-					this.pageNo=1;
-					this.getMsgList(this.fromUserId);
+				console.log(value)
+				let msg = JSON.parse(value)
+				let data = {
+					createTime:msg.createTime,
+					avatar:msg.receiveAvatar,
+					nickName:msg.receiveName
 				}
+				let type=msg.type==0?"text":msg.type==-1?"img":"voice"
+				let otherContent;
+				if(msg.type!=0){
+					otherContent = JSON.parse(msg.content);
+					otherContent.url = this.imageUrl + otherContent.url;
+				}
+				let content = msg.type==0? {
+					text:msg.content,
+					desc:msg.descText
+				}:otherContent;
+				let message = this.formatMessage(content,type,data);
+				this.screenMsg(message)
+				this.pageNo = Math.ceil(this.msgList.length/this.pageSize)
+				console.log(this.msgList)
+				console.log(this.pageNo)
 			},
 			errorSendMsg(value){
 				let task = {};
