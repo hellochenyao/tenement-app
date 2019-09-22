@@ -298,6 +298,7 @@
 				return calloginDate(new Date(dateLogin),new Date());	
 			},
 			resClick(userId,nickName){
+				let myUserId = getStorage('userId')
 				if(!this.currentResponseUser.nickName){
 					let user={
 						id:userId,
@@ -307,10 +308,9 @@
 					this.$store.dispatch("responseUserAction",user)
 					return;
 				}
-				console.log(this.selectMsg)
 				let msgId=this.currentResponseUser.invitationId;//回复帖子0 回复其他人为消息id
 				let responseUserId=this.currentResponseUser.id //回复对象的id
-				this.$store.dispatch("responseMsg",{userId:userId,invitationId:parseInt(this.invitationId),answerMsgId:msgId,msg:this.res,responseUserId:responseUserId})
+				this.$store.dispatch("responseMsg",{userId:myUserId,invitationId:parseInt(this.invitationId),answerMsgId:msgId,msg:this.res,responseUserId:responseUserId})
 				.then(res=>{
 					if(!this.detailType){
 						this.$store.dispatch("responseUserAction",{})

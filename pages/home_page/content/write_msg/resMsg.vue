@@ -11,9 +11,11 @@
 				<text class="come-text">{{list.createTime?calLoginDate(list.createTime):""}}</text>
 			</view>
 		</view> 
-		<text class="response-btn"  v-if="loginUserId!=list.userId" @tap="setCurrentSelect({id:list.userId,nickName:list.nickname,invitationId:list.id})">回复</text>  
+		<text class="response-btn"  v-if="loginUserId!=list.userId" @tap="setCurrentSelect({id:list.userId,nickName:list.nickname,invitationId:list.id})">回复{{list.id}}</text>  
 	</view> 
 	<view class="write-content">
+		<text class="response-text" v-if="showType">回复</text>
+		<text class="user" v-if="showType">{{list.answerUserNickname}}：</text>
 		<text class="wirte-content-text">{{list.msg}}</text> 
 	</view>
 	</view>
@@ -22,24 +24,42 @@
 <script> 
 	import {calloginDate} from "../../../../utils/calDateDiff.js"
 		import getStorage from "../../../../utils/getStorage.js"
+		import {
+		    mapState,  
+		    mapMutations, 
+			mapActions
+		} from 'vuex';
 	export default { 
 		data() { 
 			return {
-				list:this.msg
+				list:this.msg,
+				msgType:false
 			}
 		},
 		props:{ 
 			msg:{},
-			writeIndex:0
-		},
+			type:Boolean
+		}, 
 		mounted() {
 			
 		},
 		computed:{
+			...mapState({
+				currentResponseUser:state=>{
+					return state.invitateStore.currentResponseUser
+				},
+				msgDetailNickName:state=>{
+					return state.invitateStore.msgDetailNickName
+				}
+			}),
 			loginUserId(){
 				return  getStorage('userId');
+			},
+			showType(){
+				let msgDetailNickName = this.$store.state.invitateStore.msgDetailNickName
+				return this.list.answerUserNickname&&(msgDetailNickName!=this.list.answerUserNickname)
 			}
-		},
+		}, 
 		methods: {
 			calLoginDate(dateLogin,now){
 				if(dateLogin){
@@ -49,14 +69,13 @@
 	
 			},
 			setCurrentSelect(user){
-				console.log(this.writeIndex)
 				this.$emit("setCurrentSelect",this.list);
 				this.$store.dispatch("responseUserAction",user)
 			}
 			
 		},
 		watch:{
-			msg(value){
+			msg(value){ 
 				this.list = value;
 			}
 		}
@@ -119,6 +138,17 @@
 		margin-left: 90upx;
 		min-height: 100upx;
 		padding: 20upx 0;
+		word-break: break-all;
+		.user{
+			width:30%;
+			height: 20px;
+			font-size: 29upx;
+			color:#1796f9;
+		}
+		.response-text{
+			font-size: 29upx;
+			margin-right: 1upx;
+		}
 		.wirte-content-text{
 			font-size:33upx;
 			color:#000;

@@ -30,11 +30,6 @@
 		onShow(){
 			let userId = getStorage('userId');
 			this.getUsers(userId)
-			uni.getSystemInfo({
-			    success: function (res) {
-			        console.log(res);
-			    }
-			});
 		},
 		onPullDownRefresh(){
 			uni.showLoading({

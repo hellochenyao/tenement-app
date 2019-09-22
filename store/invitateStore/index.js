@@ -7,7 +7,8 @@ const invitateStore = {
 	  msgRes:{},
 	  currentResponseUser:{},
 	  loading:false,
-	  responseMsg:{}
+	  responseMsg:{},
+	  msgDetailNickName:""
     },
     mutations:{//显式的更改state里的数据
 	    publishMutions(state,res){
@@ -24,6 +25,10 @@ const invitateStore = {
 		},
 		setResponseMsg(state,res){
 			state.responseMsg = res;
+		},
+		setMsgDetailName(state,res){
+			console.log(res)
+			state.msgDetailNickName = res;
 		}
     },
     getters:{
@@ -81,6 +86,10 @@ const invitateStore = {
 		getReponseToUserMsg({commit,dispatch},payload){//根据pid找某个帖子留言的所有回复内容
 			let {userId,invitationId,pid,pageNo,pageSize} = payload;
 			return RestApi.request(`/app/tenement/${userId}/find/all/response/msg/${pid}`,{invitationId,pageNo,pageSize},'get')
+		},
+		setMsgDetailNameAction({commit,dispatch},payload){
+			let nickName = payload.nickName;
+			commit("setMsgDetailName",nickName)
 		}
     }
 }

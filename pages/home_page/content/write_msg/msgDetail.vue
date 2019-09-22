@@ -7,7 +7,7 @@
 				<text class="title">1楼的回复</text>
 			</view>
 			<view class="msg-content" id="view">
-				<res-msg :msg="res"></res-msg>
+				<res-msg :msg="res" :type="type"></res-msg>
 			</view>
 			<scroll-view scroll-y="true" @scrolltolower="downReachBottom" class="res" :style="{height:height}">
 				<view class="noDataContent" :style="{height:height}" v-if="res.resDetail.length==0">
@@ -72,7 +72,6 @@
 		},
 		onReachBottom(){
 			this.downReachBottom()
-			console.log("a")
 		},
 		methods: {
 			showDetailHandler(type){
@@ -146,10 +145,13 @@
 					pageSize
 				})
 				.then(res=>{
-					console.log(res)
 					if(res.data.length==this.pageSize){
 						this.pageNo = this.pageNo+1;
 					}
+					res.data.map(v=>{
+						v["id"] = pid;
+						return v;
+					})
 					this.msgArr =this.msgArr.concat(res.data);
 					this.total = res.total
 					this.changeDownMoreStatus()

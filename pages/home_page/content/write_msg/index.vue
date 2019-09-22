@@ -53,6 +53,8 @@
 		},
 		methods: {
 			setCurrentSelect(data){
+				console.log(data)
+				this.$store.dispatch("setMsgDetailNameAction",{nickName:data.nickname});
 				this.$emit("setCurrentSelectMsg",data);
 				this.$store.dispatch("responseUserAction",{
 					id:data.userId,

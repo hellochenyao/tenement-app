@@ -130,7 +130,15 @@
 						"bounce":"none"
 			        }
 		        } 
-		},{
+		},
+		{
+		    "path" : "pages/live/index", 
+		        "style" : {
+		            "navigationBarBackgroundColor":"#59c298",
+		            "navigationBarTitleText":"发红包"
+		        } 
+		},
+		{
 		    "path" : "pages/search/search",
 		        "style" : {
 		            "navigationBarTitleText":"搜索",
