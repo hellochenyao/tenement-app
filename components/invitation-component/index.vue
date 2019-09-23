@@ -42,8 +42,8 @@
 					  </view>
 				  </view>
 				</view>
-				<corver-view class="img-content" v-if="getResourceImgUrl.currentResource=='img'">
-				  <image :src="item" v-for="(item,index) in getResourceImgUrl.url" :key="index" class="img"></image>
+				<corver-view class="img-content" v-for="(item,index) in getResourceImgUrl.url" :key="index" v-if="getResourceImgUrl.currentResource=='img'">
+				  <image :src="item" class="img"></image>
 				</corver-view>
 				<view class="goViewTap">
 					<text>查看详情</text>
@@ -143,17 +143,22 @@
 						url:this.imgUrl+path,
 				        currentResource:"video"					
 					}
-				}
+				} 
 				return ""
 			},
 			getResourceImgUrl(){
 				if(this.dat.housingImgs){
-					return {
-						url:this.dat.housingImgs.split(",").map(v=>{
+					let housingImgs = this.dat.housingImgs.split(",").map((v,i)=>{
 							v=v.replace(/\\/g,"/");
 							return this.imgUrl+v;
-						},
-						),
+						});
+				    if(this.dat.housingVideos){
+						housingImgs = housingImgs.slice(0,2)
+					}else{
+						housingImgs = housingImgs.slice(0,3)
+					}
+					return {
+						url:housingImgs,
 						currentResource:"img"
 					}
 				}
@@ -365,8 +370,8 @@
 				position: relative;
 				display:flex;
 				flex-direction:row;
-				justify-content:flex-start;
 				align-items:center;
+				overflow-x:auto;
 				padding:0 20upx;
 				.video-content{
 					width:33.3%;

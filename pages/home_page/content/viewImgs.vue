@@ -9,7 +9,7 @@
 	                <input v-model="danmuValue" class="dm-input" type="text" placeholder="在此处输入弹幕内容,可让他人看到你的想法" />
 					<image class="send" mode="widthFix" src="../../../static/images/home_page/send.png" @tap="sendDanmu"></image> 
 	            </view>
-				<image :src="item" v-for="(item,index) in imgVideoUrl.image" :key="index" mode="widthFix" class="image" @tap="reviewImg"></image>
+				<image :src="item.url" :width="item.width" :height="item.height" v-for="(item,index) in imgVideoUrl" :key="index" mode="widthFix" class="image" @tap="reviewImg"></image>
 	        </view>
 	    </view>
 </template>
@@ -44,7 +44,24 @@
 		},
 		computed:{
 			...mapState({ 
-				imgVideoUrl:state=>state.invitateStore.imgVideoUrl
+				imgVideoUrl:state=>{
+					let imgArr = state.invitateStore.imgVideoUrl.image
+					let imgs = imgArr.map(v=>{
+						let img = {};
+						img["url"] = v;
+						uni.getImageInfo({
+						    src: v,
+						    success: function (image) {
+								img["width"] = image.width
+								img["height"] = image.height
+						        console.log(image.width);
+						        console.log(image.height);
+						    }
+						});
+						return img
+					})
+				    return imgs;
+				}
 			}),
 			danMu(){
 				let data = this.userMsgs.map((v,i)=>{
@@ -63,8 +80,7 @@
 	                text: this.danmuValue,
 	                color: this.getRandomColor()
 	            });
-				console.log(this.imgVideoUrl)
-	            this.danmuValue = '';
+				this.sendMsg(this.danmuValue)
 	        },
 	        videoErrorCallback: function(e) {
 	            uni.showModal({
@@ -74,6 +90,7 @@
 	        },
 			timeChange(event){
 				console.log(event)
+				this.time = event.detail.currentTime
 			},
 			sendMsg(msg){
 				let userId = getStorage('userId');
@@ -87,6 +104,7 @@
 				}
 				this.$store.dispatch("responseMsg",postData)
 				.then(res=>{
+				    this.danmuValue = '';
 					console.log(res)
 				})
 				.catch(e=>{
@@ -119,7 +137,7 @@
 	        },
 			reviewImg(){
 				 uni.previewImage({
-				    urls: this.imgVideoUrl.image,
+				    urls: this.imgVideoUrl.map(v=>v.url),
 				 });
 			}
 	    }
@@ -144,6 +162,7 @@
 		line-height: 70upx;
 		position: relative;
 		border:1px solid #eaeaea;
+		margin-bottom: 30upx;
 		.dm-input{
 			width:calc(100% - 40upx);
 			height:70upx;

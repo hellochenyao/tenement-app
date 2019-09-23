@@ -261,8 +261,8 @@
 			},
 			clickMap(){
 				 uni.openLocation({
-					latitude: parseInt(this.currentLoc.latitude),
-					longitude: parseInt(this.currentLoc.longitude), 
+					latitude: Number(this.currentLoc.latitude),
+					longitude: Number(this.currentLoc.longitude), 
 					success: function () {
 						console.log('success'); 
 					},
@@ -295,8 +295,9 @@
 					this.$store.commit("setLoading",false)
 					this.detail = res;
 					this.currentLoc.detail = res.location.split(',').length>0?res.location.split(',')[0]:""
-					this.currentLoc.latitude = res.latitude.split(",")[0]
-					this.currentLoc.longitude = res.latitude.split(",")[1]
+					this.currentLoc.latitude = Number(res.latitude.split(",")[0])
+					this.currentLoc.longitude = Number(res.latitude.split(",")[1])
+					console.log(this.currentLoc)
 				})
 				.catch(e=>{
 					console.log(e)
@@ -599,7 +600,7 @@
 		.map{
 			width:130upx;
 			height:130upx;
-			border-radius: 60%;
+			border-radius: 100px;
 		}
 	}
 	.invitation-desc{
