@@ -213,7 +213,7 @@
 				textMsg:'',
 				//消息列表
 				isHistoryLoading:false,
-				scrollAnimation:false,
+				scrollAnimation:true,
 				scrollTop:0,
 				scrollToView:'',
 				msgList:[],
@@ -334,8 +334,8 @@
 			// 接受消息(筛选处理)
 			screenMsg(msg){
 				let userId = getStorage("userId");
+				console.log(this.scrollAnimation)
 				//从长连接处转发给这个方法，进行筛选处理
-				console.log(msg)
 				if(msg.type=='system'){
 					// 系统消息
 					switch (msg.msg.type){
@@ -1025,8 +1025,6 @@
 				let message = this.formatMessage(content,type,data);
 				this.screenMsg(message)
 				this.pageNo = Math.ceil(this.msgList.length/this.pageSize)
-				console.log(this.msgList)
-				console.log(this.pageNo)
 			},
 			errorSendMsg(value){
 				let task = {};

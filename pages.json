@@ -70,6 +70,13 @@
 			}
         },
 		{
+		    "path" : "pages/home_page/content/viewImgs",  
+		    "style" : { 
+				"navigationBarTitleText": "房源详情",
+				"navigationBarBackgroundColor":"#59c298"
+			}
+		},
+		{
 			"path" : "pages/login/index",  
 			"style" : { 
 				"navigationBarTitleText": "授权登录",

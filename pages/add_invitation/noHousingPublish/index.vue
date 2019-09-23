@@ -89,8 +89,9 @@
 					detail:"",
 					latitude:"",
 					longitude:"",
-					city:"",
-					district:""
+					landmark:"",
+					street:"",
+					city:""
 				}, 
 				region:"", 
 				inDateSelected:false, 
@@ -118,7 +119,7 @@
 					return false;
 				}
 				return true;
-			},
+			}, 
 			...mapState({ 
 				publishSuccess:state=>state.invitateStore.publishSuccess
 			})
@@ -129,14 +130,16 @@
 				if(e.currentTarget.dataset.type==1){    
 					uni.chooseLocation({
 						success: function (res) {
+							console.log(res)
 							qqmapsdk.reverseGeocoder({
 								  location: { 
 							           latitude: res.latitude,
 									   longitude: res.longitude,
 								  },
 								  success: function(res) {//成功后的回调
-								       self.currentLoc.city = res.result.address_component.city;
-								       self.currentLoc.district = res.result.address_component.district;
+								       self.currentLoc.landmark = res.result.address_reference.landmark_l2.title;
+								       self.currentLoc.street = res.result.address_component.street;
+									   self.currentLoc.city = res.result.address_component.city
 								  },
 								  fail:function(e){
 									  console.log(e)
@@ -195,6 +198,7 @@
         },
 		publish(){ 
 			let userId = getStorage('userId');
+			console.log(userId)
 			if(userId){
 				let postData={
 					acceptedMedium:this.refuseMedium?1:0,
@@ -202,9 +206,11 @@
 					showPersonalInfo:this.showPersonalDetails?1:0,
 					desiredDate:this.indate.date,
 					rental:this.budget,
-					location:this.currentLoc.city+','+this.currentLoc.district,
-					detailLocation:this.currentLoc.detail,
+					location:this.currentLoc.landmark+','+this.currentLoc.street,
+					latitude:this.currentLoc.latitude+','+this.currentLoc.longitude,
 					title:this.title,
+					city:this.currentLoc.city,
+					type:0,
 					content:this.content,
 					id:userId,
 				};
@@ -218,7 +224,10 @@
 				name:"期望地点",
 				detail:"",
 				latitude:"",
-				longitude:""
+				longitude:"",
+				landmark:"",
+				street:"",
+				city:""
 			};
 			this.indate = { 
 				date:"" 

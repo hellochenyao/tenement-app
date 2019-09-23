@@ -14,18 +14,18 @@
 				</view>
 				<text class="budget">¥{{info.rental?info.rental:""}}/月</text>
 			</view>
-			<view class="invitationTag">
+			<view class="invitationTag" v-if="type==1">
 				<uni-tag :text="item" type="error" :key="index" size="small" :circle="true" :inverted="true" class="tag" v-for="(item,index) in info.remark"></uni-tag>
 			</view>
 			<view class="invitation-content">
 				<view class="invitation-title">
 					<text class="invitation-title-text">{{info.title?info.title:""}}</text>
 				</view>
-	<!-- 			<view class="detail-content">
+<!-- 				<view class="detail-content" v-if="type==0">
 					<text class="detail-content-text">{{info.content?info.content:""}}</text>
 				</view> -->
 			</view>
-			<view class="viewResource">
+			<view class="viewResource" v-if="type==1">
 				<view class="video-content" v-if="getResourceVideoUrl.currentResource=='video'">
 				  <video v-if="getResourceVideoUrl.currentResource=='video'"
 						 objectFit="fill" :src="getResourceVideoUrl.url" 
@@ -112,7 +112,8 @@
 			} 
 		}, 
 		props: {
-			dat: Object
+			dat: Object,
+			type:0
 		},
 		computed:{
 			info(){
@@ -233,7 +234,6 @@
 		border-radius: 10upx;
 		box-shadow: 1px 1px 5px #d6d6d6;
 		position: relative;
-		min-height:360upx;
 		// height: 360upx;
 		.main-content{
 			width:100%;
@@ -462,11 +462,19 @@
 						align-items: center;
 
 						.rent-type {
+							max-width:300upx;
+							overflow: hidden;
+							text-overflow:ellipsis;
+							white-space: nowrap;
 							font-size: 28upx;
 							font-weight: bold;
+							
 						}
 
 						.location {
+							overflow: hidden;
+							text-overflow:ellipsis;
+							white-space: nowrap;
 							font-size: 26upx;
 							color: #CCC;
 							margin-left: 10upx;

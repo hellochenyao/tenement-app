@@ -19,10 +19,10 @@
 		<view :style="{marginTop:topHeight+'px'}"/>
 		<mescroll-uni :up="upOption" :down="downOption" @down="downCallback" @up="upCallback" @init="mescrollInit" >
 			<view v-if="current==0" class="swiper-item-tab" :key="index" v-for="(data,index) in invitationList">
-				<invitation-component  class="invitationId" :dat="data"></invitation-component>
+				<invitation-component  class="invitationId" :type="current" :dat="data"></invitation-component>
 			</view>
 			<view v-if="current==1" class="swiper-item-tab uni-bg-green" :key="index" v-for="(data,index) in invitationList">
-				<invitation-component  class="invitationId" :dat="data"></invitation-component>
+				<invitation-component  class="invitationId" :type="current" :dat="data"></invitation-component>
 			</view>
 		</mescroll-uni>
 		<!-- <image v-if="haveAgreedType" src="../../static/images/home_page/agree.png" class="agree-img" :class="haveAgreedType?'agree':''"></image> -->
@@ -132,12 +132,6 @@
 				currPage.data.isDoSearch = false;
 				this.detailLocation = currPage.data.detailLocation
 				this.searchTitle = currPage.data.title;
-				if(this.detailLocation!=""){
-					console.log(this.detailLocation)
-				}
-				if(this.searchTitle!=""){
-					console.log(this.searchTitle)
-				}
 				this.mescroll.resetUpScroll();
 			}
 			
@@ -148,7 +142,6 @@
 		methods: {
 			// mescroll组件初始化的回调,可获取到mescroll对象
 			mescrollInit(mescroll) {
-				console.log(mescroll) 
 				this.mescroll = mescroll;
 			},
 			/*下拉刷新的回调 */
@@ -210,7 +203,7 @@
 					id:userId,
 					type:this.current,
 					city:this.currentCity,
-					detailLocation:this.detailLocation==""?"":this.detailLocation,
+					location:this.detailLocation==""?"":this.detailLocation,
 					title:this.searchTitle?this.searchTitle:"",
 	
 					pageNo,

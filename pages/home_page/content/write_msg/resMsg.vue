@@ -11,7 +11,7 @@
 				<text class="come-text">{{list.createTime?calLoginDate(list.createTime):""}}</text>
 			</view>
 		</view> 
-		<text class="response-btn"  v-if="loginUserId!=list.userId" @tap="setCurrentSelect({id:list.userId,nickName:list.nickname,invitationId:list.id})">回复{{list.id}}</text>  
+		<text class="response-btn"  v-if="loginUserId!=list.userId" @tap="setCurrentSelect({id:list.userId,nickName:list.nickname,invitationId:list.id})">回复</text>  
 	</view> 
 	<view class="write-content">
 		<text class="response-text" v-if="showType">回复</text>

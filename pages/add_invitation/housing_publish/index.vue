@@ -99,8 +99,9 @@
                     detail: "",
                     latitude: "",
                     longitude: "",
-					city:"",
-					district:""
+					landmark:"",
+					street:"",
+					city:""
                 },
                 rent: 0,
                 layoutRange: layout,
@@ -157,16 +158,15 @@
             },
 			checkboxChange(e){
 				let checkArr = e.detail.value;
-				console.log(checkArr)
 				checkArr = checkArr.sort();
 				this.remark = checkArr.map(v=>this.checkItemArr[v]).toString()
 			},
             checkedHandler(e) {
                 var self = this;
-                console.log(e.currentTarget.dataset.type)
                 if (e.currentTarget.dataset.type == 1) {
                     uni.chooseLocation({
                         success: function (res) {
+							console.log(res)
                             qqmapsdk.reverseGeocoder({
                             	  location: { 
                                        latitude: res.latitude,
@@ -174,8 +174,9 @@
                             	  },
                             	  success: function(res) {//成功后的回调
 								  console.log(res)
-                            	       self.currentLoc.city = res.result.address_component.city;
-                            	       self.currentLoc.district = res.result.address_component.district;
+                            	       self.currentLoc.landmark = res.result.address_reference.landmark_l2.title;
+                            	       self.currentLoc.street = res.result.address_component.street;
+									   self.currentLoc.city = res.result.address_component.city
                             	  },
                             	  fail:function(e){
                             		  console.log(e)
@@ -199,8 +200,9 @@
 				    detail: "",
 				    latitude: "",
 				    longitude: "",
-					city:"",
-					district:""
+					landmark:"",
+					street:"",
+					city:""
 				};
 				this.currentLoc = currentLoc;
 				this.title = "";
@@ -216,8 +218,8 @@
 				if(userId){
 					let postData={
 						rental:this.rent,
-						location:this.currentLoc.city+','+this.currentLoc.district,
-						detailLocation:this.currentLoc.detail,
+						location:this.currentLoc.landmark+','+this.currentLoc.street,
+						latitude:this.currentLoc.latitude+','+this.currentLoc.longitude,
 						title:this.title,
 						remark:this.remark,
 						content:this.content,
@@ -226,6 +228,7 @@
 						houseLayOut:this.selectedLayOut,
 						housingImgs:this.imgSrc.toString(),
 						housingVideos:this.videoSrc,
+						city:this.currentLoc.city,
 						type:1,
 						id:userId,
 					};

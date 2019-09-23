@@ -8,7 +8,8 @@ const invitateStore = {
 	  currentResponseUser:{},
 	  loading:false,
 	  responseMsg:{},
-	  msgDetailNickName:""
+	  msgDetailNickName:"",
+	  imgVideoUrl:{}
     },
     mutations:{//显式的更改state里的数据
 	    publishMutions(state,res){
@@ -29,6 +30,9 @@ const invitateStore = {
 		setMsgDetailName(state,res){
 			console.log(res)
 			state.msgDetailNickName = res;
+		},
+		setImgVideoUrl(state,res){
+			state.imgVideoUrl = res;
 		}
     },
     getters:{
@@ -36,6 +40,7 @@ const invitateStore = {
     },
     actions:{ 
 		publishInvitation({commit,dispatch},payload){
+			console.log(payload)
 			commit("publishMutions",false);
 			RestApi.request(`/app/operation/${payload.id}/item/${payload.type}/publish`,payload,'POST',)
 			.then(res=>{
@@ -90,7 +95,16 @@ const invitateStore = {
 		setMsgDetailNameAction({commit,dispatch},payload){
 			let nickName = payload.nickName;
 			commit("setMsgDetailName",nickName)
+		},
+		setImgVideoUrlAction({commit,dispatch},payload){
+			let {imgVideoUrl} = payload
+			commit("setImgVideoUrl",imgVideoUrl)
+		},
+		getUserMsgs({commit,dispatch},payload){//查找所有留言对弹幕
+			let {userId,invitationid} = payload;
+			return RestApi.request(`/app/tenement/${userId}/find/all/usermsg/${invitationid}`,null,'get')
 		}
+		
     }
 }
 export {invitateStore};

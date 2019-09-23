@@ -14,7 +14,7 @@
 			</view>
 			<image class="turn-icon" src="../../../static/images/home_page/turn1.png"></image>
 		</view> 
-		<view class="imgVideoContent" :style="{border:!haveLoadImg?'1px solid #eaeaea':0}"> 
+		<view class="imgVideoContent" v-if="detail.type==1" :style="{border:!haveLoadImg?'1px solid #eaeaea':0}" @tap="viewImg"> 
 			<image v-if="getFirstUrl.currentResource=='img'" :src="getFirstUrl.url" :style="{opacity:haveLoadImg?1:0}" @load="load" class="img" mode="scaleToFill" lazy-load="true"></image>
 			<image v-if="!haveLoadImg" src="../../../static/images/home_page/timg.gif" class="loading"></image>
 			<image v-if="haveLoadImg||getFirstUrl.currentResource=='video'" :src="getFirstUrl.currentResource=='video'?'../../../static/images/home_page/video.png':'../../../static/images/home_page/img.png'" class="icon"></image>
@@ -64,7 +64,7 @@
 				</view>
 			</view>
 			<view class="location-map"> 
-				<map class="map" :latitude="currentLoc.latitude" :longitude="currentLoc.longitude" :markers="covers" @tap="clickMap" :circles="circles">
+				<map class="map" :latitude="currentLoc.latitude" :longitude="currentLoc.longitude" :scale="18" :markers="covers" @tap="clickMap" :circles="circles">
                 </map>
 			</view>
 		</view>
@@ -202,6 +202,23 @@
 						currentResource:"img"
 					}
 				}
+			},
+			getImgVideoUrl(){
+				let imgVideoUrl = {video:"",image:""};
+				if(this.detail.housingVideos){
+					let path = this.detail.housingVideos.replace(/\\/g,"/")
+					imgVideoUrl["video"] = this.imgUrl+path
+				}
+				if(this.detail.housingImgs){
+					let len = this.detail.housingImgs.split(',').length
+					if(len>0){
+						let img = this.detail.housingImgs.split(',').map(v=>{
+							let path = v.replace(/\\/g,"/");
+							return this.imgUrl+path;
+						});
+						imgVideoUrl["image"] = img;
+					}
+				};return imgVideoUrl
 			}
 		}, 
 		methods: {
@@ -242,28 +259,22 @@
 					return
 				}
 			},
-			getLocationDetail(detail){
-				var self = this;
-				qqmapsdk.geocoder({
-					  address:detail,
-					  success: function(res) {//成功后的回调
-					       var res = res.result
-						   console.log(res)
-					       self.currentLoc.latitude= res.location.lat;
-				           self.currentLoc.longitude= res.location.lng;
-					  },
-					  fail:function(e){
-						  console.log(e)
-					  }
-				})
-			},
 			clickMap(){
 				 uni.openLocation({
 					latitude: parseInt(this.currentLoc.latitude),
 					longitude: parseInt(this.currentLoc.longitude), 
 					success: function () {
-						console.log('success');
+						console.log('success'); 
 					},
+				});
+			},
+			viewImg(){
+				let postData = {
+					imgVideoUrl:this.getImgVideoUrl
+				}
+				this.$store.dispatch("setImgVideoUrlAction",postData)
+				uni.navigateTo({
+					url: "./viewImgs?id="+this.invitationId+"&responseUserId="+this.detail.userId
 				});
 			},
 			changeDownMoreStatus(){
@@ -281,11 +292,11 @@
 				this.$store.commit("setLoading",true)
 				this.$store.dispatch("getInvitationDetail",{userId,id})
 				.then(res=>{
-					console.log(res)
 					this.$store.commit("setLoading",false)
 					this.detail = res;
-					this.currentLoc.detail = res.detailLocation
-					this.getLocationDetail(res.detailLocation)
+					this.currentLoc.detail = res.location.split(',').length>0?res.location.split(',')[0]:""
+					this.currentLoc.latitude = res.latitude.split(",")[0]
+					this.currentLoc.longitude = res.latitude.split(",")[1]
 				})
 				.catch(e=>{
 					console.log(e)
@@ -333,7 +344,6 @@
 				this.downMoreStatus ="loading"
 				this.$store.dispatch("findMsg",{id:userId,invitationId,pageNo,pageSize})
 				.then(res=>{
-					console.log(res.details)
 					if(res.details.length==this.pageSize){
 						this.pageNo = this.pageNo+1;
 					}
@@ -354,7 +364,6 @@
 				});
 			},
 			setCurrentSelectMsg(data){
-				console.log(data)
 				data["inivitationid"] = this.invitationId;
 				this.selectMsg = data;
 				this.detailType = true;
@@ -368,31 +377,29 @@
 			responseMsg(v){
 				let responseMsgId=v.msgId
 				let msgRes = this.msgRes
-				console.log(this.msgRes)
 				let selectMsg = msgRes.filter(v=>{
 					return v.id== responseMsgId
 				});
-				console.log(selectMsg)
-				console.log(v)
 				if(selectMsg.length>0){
 					if(selectMsg[0].resDetail.length>=5){
-						console.log("a")
 						selectMsg[0].resTotal = v.total
 						return;
 					}
 					selectMsg[0].resTotal = v.total
 					selectMsg[0].resDetail.push(v.msg)
 				}
-				
-				console.log(selectMsg)
 			}
 		}
 	}
 </script>
 
 <style lang="scss">
-	.contant-container{
+	page{
+		width:100%;
+		min-height: 100%;
 		background: #FFF;
+	}
+	.contant-container{
 		padding:10upx 10upx 100upx;
 		width:100%;
 		height: 100%;
