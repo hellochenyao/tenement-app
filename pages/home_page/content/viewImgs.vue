@@ -89,7 +89,6 @@
 	            })
 	        },
 			timeChange(event){
-				console.log(event)
 				this.time = event.detail.currentTime
 			},
 			sendMsg(msg){
@@ -105,7 +104,6 @@
 				this.$store.dispatch("responseMsg",postData)
 				.then(res=>{
 				    this.danmuValue = '';
-					console.log(res)
 				})
 				.catch(e=>{
 					console.log(e)
@@ -119,7 +117,6 @@
 				}
 				this.$store.dispatch("getUserMsgs",postData)
 				.then(res=>{
-					console.log(res)
 					this.userMsgs = res.data;
 				})
 				.catch(e=>{

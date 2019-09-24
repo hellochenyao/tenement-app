@@ -103,6 +103,10 @@ const invitateStore = {
 		getUserMsgs({commit,dispatch},payload){//查找所有留言对弹幕
 			let {userId,invitationid} = payload;
 			return RestApi.request(`/app/tenement/${userId}/find/all/usermsg/${invitationid}`,null,'get')
+		},
+		getCodeAndBackImg({commit,dispatch},payload){
+			let {userId,path} = payload;
+			return RestApi.request(`/app/wx-code/${userId}/getCode`,{path,width:"430"},'POST')
 		}
 		
     }

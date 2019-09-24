@@ -84,7 +84,7 @@
 			<write-msg v-for="(item,idx) in msgRes" :writeIndex="idx" :key="idx" :vid="idx===0?true:false" @setCurrentSelectMsg="setCurrentSelectMsg" :dat="item"></write-msg>
 			<uni-load-more :loadingType="1" :status="downMoreStatus" :content-text="downMoreOptions"></uni-load-more>
 		</view>
-		<view class="invitation-bottom-tab">
+		<view class="invitation-bottom-tab" @tap="reply">
 			<view v-if="!currentResponseUser.nickName" class="tab-content">
 				<image class="tab-img" src="../../../static/images/home_page/turn.png"/>
 				<text class="tab-text">转发</text>
@@ -287,6 +287,11 @@
 					return true;
 				}
 				return false
+			},
+			reply(){
+				uni.navigateTo({
+					url: '../../reply/index'
+				})
 			},
 			getInvitation(userId,id){
 				this.$store.commit("setLoading",true)

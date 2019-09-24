@@ -104,7 +104,6 @@
 				let responseToUserNickName=this.currentResponseUser.nickName;
 				this.$store.dispatch("getResponseMsgContent",{userId,msgId})
 				.then(res=>{
-					console.log(this.res)
 						let newResMsg = {
 							answerUserId:responseToUserId,
 							answerUserNickname:responseToUserNickName,
