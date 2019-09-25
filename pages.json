@@ -100,13 +100,6 @@
 					"backgroundColorTop":"#cf3c35",
 					"backgroundColorBottom":"#fff"
 			    }
-		 },
-		 {
-		   "path" : "pages/reply/index",
-		        "style" : {
-					"navigationBarBackgroundColor":"#59c298",
-					"navigationBarTitleText":"分享"
-			    }
 		 }
 		 ,{
 		    "path" : "pages/chat/index",

@@ -32,15 +32,11 @@ let times=0;
 function connectSocketInterval(){
 	let connectSuccess  =false;
 	let userId=getStorage("userId");
-	console.log(userId)
 	let wait = 500*Math.floor((Math.random()*10));
-	console.log(wait)
 	let url = configUrl.wbUrl;
 	uni.connectSocket({
 		url: `ws://${url}/im/${userId}`
 	});
-	console.log(times)
-	console.log(connectSuccess)
 	let connectTime = setTimeout(()=>{connectSocketInterval()},wait);
 	uni.onSocketOpen(function (res) {
 	  console.log('WebSocket连接已打开！');

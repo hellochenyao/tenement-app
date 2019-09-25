@@ -84,10 +84,14 @@
 			<write-msg v-for="(item,idx) in msgRes" :writeIndex="idx" :key="idx" :vid="idx===0?true:false" @setCurrentSelectMsg="setCurrentSelectMsg" :dat="item"></write-msg>
 			<uni-load-more :loadingType="1" :status="downMoreStatus" :content-text="downMoreOptions"></uni-load-more>
 		</view>
-		<view class="invitation-bottom-tab" @tap="reply">
+		<view class="invitation-bottom-tab">
 			<view v-if="!currentResponseUser.nickName" class="tab-content">
 				<image class="tab-img" src="../../../static/images/home_page/turn.png"/>
 				<text class="tab-text">转发</text>
+			</view>
+			<view v-if="!currentResponseUser.nickName" class="tab-content" @tap="openPost(true)">
+				<image class="tab-img" src="../../../static/images/home_page/return.png"/>
+				<text class="tab-text">海报</text>
 			</view>
 			<view v-if="!currentResponseUser.nickName" class="tab-content">
 				<image class="tab-img" src="../../../static/images/home_page/shouchang.png"/>
@@ -98,6 +102,15 @@
 		</view>
 		<msg-detail :responseToUserMsgId="responseToUserMsgId" :res="selectMsg" :detailType="detailType" @changeType="changeDetailTypeValue"></msg-detail>
 		<loading-component :show="Object.keys(detail).length==0"></loading-component>
+		<poster v-if="posterShow" 
+		        @openPost="openPost"
+				:location="detail.location"  
+				:gender="detail.gender" 
+				:title="detail.title" 
+				:content="detail.content" 
+				:avatar="detail.avatar"
+				:remark="detail.remark"
+		></poster>
 	    </view>
 	</view>
 </template> 
@@ -116,6 +129,7 @@
 	import configUrl from "../../../utils/config_utils.js"
 	import info from "../../../utils/info.js"
 	import uniLoadMore from "@/components/uni-load-more/uni-load-more.vue"
+	import poster from '../../../components/uni-poster/index.vue';
 	export default {
 		data() { 
 			return {
@@ -142,13 +156,15 @@
 				pageNo:1,
 				pageSize:10,
 				total:0,
-				responseToUserMsgId:""
+				responseToUserMsgId:"",
+				posterShow:false
 			}
 		},
 		components: {
 			writeMsg,
 			MsgDetail,
-			uniLoadMore
+			uniLoadMore,
+			poster
 		},
 		onLoad(event) {
 			
@@ -161,6 +177,16 @@
 		},
 		onUnload(){
 			this.$store.commit("setLoading",false)
+		},
+		onShareAppMessage(res) {
+		    if (res.from === 'button') {// 来自页面内分享按钮
+		      console.log(res.target)
+		    }
+			console.log(res)
+		    return {
+		      title: '自定义分享标题',
+		      path: '/pages/test/test?id=123'
+		    }
 		},
 		onReachBottom(){
 			this.downReachBottom()
@@ -288,10 +314,8 @@
 				}
 				return false
 			},
-			reply(){
-				uni.navigateTo({
-					url: '../../reply/index'
-				})
+			openPost(type){
+				this.posterShow = type;
 			},
 			getInvitation(userId,id){
 				this.$store.commit("setLoading",true)
@@ -670,6 +694,7 @@
 			width:110upx;
 			height:60upx;
 			display: flex;
+			margin-right: 25upx;
 			flex-direction: row;
 			justify-content: space-around;
 			align-items: center;
@@ -679,9 +704,6 @@
 			}
 			.tab-text{
 				font-size:26upx;
-			}
-			&:first-child{
-				margin-right: 30upx;
 			}
 		}
 		.return{

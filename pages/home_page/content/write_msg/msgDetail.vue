@@ -121,7 +121,7 @@
 						if(this.downMoreStatus =="noMore"){
 							responseMsgTotal = this.msgArr.length;
 						}else{
-							responseMsgTotal = this.total+1
+							responseMsgTotal = this.total+1 
 						}
 						this.$store.commit("setResponseMsg",{
 							msg:newResMsg,

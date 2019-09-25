@@ -18,12 +18,10 @@
 </script>
 
 <style>
-	/*每个页面公共css */
-	@import "./static/css/simplepro.css";
 	page{
 		background-color: #f7f7f7;
 	}
-	.container{ 
+	.container{
 		width:100%;
 		height:100%;
 		position: absolute;

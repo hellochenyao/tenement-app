@@ -5,5 +5,14 @@ export default {
 			duration:time,
 			icon
 		});
+	},
+	loading:(title,mask=false)=>{
+		uni.showLoading({
+		    title,
+			mask
+		});
+	},
+	hideLoading:()=>{
+		uni.hideLoading();
 	}
 }
