@@ -12,7 +12,7 @@
 					<text class="come-text">浏览{{detail.viewTimes?detail.viewTimes:0}}次</text>
 				</view>
 			</view>
-			<image class="turn-icon" src="../../../static/images/home_page/turn1.png"></image>
+<!-- 			<image class="turn-icon" src="../../../static/images/home_page/turn1.png"></image> -->
 		</view> 
 		<view class="imgVideoContent" v-if="detail.type==1" :style="{border:!haveLoadImg?'1px solid #eaeaea':0}" @tap="viewImg"> 
 			<image v-if="getFirstUrl.currentResource=='img'" :src="getFirstUrl.url" :style="{opacity:haveLoadImg?1:0}" @load="load" class="img" mode="scaleToFill" lazy-load="true"></image>
@@ -88,6 +88,7 @@
 			<view v-if="!currentResponseUser.nickName" class="tab-content">
 				<image class="tab-img" src="../../../static/images/home_page/turn.png"/>
 				<text class="tab-text">转发</text>
+				<button open-type="share" class="return"></button>
 			</view>
 			<view v-if="!currentResponseUser.nickName" class="tab-content" @tap="openPost(true)">
 				<image class="tab-img" src="../../../static/images/home_page/return.png"/>
@@ -130,6 +131,7 @@
 	import info from "../../../utils/info.js"
 	import uniLoadMore from "@/components/uni-load-more/uni-load-more.vue"
 	import poster from '../../../components/uni-poster/index.vue';
+	import {appHeadUrl} from "../../../utils/config.js";
 	export default {
 		data() { 
 			return {
@@ -174,6 +176,10 @@
 			this.getInvitation(userId,event.id)
 			this.viewAction(userId,event.id)
 			this.$store.dispatch("getUserInfo") 
+			this.$store.dispatch("getCodeAndBackImg",{
+				path:"/pages/home_page/content/index?id="+this.invitationId,
+				userId
+			});
 		},
 		onUnload(){
 			this.$store.commit("setLoading",false)
@@ -182,10 +188,11 @@
 		    if (res.from === 'button') {// 来自页面内分享按钮
 		      console.log(res.target)
 		    }
-			console.log(res)
+			console.log(appHeadUrl)
 		    return {
-		      title: '自定义分享标题',
-		      path: '/pages/test/test?id=123'
+		      title: this.detail.title,
+			  imageUrl:appHeadUrl,
+		      path: "/pages/home_page/content/index?id="+this.invitationId,
 		    }
 		},
 		onReachBottom(){
@@ -698,12 +705,22 @@
 			flex-direction: row;
 			justify-content: space-around;
 			align-items: center;
+			position:relative;
 			.tab-img{
 				width:35upx;
 				height: 35upx;
 			}
 			.tab-text{
 				font-size:26upx;
+			}
+			.return{
+				width:100%;
+				height:100%;
+				position: absolute;
+				left:0;
+				top:0;
+				z-index: 1000;
+				opacity: 0;
 			}
 		}
 		.return{

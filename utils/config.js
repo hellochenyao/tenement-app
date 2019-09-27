@@ -1,4 +1,4 @@
-import configUrl from "./config_utils";
+import configUrl from "./config_utils.js";
 import info from "./info";
 import getStorage from './getStorage.js'
 let getNodeHeight = (id) => {
@@ -70,6 +70,7 @@ const getImageInfo = async (url)=>{
 		});
 	});
 }
+const appHeadUrl = configUrl.imagesUrl+"back/head.png";
 			  
 export {
 	getNodeHeight,
@@ -77,5 +78,6 @@ export {
 	connectSocketInterval,
 	emo,
 	onlineEmoji,
-	getImageInfo
+	getImageInfo,
+	appHeadUrl
 }

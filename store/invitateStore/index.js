@@ -9,7 +9,8 @@ const invitateStore = {
 	  loading:false,
 	  responseMsg:{},
 	  msgDetailNickName:"",
-	  imgVideoUrl:{}
+	  imgVideoUrl:{},
+	  codeAndImgUrl:{}
     },
     mutations:{//显式的更改state里的数据
 	    publishMutions(state,res){
@@ -33,6 +34,9 @@ const invitateStore = {
 		},
 		setImgVideoUrl(state,res){
 			state.imgVideoUrl = res;
+		},
+		setCodeAndImgUrl(state,res){
+			state.codeAndImgUrl = res;
 		}
     },
     getters:{
@@ -106,7 +110,14 @@ const invitateStore = {
 		},
 		getCodeAndBackImg({commit,dispatch},payload){
 			let {userId,path} = payload;
-			return RestApi.request(`/app/wx-code/${userId}/getCode`,{path,width:"430"},'POST')
+			RestApi.request(`/app/wx-code/${userId}/getCode`,{path,width:"430"},'POST')
+			.then(res=>{
+				console.log(res)
+				commit("setCodeAndImgUrl",res)
+			})
+			.catch(e=>{
+				console.log(e)
+			})
 		}
 		
     }

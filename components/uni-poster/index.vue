@@ -11,6 +11,11 @@
 </template>
 
 <script>
+	import {
+	    mapState,  
+	    mapMutations, 
+		mapActions
+	} from 'vuex';
 	import {getImageInfo,getSystem} from "../../utils/config.js"
 	import getStorage from "../../utils/getStorage.js"
 	import configUrl from "../../utils/config_utils.js"
@@ -43,7 +48,6 @@
 				this.$emit("openPost",false)
 				return;
 			},15000); 
-			console.log(this.gender)
 			let remark = "";
 			if(this.remark){
 				remark = this.remark.split(",");
@@ -54,9 +58,9 @@
 			this.ctx = uni.createCanvasContext('zwyPoster',this);
 			//绘制海报底色为白色
 			let systemInfo = await getSystem();
+			let res = this.codeAndImgUrl;
 			this.cansWidth = systemInfo.screenWidth*0.9;
 			this.cansHeight = uni.upx2px(1000)
-			let res = await this.requestCode();
 			let codeUrl = await this.send_code(res.codeBase);
 			let head = await getImageInfo(this.imageUrl+res.headUrl);
 			let bg = await getImageInfo(this.imageUrl+res.backUrl);
@@ -108,13 +112,9 @@
 			this.clearWriteFile()
 		},
 		computed:{
-			today(){
-				let year = new Date().getFullYear();
-				let month =new Date().getMonth() + 1 
-				let date =new Date().getDate()
-				let time = year + "年" + month + "月" + date +"日"
-				return time
-			}
+			...mapState({
+				codeAndImgUrl:state=>state.invitateStore.codeAndImgUrl
+			}),
 		},
 		methods:{
 			drawBaseBg(bgColor){
@@ -272,21 +272,22 @@
 				  }
 				},this)
 			},
-			requestCode(){
-				let userId = getStorage("userId")
-				return new Promise((resolve,reject)=>{
-					this.$store.dispatch("getCodeAndBackImg",{
-						path:"/pages/home_page",
-						userId
-					}).then(res=>{
-						resolve(res);
-					}).catch(e=>{
-						reject(e)
-						info.hideLoading();
-					    info.toast(e.msg)
-					});
-				})
-			},
+			// requestCode(){
+			// 	let userId = getStorage("userId")
+			// 	let invitationId = this.id;
+			// 	return new Promise((resolve,reject)=>{
+			// 		this.$store.dispatch("getCodeAndBackImg",{
+			// 			path:"/pages/home_page/content/index?id="+invitationId,
+			// 			userId
+			// 		}).then(res=>{
+			// 			resolve(res);
+			// 		}).catch(e=>{
+			// 			reject(e)
+			// 			info.hideLoading();
+			// 		    info.toast(e.msg)
+			// 		});
+			// 	})
+			// },
 			drawPara(item){
 				var redIndexObj = {}
 				if(item.redWord.length > 0){
