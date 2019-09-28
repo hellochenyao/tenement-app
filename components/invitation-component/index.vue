@@ -64,7 +64,7 @@
 				</view>
 			</view>
 		</view>
-		<view class="share-bottom">  
+		<view class="share-bottom" v-if="showBottom">  
 		    <view class="comment">
 				<view class="content">
 					<image class="button-icon" src="../../static/images/home_page/turn.png"></image>
@@ -113,7 +113,8 @@
 		}, 
 		props: {
 			dat: Object,
-			type:0
+			type:0,
+			showBottom:Boolean
 		},
 		computed:{
 			info(){

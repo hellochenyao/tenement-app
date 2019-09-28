@@ -6,7 +6,8 @@ import {invitateStore} from "./invitateStore";
 import {privateMsgStore} from "./privateMsgStore"
 import {userStore} from "./userStore/index.js"
 import {concernStore} from "./concernStore/index.js"
-Vue.use(Vuex);
+import {userBrowsingStore} from "./userBrowsingStore"
+Vue.use(Vuex); 
 const mainStore = new Vuex.Store({
 	state:{
 		
@@ -22,7 +23,8 @@ const mainStore = new Vuex.Store({
 		invitateStore,
 		privateMsgStore,
 		userStore,
-		concernStore
+		concernStore,
+		userBrowsingStore
 	}
 });
 export default mainStore; 

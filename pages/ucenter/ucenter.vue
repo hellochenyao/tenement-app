@@ -10,7 +10,7 @@
 			</view>
 		</view>
 		<view class="grid-view">
-			<view class="grid-item">
+			<view class="grid-item" @tap="goBrowsingHistory">
 				<view>
 					<image class="grid-img" src="../../static/grid/足迹.png"></image>
 				</view>
@@ -123,6 +123,14 @@
 
 			getUserInfo() {
 				this.$store.dispatch("getInfo");
+			},
+			goReleaseInvitation(){
+				
+			},
+			goBrowsingHistory(){
+				uni.navigateTo({
+					url: "/pages/history/index"
+				});
 			}
 		},
 		components: {

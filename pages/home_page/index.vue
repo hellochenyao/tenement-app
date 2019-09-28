@@ -19,10 +19,10 @@
 		<view :style="{marginTop:topHeight+'px'}"/>
 		<mescroll-uni :up="upOption" :down="downOption" @down="downCallback" @up="upCallback" @init="mescrollInit" >
 			<view v-if="current==0" class="swiper-item-tab" :key="index" v-for="(data,index) in invitationList">
-				<invitation-component  class="invitationId" :type="current" :dat="data"></invitation-component>
+				<invitation-component  class="invitationId" :type="current" :dat="data" :showBottom="true"></invitation-component>
 			</view>
 			<view v-if="current==1" class="swiper-item-tab uni-bg-green" :key="index" v-for="(data,index) in invitationList">
-				<invitation-component  class="invitationId" :type="current" :dat="data"></invitation-component>
+				<invitation-component  class="invitationId" :type="current" :dat="data" :showBottom="true"></invitation-component>
 			</view>
 		</mescroll-uni>
 		<!-- <image v-if="haveAgreedType" src="../../static/images/home_page/agree.png" class="agree-img" :class="haveAgreedType?'agree':''"></image> -->

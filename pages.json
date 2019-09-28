@@ -91,6 +91,15 @@
 				"navigationBarBackgroundColor":"#59c298"
 		    }
 		}
+		,
+		{
+		    "path" : "pages/history/index",
+		    "style" : {
+				"navigationBarTitleText":"浏览记录",
+				"enablePullDownRefresh": false,
+				"navigationBarBackgroundColor":"#59c298"
+		    }
+		}
 		,{
 		   "path" : "pages/chat/details/details",
 		        "style" : {
