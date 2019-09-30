@@ -1,6 +1,10 @@
 <template>
 	<view>
-		<invitation-component v-for="(item,index) in dataList" :dat="item" :showBottom="false"></invitation-component>
+		<view class="chooseInvitation">
+			<text class="chooseText">过滤已下架帖子</text>
+			<switch color="#59C298" :style="{transform:'scale(0.7)'}" checked @change="switch1Change" />
+		</view>
+		<invitation-component v-for="(item,index) in dataList" :dat="item" :showType="'history'"></invitation-component>
 		<uni-load-more :loadingType="1" :status="downMoreStatus" :content-text="downMoreOptions"></uni-load-more>
 	</view>
 </template>
@@ -102,5 +106,16 @@
 	}
 </script>
 
-<style>
+<style lang="scss">
+	.chooseInvitation{
+		width:100%;
+		height: 100upx;
+		display: flex;
+		flex-direction: row;
+		justify-content: flex-end;
+		align-items: center;
+		.chooseText{
+			font-size:26upx;
+		}
+	}
 </style>

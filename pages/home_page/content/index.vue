@@ -206,7 +206,6 @@
 					return state.invitateStore.responseMsg
 				}
 			}),
-			
 			location(){
 				if(this.detail.location){
 					return this.detail.location.split(",")[1]

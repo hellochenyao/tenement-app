@@ -64,7 +64,7 @@
 				</view>
 			</view>
 		</view>
-		<view class="share-bottom" v-if="showBottom">  
+		<view class="share-bottom" v-if="bottomType==1">  
 		    <view class="comment">
 				<view class="content">
 					<image class="button-icon" src="../../static/images/home_page/turn.png"></image>
@@ -105,16 +105,16 @@
 	export default {
 		data() {
 			return {
-					imgUrl:configUrl.uploadFileUrl,
-					contentHeight:0,
-					likeType:1,
-					likeInvitation:{}
+				imgUrl:configUrl.uploadFileUrl,
+				contentHeight:0,
+				likeType:1,
+				likeInvitation:{}
 			} 
 		}, 
 		props: {
 			dat: Object,
 			type:0,
-			showBottom:Boolean
+			showType:""
 		},
 		computed:{
 			info(){
@@ -164,6 +164,15 @@
 					}
 				}
 				return ""
+			},
+			bottomType(){
+				console.log(this.showType)
+				switch(this.showType){
+					case "history":
+					   return 0;
+					case "content":
+						return 1
+				}
 			}
 		},
 		components: {
