@@ -56,7 +56,6 @@ const loginStore = {
 			  success: function (loginRes) {
 				  RestApi.request(`/app/wx-user/auth/login`,{jscode:loginRes.code},"POST",false) 
 				  .then(res=>{   
-					  console.log("aaa",res)
 					  uni.setStorageSync("userId",res.userId);
 					  uni.setStorageSync("userJWTandToken",res.jwt+'/'+res.refreshToken);
 					  dispatch("storeUserInfo",{infoRes:info,userId:res.userId});

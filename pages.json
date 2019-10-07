@@ -99,6 +99,14 @@
 				"enablePullDownRefresh": false,
 				"navigationBarBackgroundColor":"#59c298"
 		    }
+		},
+		{
+		    "path" : "pages/my_publish/index",
+		    "style" : {
+				"navigationBarTitleText":"我的发布",
+				"enablePullDownRefresh": false,
+				"navigationBarBackgroundColor":"#59c298"
+		    }
 		}
 		,{
 		   "path" : "pages/chat/details/details",

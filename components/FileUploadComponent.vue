@@ -41,7 +41,7 @@
 	import getStorage from '../utils/getStorage.js';
 	import info from "../utils/info";
 	export default {
-		props: ["imgUrl1", "imgUrl2"
+		props: ["imgArr","video"
 		],
 		data() {
 			return { 
@@ -151,7 +151,17 @@
 			    }
 			    });
 			}
-		} 
+		},
+		watch:{
+			imgArr(v){
+				this.imgSrc=v.map(ite=>{
+					return this.uploadUrl+ite;
+				})
+			},
+			video(v){
+				this.videoSrc=this.uploadUrl+v
+			}
+		}
 	}
 </script>
 

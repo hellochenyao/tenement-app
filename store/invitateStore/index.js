@@ -77,6 +77,18 @@ const invitateStore = {
 		responseUserAction(action,payload){
 			action.commit("responsetToUser",payload);
 		},
+		updateInvitation({commit,dispatch},payload){
+			commit("publishMutions",false);
+			RestApi.request(`/app/operation/${payload.userId}/invitation/${payload.invitationId}`,payload,'PUT',)
+			.then(res=>{
+				commit("publishMutions",true);
+				info.toast("修改成功！");
+			})
+			.catch(err=>{
+				console.log(err)
+				info.toast("修改失败"+err.msg);
+			});
+		},
 		responseMsg({commit,dispatch},payload){
 			return RestApi.request(`/app/tenement/${payload.userId}/leave/words/${payload.invitationId}`,{answerMsgId:payload.answerMsgId,msg:payload.msg,invitationId:payload.invitationId,responseUserId:payload.responseUserId},'POST')
 		},
@@ -118,6 +130,18 @@ const invitateStore = {
 			.catch(e=>{
 				console.log(e)
 			})
+		},
+		getPublishHistory({commit,dispatch},payload){
+			let {userId,pageNo,pageSize} = payload;
+			return RestApi.request(`/app/operation/${userId}/find/publish/log`,{pageNo,pageSize},'get');
+		},
+		refreshInvitation({commit,dispatch},payload){
+			let {userId,invitationId} = payload;
+			return RestApi.request(`/app/operation/${userId}/refresh/invitation/${invitationId}`,{},'PUT');
+		},
+		downInvitationStatus({commit,dispatch},payload){
+			let {userId,invitationId,status} = payload;
+			return RestApi.request(`/app/operation/${userId}/update/invitation/${status}/${invitationId}`,{},'PUT');
 		}
 		
     }

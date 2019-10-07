@@ -1,5 +1,6 @@
 <template>
-	<view class="invitation-container" >
+	<view class="invitation-container">
+		<view class="back-container" v-if="info.status==-1&&bottomType==2"/>
 		<view class="main-content" id="main"   @tap="directTo">
 			<view class="user-info">
 				<image class="avatar" :src="info.avatar?info.avatar:''"></image>
@@ -25,7 +26,7 @@
 					<text class="detail-content-text">{{info.content?info.content:""}}</text>
 				</view> -->
 			</view>
-			<view class="viewResource" v-if="type==1">
+			<view class="viewResource" v-if="type==1&&(getResourceVideoUrl||getResourceImgUrl)">
 				<view class="video-content" v-if="getResourceVideoUrl.currentResource=='video'">
 				  <video v-if="getResourceVideoUrl.currentResource=='video'"
 						 objectFit="fill" :src="getResourceVideoUrl.url" 
@@ -76,19 +77,33 @@
 				</view>
 			</view>
 			<view class="comment">
-				<view class="content" @tap="agreeStepHandler(0,info.status)">
+				<view class="content" @tap="agreeStepHandler(0,info.likeStatus)">
 					<view class="button-content">
 						<image :class="'likeAnimation '+ (likeType==0?' getlike':'')" src="../../static/images/home_page/haveAgree.png"/>
-						<image class="button-icon" :src="info.status==0?'../../static/images/home_page/haveAgree.png':'../../static/images/home_page/agree.png'"></image>
+						<image class="button-icon" :src="info.likeStatus==0?'../../static/images/home_page/haveAgree.png':'../../static/images/home_page/agree.png'"></image>
 					</view>
 					<text class="button-name agree-button">{{info.supportNums?info.supportNums:0}}</text>
 				</view>
-				<view class="content" @tap="agreeStepHandler(1,info.status)">
+				<view class="content" @tap="agreeStepHandler(1,info.likeStatus)">
 					<view class="button-content">
 					  <image :class="'toLikeAnimation '+ (likeType==-1?' getStep':'')" src="../../static/images/home_page/haveStep.png"/>
-					  <image class="button-icon" :src="info.status==1?'../../static/images/home_page/haveStep.png':'../../static/images/home_page/step.png'"></image>
+					  <image class="button-icon" :src="info.likeStatus==1?'../../static/images/home_page/haveStep.png':'../../static/images/home_page/step.png'"></image>
 				    </view>
-				</view>
+				</view> 
+			</view>
+		</view>
+		<view class="my-publish" v-if="bottomType==2"> 
+			<view class="content" @tap="updateRefreshInvitation">
+				<image class="button-icon" src="../../static/images/my_publish/update.png"></image>
+				<text class="button-name">顶帖</text>
+			</view>
+			<view class="content" @tap="edit(info)">
+				<image class="button-icon" src="../../static/images/my_publish/change.png"></image>
+				<text class="button-name">修改</text>
+			</view>
+			<view class="content restart" @tap="changeInvitationStatus(info.status)">
+				<image class="button-icon" src="../../static/images/my_publish/delete.png"></image>
+				<text class="button-name delete">{{info.status==1?'关闭':'恢复'}}</text>
 			</view>
 		</view>
 		
@@ -102,6 +117,7 @@
 	import {getNodeHeight} from "../../utils/config.js"
 	import configUrl from "../../utils/config_utils.js"
 	import uniTag from "@/components/uni-tag/uni-tag.vue"
+	import getStorage from "../../utils/getStorage.js"
 	export default {
 		data() {
 			return {
@@ -116,13 +132,13 @@
 			type:0,
 			showType:""
 		},
-		computed:{
+		computed:{ 
 			info(){
 				console.log(this.likeInvitation)
 				let list = {};
 				let likeObj = {}
 				if(Object.keys(this.likeInvitation).length>0){
-					likeObj["status"] = this.likeInvitation.status;
+					likeObj["likeStatus"] = this.likeInvitation.likeStatus;
 					likeObj["supportNums"] = this.likeInvitation.supportNums;
 				}
 				let dateStr = this.dat.lastLoginTime.replace(/-/g, '/')
@@ -135,6 +151,7 @@
 				if(this.dat){
 					Object.assign(list,this.dat,ori,likeObj);
 				}
+				console.log(list)
 				return list;
 			} ,
 			getResourceVideoUrl(){ 
@@ -172,6 +189,8 @@
 					   return 0;
 					case "content":
 						return 1
+					case "ow":
+					    return 2;
 				}
 			}
 		},
@@ -199,7 +218,7 @@
 				})
 			},
 			agreeStepHandler(status,preStatus){
-				const userId = uni.getStorageSync('userId');
+				const userId = getStorage('userId');
 				let invitationId= this.info.id;
 				this.$store.dispatch("agreeStepAction",{
 					likeUserId:userId,
@@ -232,6 +251,63 @@
 					console.log(e)
 					info.toast(e.msg);
 				});
+			},
+			updateRefreshInvitation(){//顶帖
+				const userId = getStorage('userId');
+				let invitationId= this.info.id;
+				this.$store.dispatch("refreshInvitation",{
+					userId,
+					invitationId
+				}).then(res=>{
+					info.toast("更新成功！");
+				})
+			},
+			changeInvitationStatus(status){
+				let _this = this
+				uni.showModal({
+				    title: '提示',
+				    content: `确定${status==1?'关闭该帖子':'重新恢复帖子'}吗？`+(status==1?'关闭后,其他人将无法查看':''),
+				    success: function (res) {
+				        if (res.confirm) {
+				            const userId = getStorage('userId');
+				            let invitationId= _this.info.id;
+				            _this.$store.dispatch("downInvitationStatus",{
+				            	userId,
+				            	invitationId,
+								status:-status
+				            }).then(res=>{
+				            	if(status==-1){
+				            		info.toast("帖子恢复成功！")
+				            	}else{
+				            		info.toast("帖子关闭成功！")
+				            	}
+								_this.getDeitailInvitation(userId,invitationId);
+				            })
+				        } 
+				    }
+				});
+			},
+			getInvitationDetail(userId,id){
+				this.$store.dispatch("getInvitationDetail",{userId,id})
+				.then(res=>{
+					console.log(res)
+					this.info.status = res.status;
+				})
+				.catch(e=>{
+					console.log(e)
+				})
+			},
+			edit(invitation){
+				console.log(invitation)
+				if(invitation.type==1){
+					uni.navigateTo({
+						url: "../add_invitation/housing_publish/index?invitationId="+invitation.id
+					});
+				}else{
+					uni.navigateTo({
+						url: "../add_invitation/noHousingPublish/index?invitationId="+invitation.id
+					});
+				}
 			}
 			
 			
@@ -250,6 +326,16 @@
 		box-shadow: 1px 1px 5px #d6d6d6;
 		position: relative;
 		// height: 360upx;
+		.back-container{
+			width:100%;
+			height:100%;
+			position: absolute;
+			left:0;
+			top:0;
+			background: #000;
+			opacity:0.3;
+			z-index: 1000;
+		}
 		.main-content{
 			width:100%;
 		}
@@ -587,6 +673,7 @@
 						.button-icon {
 							width:45upx;
 							height:45upx;
+							margin-right: 10upx;
 						}
 						.button-name {
 							width:100upx;
@@ -603,6 +690,41 @@
 					&:nth-of-type(2){
 						justify-content: flex-end;
 					}
+				}
+			}
+			.my-publish{
+				width: calc(100% - 40upx);
+				height:50upx;
+				display: flex;
+				flex-direction: row;
+				justify-content: space-between;
+				align-items: center;
+				border-top: 1px solid $uni-app-border-color;
+				padding: 10upx 20upx;
+				.content{
+					display: flex;
+					flex-direction: row;
+					justify-content: center;
+					align-items: center;
+					.button-icon {
+						width:45upx;
+						height:45upx;
+						margin-right: 10upx;
+					}
+					.button-name {
+						max-width:100upx;
+						margin-right: 10upx;
+						font-size: 26upx;
+						color: $uni-app-font-color;
+					}
+					.delete{
+						color:#FF0000;
+					}
+				}
+				.restart{
+					position: relative;
+					z-index: 1001;
+					background: #FFF;
 				}
 			}
 		}

@@ -1,10 +1,6 @@
 <template>
 	<view>
-		<view class="chooseInvitation">
-			<text class="chooseText">只看回复过的</text>
-			<switch color="#59C298" :style="{transform:'scale(0.7)'}" :checked="isHaveResponse" @change="switchChange" />
-		</view>
-		<invitation-component v-for="(item,index) in dataList" :dat="item" :showType="'history'"></invitation-component>
+		<invitation-component v-for="(item,index) in dataList" :type="1" :dat="item" :showType="'ow'"></invitation-component>
 		<uni-load-more :loadingType="1" :status="downMoreStatus" :content-text="downMoreOptions"></uni-load-more>
 	</view>
 </template>
@@ -53,7 +49,7 @@
 
 		},
 		onLoad(event) {
-			this.getHistory();
+			this.getPublish();
 		},
 		onReachBottom(){
 			this.downReachBottom()
@@ -67,15 +63,14 @@
 				if(this.changeDownMoreStatus()){
 					return;
 				}
-				this.getHistory();
+				this.getPublish();
 			},
-			getHistory(status){
+			getPublish(status){
 				let userId = getStorage("userId")
 				let pageNo = this.pageNo;
 				let pageSize = this.pageSize;
 				let postData = {userId,pageNo,pageSize};
-				postData["isHaveResponse"] = this.isHaveResponse;
-				this.$store.dispatch("getBrowsingInvitation",postData)
+				this.$store.dispatch("getPublishHistory",postData)
 				.then(res=>{
 					if(res.data.length==this.pageSize){
 						this.pageNo = this.pageNo+1;
@@ -98,13 +93,6 @@
 					return true;
 				}
 				return false
-			},
-			switchChange(e){
-				console.log(e)
-				this.isHaveResponse = e.detail.value;
-				this.pageNo=1;
-				this.dataList = []
-				this.downReachBottom()
 			}
 		},
 	watch:{
@@ -125,3 +113,4 @@
 		}
 	}
 </style>
+

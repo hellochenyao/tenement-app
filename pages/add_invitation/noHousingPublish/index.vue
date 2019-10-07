@@ -104,7 +104,9 @@
 				showPersonalDetails:false, 
 				title:"", 
 				content:"",
-				hideTitle:false
+				hideTitle:false,
+				edit:false,
+				invitationId:""
 			}
 		}, 
 		computed: { 
@@ -124,7 +126,53 @@
 				publishSuccess:state=>state.invitateStore.publishSuccess
 			})
         },
+		onLoad(event) {
+			if(event.invitationId){
+				let userId = getStorage('userId');
+				let id = event.invitationId;
+				this.invitationId = id;
+				this.getInvitationDetail(userId,id)
+				this.edit = true;
+			}
+		},
 		methods: { 
+			getInvitationDetail(userId,id){
+				let _this = this;
+				this.$store.dispatch("getInvitationDetail",{userId,id})
+				.then(res=>{
+					console.log(res)
+					_this.currentLoc.name = res.location.split(",")[0];
+					_this.currentLoc.latitude = res.latitude.split(",")[0];
+					_this.currentLoc.longitude = res.latitude.split(",")[1];
+					qqmapsdk.reverseGeocoder({
+						  location: { 
+					           latitude: res.latitude.split(",")[0],
+							   longitude: res.latitude.split(",")[1]
+						  },
+						  success: function(res) {//成功后的回调
+						  console.log(res)
+						       _this.currentLoc.landmark = res.result.address_reference.landmark_l2.title;
+						       _this.currentLoc.street = res.result.address_component.street;
+							   _this.currentLoc.city = res.result.address_component.city
+						  },
+						  fail:function(e){
+							  console.log(e)
+						  }
+					})
+					_this.refuseMedium = res.acceptedMedium==0?true:false,
+					_this.allowCall = res.allowCallMe==0?false:true,
+					_this.showPersonalDetails =res.showPersonalInfo==0?false:true, 
+					_this.indate = {
+						date:res.desiredDate.split(" ")[0]
+					};
+					_this.title = res.title; 
+					_this.content = res.content;
+					_this.budget = res.rental;
+				})
+				.catch(e=>{
+					console.log(e)
+				})
+			},
 			checkedHandler(e){       
 				var self = this; 
 				if(e.currentTarget.dataset.type==1){    
@@ -214,7 +262,13 @@
 					content:this.content,
 					id:userId,
 				};
-				this.$store.dispatch("publishInvitation",postData); 
+				if(this.edit){
+					postData["invitationId"] = this.invitationId;
+					postData["userId"] = userId
+					this.$store.dispatch("updateInvitation",postData); 
+				}else{
+					this.$store.dispatch("publishInvitation",postData); 
+				}
 			}else{
 				info.toast("请先登录");
 			}

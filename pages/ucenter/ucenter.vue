@@ -2,11 +2,11 @@
 	<view class="container">
 		<view class="user-info">
 			<view class="user-name">
-				<view class="name">宇宙 <i class="iconfont" style="margin-left: 10upx;color:#00CCFF">&#xe757;</i> </view>
+				<view class="name"><text>{{loginRes.nickName?loginRes.nickName:''}}</text> <image class="iconfont" :src="'../../static/images/home_page/'+(loginRes.gender==1?'boy.png':loginRes.gender==0?'girl.png':'')" style="margin-left: 10upx;color:#00CCFF"></image> </view>
 				<view class="user-modify">编辑个人资料</view>
 			</view>
 			<view class="user-avatar">
-				<image class="avatar" src="https://ss3.bdstatic.com/70cFv8Sh_Q1YnxGkpoWK1HF6hhy/it/u=3914950518,3569645197&fm=27&gp=0.jpg"></image>
+				<image class="avatar" :src="loginRes.avatarUrl"></image>
 			</view>
 		</view>
 		<view class="grid-view">
@@ -18,7 +18,7 @@
 					浏览记录
 				</view>
 			</view>
-			<view class="grid-item">
+			<view class="grid-item" @tap="goPublishHistory">
 				<view>
 					<image class="grid-img" src="../../static/grid/发布.png"></image>
 				</view>
@@ -75,7 +75,7 @@
 	import RestApi from "../../utils/restApi/index.js";
 	import uniGrid from "../../components/uni-grid/uni-grid.vue";
 	import {
-		mapState,
+		mapState, 
 		mapMutations,
 		mapActions
 	} from 'vuex';
@@ -104,6 +104,9 @@
 		onShow() {
 		
 		},
+		onLoad(option) {
+			this.getUserInfo()
+		},
 		methods: {
 			// #ifdef  APP-PLUS || H5
 			goAppLogin() {
@@ -122,7 +125,7 @@
 			// #endif 
 
 			getUserInfo() {
-				this.$store.dispatch("getInfo");
+				this.$store.dispatch("getUserInfo");
 			},
 			goReleaseInvitation(){
 				
@@ -131,10 +134,20 @@
 				uni.navigateTo({
 					url: "/pages/history/index"
 				});
+			},
+			goPublishHistory(){
+				uni.navigateTo({
+					url: "/pages/my_publish/index"
+				});
 			}
 		},
 		components: {
 			uniGrid,
+		},
+		watch:{
+			loginRes(v){
+				console.log(v)
+			}
 		}
 	}
 </script>
@@ -162,12 +175,9 @@
 	}
 
 	.iconfont {
-		font-family: "iconfont" !important;
-		font-size: 16px;
-		font-style: normal;
-		-webkit-font-smoothing: antialiased;
-		-webkit-text-stroke-width: 0.2px;
-		-moz-osx-font-smoothing: grayscale;
+		width:50upx;
+		height: 50upx;
+		margin-left: 10upx;
 	}
 
 	.user-info {
@@ -195,6 +205,11 @@
 	.name {
 		font-size: 42upx;
 		width: 100%;
+		height: 90upx;
+		display: flex;
+		flex-direction: row;
+		justify-content: flex-start;
+		align-items: center;
 		font-weight: 500;
 	}
 

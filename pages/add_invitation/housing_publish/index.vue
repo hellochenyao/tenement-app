@@ -1,7 +1,7 @@
 <template>
 	<view class="has-hourse-container"> 
 		<view class="roll-wrap">
-			<file-upload-component imgUrl1="../../../static/images/add/相机.png" imgUrl2="../../../static/images/add/视频.png" v-if="publishState===0"
+			<file-upload-component :video="videoSrc" :imgArr="imgSrc" imgUrl1="../../../static/images/add/相机.png" imgUrl2="../../../static/images/add/视频.png" v-if="publishState===0"
 			 v-on:setResourceUrl="setResourceUrl"></file-upload-component>
 			<view class="detail-publish" v-if="publishState===0">
 				<input v-if="!hideTitle" class="detail-title-input" placeholder="加个标题哟" placeholder-class="place-title" v-model="title" />
@@ -114,7 +114,9 @@
 				housing:"",
 				enterNum:0,
 				checkItemArr:[{title:"可短租",check:false},{title:"包宽带费",check:false},{title:"无中介费",check:false}],
-				remark:""
+				remark:"",
+				edit:false,
+				invitationId:""
 				
             }
         },
@@ -129,6 +131,15 @@
                 return true;
             }
         },
+		onLoad(event) {
+			if(event.invitationId){
+				let userId = getStorage('userId');
+				let id = event.invitationId;
+				this.invitationId = id;
+				this.getInvitationDetail(userId,id)
+				this.edit = true;
+			}
+		},
         components: {
             fileUploadComponent,
             publishButton,
@@ -173,7 +184,6 @@
                             		   longitude: res.longitude,
                             	  },
                             	  success: function(res) {//成功后的回调
-								  console.log(res)
                             	       self.currentLoc.landmark = res.result.address_reference.landmark_l2.title;
                             	       self.currentLoc.street = res.result.address_component.street;
 									   self.currentLoc.city = res.result.address_component.city
@@ -232,7 +242,13 @@
 						type:1,
 						id:userId,
 					};
-					this.$store.dispatch("publishInvitation",postData); 
+					if(this.edit){
+						postData["invitationId"] = this.invitationId;
+						postData["userId"] = userId
+						this.$store.dispatch("updateInvitation",postData); 
+					}else{
+						this.$store.dispatch("publishInvitation",postData); 
+					}
 				}else{
 					info.toast("请先登录");
 				}
@@ -240,7 +256,6 @@
 			getCheck(index){
 				this.checkItemArr[index].check = !this.checkItemArr[index].check
 				this.remark = this.checkItemArr.filter((v,i)=>v.check).map(v=>v.title).toString();
-				console.log(this.remark)
 			},
             clickHandle() {
                 if (this.publishState === 0) {
@@ -271,11 +286,51 @@
             popOpen() {
                 this.popData.visible = true
             },
+			getInvitationDetail(userId,id){
+				let _this = this;
+				this.$store.dispatch("getInvitationDetail",{userId,id})
+				.then(res=>{
+					_this.currentLoc.name = res.location.split(",")[0];
+					_this.currentLoc.latitude = res.latitude.split(",")[0];
+					_this.currentLoc.longitude = res.latitude.split(",")[1];
+					qqmapsdk.reverseGeocoder({
+						  location: { 
+					           latitude: res.latitude.split(",")[0],
+							   longitude: res.latitude.split(",")[1]
+						  },
+						  success: function(res) {//成功后的回调
+						  console.log(res)
+						       _this.currentLoc.landmark = res.result.address_reference.landmark_l2.title;
+						       _this.currentLoc.street = res.result.address_component.street;
+							   _this.currentLoc.city = res.result.address_component.city
+						  },
+						  fail:function(e){
+							  console.log(e)
+						  }
+					})
+					_this.rent = res.rental;
+					_this.title = res.title;
+					_this.content =res.content;
+					_this.housing=res.roomRentType==0?"整租":res.roomRentType==1?"主卧":res.roomRentType==2?"次卧":"床位";
+					_this.enterNum=res.enterNums;
+					_this.selectedLayOut=res.houseLayout;
+					_this.imgSrc=res.housingImgs.split(",");
+					_this.videoSrc=res.housingVideos;
+					_this.remark = res.remark;
+					_this.checkItemArr= _this.checkItemArr.map(v=>{
+						if(res.remark.indexOf(v.title)!=-1){
+							v.check = true
+						}
+						return v
+					})
+				})
+				.catch(e=>{
+					console.log(e)
+				})
+			},
             bindLayoutChange(e) {
                 let layoutIndex = e.target.value
-				console.log(layoutIndex)
                 this.selectedLayOut = this.layoutRange[0][layoutIndex[0]] + this.layoutRange[1][layoutIndex[1]] + this.layoutRange[2][layoutIndex[2]];
-                console.log(this.selectedLayOut)
 			},
             bindRentTypeChange(e) {
                 let rentTypeIndex = e.target.value;
