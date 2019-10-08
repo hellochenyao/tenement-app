@@ -94,9 +94,9 @@
 				<image class="tab-img" src="../../../static/images/home_page/return.png"/>
 				<text class="tab-text">海报</text>
 			</view>
-			<view v-if="!currentResponseUser.nickName" class="tab-content">
-				<image class="tab-img" src="../../../static/images/home_page/shouchang.png"/>
-				<text class="tab-text">收藏</text>
+			<view v-if="!currentResponseUser.nickName" @tap="collect()" class="tab-content">
+				<image class="tab-img" :src="haveCollect?'../../../static/images/home_page/yishouchang.png':'../../../static/images/home_page/shouchang.png'"/>
+				<text class="tab-text" :style="{color:haveCollect?'#59c298':'#000'}">收藏</text>
 			</view>
 			<input v-if="currentResponseUser.nickName" class="response-input" :placeholder="'回复:'+(currentResponseUser.nickName?currentResponseUser.nickName:'')" v-model="res" />
 			<button class="return" @tap="resClick(detail.userId,detail.publisher)">{{!currentResponseUser.nickName?'回复ta':'发送'}}</button>
@@ -134,7 +134,7 @@
 	import {appHeadUrl} from "../../../utils/config.js";
 	export default {
 		data() { 
-			return {
+			return { 
 				res:'',
 				hideButton:false,
 				invitationId:"",
@@ -159,7 +159,8 @@
 				pageSize:10,
 				total:0,
 				responseToUserMsgId:"",
-				posterShow:false
+				posterShow:false,
+				haveCollect:false
 			}
 		},
 		components: {
@@ -175,6 +176,7 @@
 			this.getWriteMsg(event.id,this.pageNo,this.pageSize);
 			this.getInvitation(userId,event.id)
 			this.viewAction(userId,event.id)
+			this.queryCollect()
 			this.$store.dispatch("getUserInfo") 
 			this.$store.dispatch("getCodeAndBackImg",{
 				path:"/pages/home_page/content/index?id="+this.invitationId,
@@ -309,6 +311,18 @@
 					url: "./viewImgs?id="+this.invitationId+"&responseUserId="+this.detail.userId
 				});
 			},
+			queryCollect(){
+				let userId = getStorage('userId');
+				let invitationId = this.invitationId;
+				this.$store.dispatch("queryCollect",{userId,invitationId})
+				.then(res=>{
+					this.haveCollect = res.collectStatus
+					console.log(this.currentLoc)
+				})
+				.catch(e=>{
+					console.log(e)
+				})
+			},
 			changeDownMoreStatus(){
 				if(this.msgRes.length >= this.total){
 					this.downMoreStatus = "noMore";
@@ -407,6 +421,22 @@
 			changeDetailTypeValue(type){
 				this.detailType = type;
 				this.res=""
+			},
+			collect(){
+				let userId = getStorage('userId'); 
+				let invitationId = this.invitationId
+				this.$store.dispatch("collect",{userId,invitationId})
+				.then(res=>{
+					if(res.collectStatus){
+						info.toast("已收藏！")
+					}else{
+						info.toast("已取消收藏！")
+					}
+					this.haveCollect = res.collectStatus
+				})
+				.catch(err=>{
+					console.log(err)
+				});
 			}
 		},
 		watch:{
@@ -447,7 +477,6 @@
 		display: flex;
 		flex-direction: row;
 		align-items: center;
-		justify-content: space-between;
 		margin-top: 10upx;
 		background: #FFF;
 		.avatar{

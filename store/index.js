@@ -4,6 +4,7 @@ import RestApi from "../utils/restApi/index.js"
 import {loginStore} from "./loginStore";
 import {invitateStore} from "./invitateStore";
 import {privateMsgStore} from "./privateMsgStore"
+import {collectStore} from "./collectStore"
 import {userStore} from "./userStore/index.js"
 import {concernStore} from "./concernStore/index.js"
 import {userBrowsingStore} from "./userBrowsingStore"
@@ -24,7 +25,8 @@ const mainStore = new Vuex.Store({
 		privateMsgStore,
 		userStore,
 		concernStore,
-		userBrowsingStore
+		userBrowsingStore,
+		collectStore
 	}
 });
 export default mainStore; 

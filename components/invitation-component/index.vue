@@ -138,6 +138,7 @@
 				let list = {};
 				let likeObj = {}
 				if(Object.keys(this.likeInvitation).length>0){
+					likeObj["status"] = this.likeInvitation.status;
 					likeObj["likeStatus"] = this.likeInvitation.likeStatus;
 					likeObj["supportNums"] = this.likeInvitation.supportNums;
 				}
