@@ -63,6 +63,13 @@
 				"navigationBarBackgroundColor":"#59c298"
 			}
         },{
+            "path" : "pages/collect/index",  
+            "style" : { 
+				"navigationBarTitleText": "收藏",
+				"navigationBarBackgroundColor":"#59c298"
+			}
+        },
+		{
             "path" : "pages/home_page/choose_city",  
             "style" : { 
 				"navigationBarTitleText": "选择城市",

@@ -26,7 +26,7 @@
 					我的发布
 				</view>
 			</view>
-			<view class="grid-item">
+			<view class="grid-item" @tap="goCollect">
 				<view>
 					<image class="grid-img" src="../../static/grid/收藏.png"></image>
 				</view>
@@ -139,7 +139,13 @@
 				uni.navigateTo({
 					url: "/pages/my_publish/index"
 				});
-			}
+			},
+			goCollect(){
+				uni.navigateTo({
+					url: "/pages/collect/index"
+				});
+			},
+			
 		},
 		components: {
 			uniGrid,
