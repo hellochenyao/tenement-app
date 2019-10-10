@@ -57,6 +57,12 @@
 				"navigationBarBackgroundColor":"#59c298"
 			}
         },{
+            "path" : "pages/leaveWord/index",  
+            "style" : { 
+				"navigationBarTitleText": "留言",
+				"navigationBarBackgroundColor":"#59c298"
+			}
+        },{
             "path" : "pages/home_page/content/index",  
             "style" : { 
 				"navigationBarTitleText": "详细内容",

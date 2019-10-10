@@ -34,15 +34,15 @@
 					我的收藏
 				</view>
 			</view>
-			<view class="grid-item">
+<!-- 			<view class="grid-item">
 				<view>
 					<image class="grid-img" src="../../static/grid/合同.png"></image>
 				</view>
 				<view>
 					合同模版
 				</view>
-			</view>
-			<view class="grid-item">
+			</view> -->
+			<view class="grid-item" @tap="goWord">
 				<view>
 					<image class="grid-img" src="../../static/grid/留言.png"></image>
 				</view>
@@ -145,6 +145,11 @@
 					url: "/pages/collect/index"
 				});
 			},
+			goWord(){
+				uni.navigateTo({
+					url: "/pages/leaveWord/index"
+				});
+			}
 			
 		},
 		components: {
