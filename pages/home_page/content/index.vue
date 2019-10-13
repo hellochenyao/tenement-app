@@ -101,7 +101,7 @@
 			<input v-if="currentResponseUser.nickName" class="response-input" :placeholder="'回复:'+(currentResponseUser.nickName?currentResponseUser.nickName:'')" v-model="res" />
 			<button class="return" @tap="resClick(detail.userId,detail.publisher)">{{!currentResponseUser.nickName?'回复ta':'发送'}}</button>
 		</view>
-		<msg-detail :responseToUserMsgId="responseToUserMsgId" :res="selectMsg" :detailType="detailType" @changeType="changeDetailTypeValue"></msg-detail>
+		<msg-detail :responseToUserMsgId="responseToUserMsgId" :currentMsgInfo="currentMsgInfo" :res="selectMsg" :detailType="detailType" @changeType="changeDetailTypeValue"></msg-detail>
 		<loading-component :show="Object.keys(detail).length==0"></loading-component>
 		<poster v-if="posterShow" 
 		        @openPost="openPost"
@@ -160,7 +160,8 @@
 				total:0,
 				responseToUserMsgId:"",
 				posterShow:false,
-				haveCollect:false
+				haveCollect:false,
+				currentMsgInfo:{}
 			}
 		},
 		components: {
@@ -182,6 +183,14 @@
 				path:"/pages/home_page/content/index?id="+this.invitationId,
 				userId
 			});
+			if(event.msgId){
+				console.log(this.msgRes)
+				this.currentMsgInfo = Object.assign({},{
+					msgId:event.msgId,
+					invitationId:this.invitationId,
+				})
+				this.detailType = true;
+			}
 		},
 		onUnload(){
 			this.$store.commit("setLoading",false)

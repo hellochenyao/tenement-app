@@ -7,7 +7,7 @@
 				<text class="title">1楼的回复</text>
 			</view>
 			<view class="msg-content" id="view">
-				<res-msg :msg="res" :type="type"></res-msg>
+				<res-msg :msg="msg.id?msg:res" :type="type"></res-msg>
 			</view>
 			<scroll-view scroll-y="true" @scrolltolower="downReachBottom" class="res" :style="{height:height}">
 				<view class="noDataContent" :style="{height:height}" v-if="res.resDetail.length==0">
@@ -45,13 +45,15 @@
 				pageNo:1,
 				pageSize:10,
 				total:0,
-				msgArr:[]
+				msgArr:[],
+				msg:{}
 			}
 		},
 		props:{  
 			res:{},
 			detailType:Boolean,
-			responseToUserMsgId:""
+			responseToUserMsgId:"",
+			currentMsgInfo:{}
 		},
 		components: {
 			ResMsg,
@@ -79,6 +81,9 @@
 				this.resetState();
 				this.$emit("changeType",type);
 				this.$store.dispatch("responseUserAction",{})
+				if(!type){
+					this.msg={}
+				}
 			},
 			resetState(){
 				this.msgArr=[]
@@ -171,7 +176,8 @@
 		watch:{
 			detailType(value){
 				this.type = value;
-				if(value){
+				if(value&&!this.currentMsgInfo.invitationId){
+					console.log("a")
 					let userId = getStorage('userId');
 					this.getResponseMsg(userId,this.res.inivitationid,this.res.id);
 				}
@@ -180,6 +186,21 @@
 				let msgId = parseInt(v);
 				let userId = getStorage('userId');
 				this.addResponseContent(userId,msgId)
+			},
+			currentMsgInfo(v){
+				this.type = true;
+				if(v.invitationId&&this.detailType){
+					let userId = getStorage('userId');
+					this.getResponseMsg(userId,v.invitationId,v.msgId);
+					this.$store.dispatch("getResponseMsgContent",{userId,msgId:v.msgId})
+					.then(res=>{
+						console.log(res)
+						this.msg = res;
+					})
+					.catch(e=>{
+						console.log(e)
+					})
+				}
 			}
 		}
 	}
