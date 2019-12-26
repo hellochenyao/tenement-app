@@ -1,10 +1,11 @@
 <template>
 	<view class="loading" v-if="loading">
-		<image class="loading-img" src="../../static/images/home_page/timg.gif"/>
+		<image class="loading-img" :src="image+'timg.gif'"/>
 	</view>
-</template>
+</template> 
 
 <script>
+	import configUrl from "../../utils/config_utils.js"
 	import {
 	    mapState,  
 	    mapMutations, 
@@ -13,6 +14,7 @@
 	export default {
 		data() { 
 			return {
+				image:configUrl.imagesUrl,
 			}
 		},
 		props: {

@@ -1,9 +1,9 @@
-<template>
+<template> 
 	<view class="container">
 		<view class="user-info">
 			<view class="user-name">
 				<view class="name"><text>{{loginRes.nickName?loginRes.nickName:''}}</text> <image class="iconfont" :src="'../../static/images/home_page/'+(loginRes.gender==1?'boy.png':loginRes.gender==0?'girl.png':'')" style="margin-left: 10upx;color:#00CCFF"></image> </view>
-				<view class="user-modify">编辑个人资料</view>
+				<view class="user-modify" @tap="goEdit()">编辑个人资料</view>
 			</view>
 			<view class="user-avatar">
 				<image class="avatar" :src="loginRes.avatarUrl"></image>
@@ -12,7 +12,7 @@
 		<view class="grid-view">
 			<view class="grid-item" @tap="goBrowsingHistory">
 				<view>
-					<image class="grid-img" src="../../static/grid/足迹.png"></image>
+					<image class="grid-img" src="../../static/grid/zuji.png"></image>
 				</view>
 				<view>
 					浏览记录
@@ -20,15 +20,15 @@
 			</view>
 			<view class="grid-item" @tap="goPublishHistory">
 				<view>
-					<image class="grid-img" src="../../static/grid/发布.png"></image>
+					<image class="grid-img" src="../../static/grid/fabu.png"></image>
 				</view>
 				<view>
 					我的发布
-				</view>
+				</view>  
 			</view>
 			<view class="grid-item" @tap="goCollect">
 				<view>
-					<image class="grid-img" src="../../static/grid/收藏.png"></image>
+					<image class="grid-img" src="../../static/grid/shouchang.png"></image>
 				</view>
 				<view>
 					我的收藏
@@ -36,7 +36,7 @@
 			</view>
 <!-- 			<view class="grid-item">
 				<view>
-					<image class="grid-img" src="../../static/grid/合同.png"></image>
+					<image class="grid-img" src="../../static/grid/hetong.png"></image>
 				</view>
 				<view>
 					合同模版
@@ -44,7 +44,7 @@
 			</view> -->
 			<view class="grid-item" @tap="goWord">
 				<view>
-					<image class="grid-img" src="../../static/grid/留言.png"></image>
+					<image class="grid-img" src="../../static/grid/liuyan.png"></image>
 				</view>
 				<view>
 					留言
@@ -53,19 +53,19 @@
 		</view>
 		<view class="user-bottom-list">
 			<view class="my-list-item">
-				<image class="list-img" src="../../static/grid/设置.png"></image>
+				<image class="list-img" src="../../static/grid/shezhi.png"></image>
 				<view class="list-text">我的设置</view>
-				<view class="list-text-left"><i class="iconfont" style="">&#xe62d;</i></view>
+				<view class="list-text-left"><image class="list-img" src="../../static/images/home_page/right.png"></image></view>
 			</view>
-			<view class="my-list-item">
-				<image class="list-img" src="../../static/grid/意见.png"></image>
+			<view class="my-list-item" @tap="goAdvice()">
+				<image class="list-img" src="../../static/grid/yijian.png"></image>
 				<view class="list-text">意见反馈</view>
-				<view class="list-text-left"><i class="iconfont" style="">&#xe62d;</i></view>
+				<view class="list-text-left"><image class="list-img" src="../../static/images/home_page/right.png"></image></view>
 			</view>
 			<view class="my-list-item">
-				<image class="list-img" src="../../static/grid/客服.png"></image>
+				<image class="list-img" src="../../static/grid/kefu.png"></image>
 				<view class="list-text">联系客服</view>
-				<view class="list-text-left"><i class="iconfont" style="">&#xe62d;</i></view>
+				<view class="list-text-left"><image class="list-img" src="../../static/images/home_page/right.png"></image></view>
 			</view>
 		</view>
 	</view>
@@ -127,6 +127,11 @@
 			getUserInfo() {
 				this.$store.dispatch("getUserInfo");
 			},
+			goAdvice(){
+				uni.navigateTo({
+					url: "../suggest/index"
+				});
+			},
 			goReleaseInvitation(){
 				
 			},
@@ -143,6 +148,11 @@
 			goCollect(){
 				uni.navigateTo({
 					url: "/pages/collect/index"
+				});
+			},
+			goEdit(){
+				uni.navigateTo({
+					url: "/pages/ucenter/index"
 				});
 			},
 			goWord(){

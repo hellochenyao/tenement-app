@@ -142,6 +142,10 @@ const privateMsgStore = {
 		deleteMsg({commit,dispatch},payload){
 			let {userId,receiveUserid} = payload;
 			return RestApi.request(`/app/tenement/${userId}/private/message/delete/${receiveUserid}`,null,'DELETE')
+		},
+		read({commit,dispatch},payload){
+			let {userId,receiverUserId} = payload;
+			return RestApi.request(`/app/tenement/${userId}/preivate/message/read?receiveUserId=${receiverUserId}`,{},'PUT')
 		}
     }
 }

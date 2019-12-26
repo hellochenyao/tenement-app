@@ -3,13 +3,13 @@
 		<view class="upload-container" @tap="uploadImg">   
 		    <view v-if="!imgSrc.length>0" class="detail-content">    
 				<!-- <uni-icon color="#68bd91" type="camera" size="60"></uni-icon> -->
-				<image :src="imgUrl1" class="image-big-1"></image>
+				<image :src="'../static/images/add/xiangji.png'" class="image-big-1"></image>
 				<text class="upload-name">添加图片</text>  
 			</view>  
 			<view v-if="imgSrc.length>0" class="picture_container">
 				 <view class="img-container" v-for="(item,idx) in imgSrc" :key='idx'>
 					 <view class="content-close" @tap.stop="deleteUpload(0,idx)">
-						<image class="close-btn" src="../static/images/home_page/关闭.png"></image>
+						<image class="close-btn" src="../static/images/page/close.png"></image>
 					 </view>
 				     <image class="controls-play img" :src="item" mode="scaleToFill"></image>
 					 <image class="img_desc" src="../static/images/home_page/img.png"></image>
@@ -19,13 +19,13 @@
 		<view class="upload-container"  @tap="uploadVideo">      
 		    <view v-if="!videoSrc" class="detail-content">
 				<!-- <uni-icon color="#68bd91" type="videocam" size="60"></uni-icon>  -->
-				<image :src="imgUrl2" class="image-big-2"></image>
+				<image :src="'../static/images/add/shiping.png'" class="image-big-2"></image>
 				<text class="upload-name">添加视频</text> 
 			</view>
 			<view v-if="videoSrc" class="picture_container"> 
 				<view class="play-container">  
 					<view class="content-close" @tap.stop="deleteUpload(1,idx)">
-						<image class="close-btn" src="../static/images/home_page/关闭.png"></image>
+						<image class="close-btn" src="../static/images/page/close.png"></image>
 					</view>
 					<video class="controls-play play" :src="videoSrc"></video>  
 					<image class="video_desc" src="../static/images/home_page/video.png"></image>

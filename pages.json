@@ -63,6 +63,12 @@
 				"navigationBarBackgroundColor":"#59c298"
 			}
         },{
+            "path" : "pages/ucenter/index",  
+            "style" : { 
+				"navigationBarTitleText": "个人资料",
+				"navigationBarBackgroundColor":"#59c298"
+			}
+        },{
             "path" : "pages/home_page/content/index",  
             "style" : { 
 				"navigationBarTitleText": "详细内容",
@@ -72,6 +78,12 @@
             "path" : "pages/collect/index",  
             "style" : { 
 				"navigationBarTitleText": "收藏",
+				"navigationBarBackgroundColor":"#59c298"
+			}
+        },{
+            "path" : "pages/suggest/index",  
+            "style" : { 
+				"navigationBarTitleText": "意见反馈",
 				"navigationBarBackgroundColor":"#59c298"
 			}
         },
@@ -109,6 +121,14 @@
 		    "path" : "pages/history/index",
 		    "style" : {
 				"navigationBarTitleText":"浏览记录",
+				"enablePullDownRefresh": false,
+				"navigationBarBackgroundColor":"#59c298"
+		    }
+		},
+		{
+		    "path" : "pages/circle/detail/index",
+		    "style" : {
+				"navigationBarTitleText":"动态详情",
 				"enablePullDownRefresh": false,
 				"navigationBarBackgroundColor":"#59c298"
 		    }
@@ -182,6 +202,13 @@
 		            "navigationBarBackgroundColor":"#59c298"
 		        }
 		},{
+		    "path" : "pages/circle/index/index",
+		        "style" : {
+		            "navigationBarTitleText":"圈子",
+		            "navigationBarBackgroundColor":"#59c298"
+		        }
+		},
+		{
 		    "path" : "pages/ucenter/personal",
 		        "style" : {
 		            "navigationBarTitleText":"个人主页",
@@ -212,6 +239,12 @@
 			"iconPath":"static/tab/add.png",
 			"selectedIconPath":"static/tab/add_active.png", 
 			"text": "发布" 
+		},
+		{
+			"pagePath": "pages/circle/index/index",
+			"iconPath":"static/images/index/quanzi.png",
+			"selectedIconPath":"static/images/index/quanzi_active.png", 
+			"text": "圈子" 
 		},
 		{
 			"pagePath": "pages/chat/index",

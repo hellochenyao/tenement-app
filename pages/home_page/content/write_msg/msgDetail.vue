@@ -119,8 +119,8 @@
 							nickname:this.userinfo.nickName,
 							userId:userId
 						}
-						if(this.msgArr.length>=this.total){
-							this.msgArr.push(newResMsg)
+						if(this.msgArr.length>=this.total){  
+							this.msgArr.unshift(newResMsg)
 						}
 						let responseMsgTotal=0;
 						if(this.downMoreStatus =="noMore"){

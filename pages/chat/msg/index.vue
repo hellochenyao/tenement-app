@@ -109,10 +109,24 @@
 		    this.flag = 0;
 		    this.text = '没有滑动';
 		},
+		read(toUserId){
+			let userId = getStorage('userId');
+			let _this = this;
+			this.$store.dispatch("read",{userId,receiverUserId:toUserId})
+			.then(res=>{
+				console.log(res)
+				_this.$emit("getUsers",userId)
+			})
+			.catch(e=>{
+				console.log(e)
+			})
+		},
 		gotoDetailMsg(id,nickName){
+			let userId = getStorage('userId');
 			uni.navigateTo({
 				url:"../chat/chat?fromUserId="+id+"&nickName="+nickName
 			});
+			this.read(id)
 		},
 		formateDate(dateStr){
 			dateStr = dateStr.replace(/-/g, '/')

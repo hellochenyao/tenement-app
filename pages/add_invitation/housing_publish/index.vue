@@ -1,7 +1,7 @@
 <template>
 	<view class="has-hourse-container"> 
 		<view class="roll-wrap">
-			<file-upload-component :video="videoSrc" :imgArr="imgSrc" imgUrl1="../../../static/images/add/相机.png" imgUrl2="../../../static/images/add/视频.png" v-if="publishState===0"
+			<file-upload-component :video="videoSrc" :imgArr="imgSrc" imgUrl1="../../../static/images/add/xiangji.png" imgUrl2="../../../static/images/add/shiping.png" v-if="publishState===0"
 			 v-on:setResourceUrl="setResourceUrl"></file-upload-component>
 			<view class="detail-publish" v-if="publishState===0">
 				<input v-if="!hideTitle" class="detail-title-input" placeholder="加个标题哟" placeholder-class="place-title" v-model="title" />
@@ -19,17 +19,17 @@
             <view class="check-content">
                 <view class="invitation-check">
                     <view class="invitation_check_group" @tap="checkedHandler" data-type="1">
-                        <image class="list-icon" src="../../../static/images/publish/hourse/定位.png"></image>
+                        <image class="list-icon" src="../../../static/images/publish/hourse/dingwei.png"></image>
                         <check-down :btnValue="currentLoc.name"></check-down>
                     </view>
                     <view class="invitation_check_group" @tap="checkedHandler" data-type="2">
-                        <image class="list-icon" src="../../../static/images/publish/hourse/预算.png"></image>
+                        <image class="list-icon" src="../../../static/images/publish/hourse/yusuan.png"></image>
                         <check-down :btnValue="rent > 0?rent+'元':'预算'" :selected="popData.visible"></check-down>
                     </view> 
                     <picker class="invitation_check_group" @change="bindLayoutChange" mode="multiSelector"
                             :range="layoutRange">
                         <view class="invitation_check_item" @tap="checkedHandler" data-type="3">
-                            <image class="list-icon" src="../../../static/images/publish/hourse/户型.png"></image>
+                            <image class="list-icon" src="../../../static/images/publish/hourse/huxing.png"></image>
                             <check-down :btnValue="selectedLayOut?selectedLayOut:'户型'"></check-down>
                         </view>
                     </picker>
@@ -38,14 +38,14 @@
                     <picker class="invitation_check_group" @change="bindRentTypeChange" :value="rentTypeIndex"
                             :range="rentType">
                         <view class="invitation_check_item" @tap="checkedHandler" data-type="4">
-                            <image class="list-icon" src="../../../static/images/publish/hourse/门禁.png"></image>
+                            <image class="list-icon" src="../../../static/images/publish/hourse/menjing.png"></image>
                             <check-down :btnValue="housing?housing:'出租房间'"></check-down>
                         </view>
                     </picker>
                     <picker class="invitation_check_group" @change="bindEnterChange" :value="enterIndex"
                             :range="enterNums">
                         <view class="invitation_check_item" @tap="checkedHandler" data-type="5">
-                            <image class="list-icon" src="../../../static/images/publish/hourse/行李.png"></image>
+                            <image class="list-icon" src="../../../static/images/publish/hourse/xingli.png"></image>
                             <check-down :btnValue="enterNum?enterNum:'入住情况'"></check-down>
                         </view>
                     </picker>
@@ -116,7 +116,8 @@
 				checkItemArr:[{title:"可短租",check:false},{title:"包宽带费",check:false},{title:"无中介费",check:false}],
 				remark:"",
 				edit:false,
-				invitationId:""
+				invitationId:"",
+				type:1
 				
             }
         },
@@ -138,6 +139,11 @@
 				this.invitationId = id;
 				this.getInvitationDetail(userId,id)
 				this.edit = true;
+			}
+			if(event.type){
+				let type = event.type;
+				this.type = type;
+				console.log(type)
 			}
 		},
         components: {
@@ -239,7 +245,7 @@
 						housingImgs:this.imgSrc.toString(),
 						housingVideos:this.videoSrc,
 						city:this.currentLoc.city,
-						type:1,
+						type:this.type,
 						id:userId,
 					};
 					if(this.edit){

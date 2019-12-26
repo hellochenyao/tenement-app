@@ -1,10 +1,7 @@
 <template>
 	<view class="top-select-bar">
-		<view class="current-select-container" @tap="selectHandler(0)">
-			<text class="top-item" :class="currentType==0?'checked':''">求租帖</text>
-		</view>
-		<view class="current-select-container" @tap="selectHandler(1)">
-			<text class="top-item" :class="currentType==1?'checked':''" >房源帖</text>
+		<view v-for="(v,i) in data" class="current-select-container" @tap="selectHandler(i)">
+			<text class="top-item" :class="currentType==i?'checked':''">{{v}}</text>
 		</view>
 		<text :class="currentType==1?'changeChecked':''" class="selected-border"></text>
 	</view>
@@ -19,7 +16,8 @@
 		},
 		props: {
 			current:Number,
-			topHeight:String
+			topHeight:String,
+			data:[]
 		},
 		components: {
 		},

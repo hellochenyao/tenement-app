@@ -14,7 +14,7 @@
 					<image class="search-icon" src="../../static/images/home_page/search.png"></image>
 				</view>
 			</view>
-			<top-select-bar :current="current" @changeCurrent="selectChangeHandler"></top-select-bar>
+			<top-select-bar :current="current" @changeCurrent="selectChangeHandler" :data="['求租帖','房源帖']"></top-select-bar>
 		</view>
 		<view :style="{marginTop:topHeight+'px'}"/>
 		<mescroll-uni :up="upOption" :down="downOption" @down="downCallback" @up="upCallback" @init="mescrollInit" >

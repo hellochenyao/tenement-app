@@ -4,18 +4,18 @@
 		    <image class="list-icon" src="../../static/images/publish/wufang1.png"></image>       
 			<text class="release_tab_content">我无房</text> 
 		</view> 
-		<view class="release_tab" @tap="navigateTo" data-page-url="./housing_publish/index"> 
+		<view class="release_tab" @tap="navigateTo" data-page-url="./housing_publish/index?type=1"> 
 			<image class="list-icon" src="../../static/images/publish/youfang1.png"></image>       
 			<text class="release_tab_content">我有房</text>
 		</view> 
-		<view class="release_tab">  
+		<view class="release_tab" @tap="navigateTo" data-page-url="./housing_publish/index?type=2">  
 			<image class="list-icon" src="../../static/images/publish/zhuanzu1.png"></image>       
 			<text class="release_tab_content">我转租</text> 
 		</view>
 	</view>
 </template>
 
-<script>      
+<script>       
 	export default {
 		data() {
 			return {

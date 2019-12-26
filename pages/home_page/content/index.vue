@@ -16,7 +16,7 @@
 		</view> 
 		<view class="imgVideoContent" v-if="detail.type==1" :style="{border:!haveLoadImg?'1px solid #eaeaea':0}" @tap="viewImg"> 
 			<image v-if="getFirstUrl.currentResource=='img'" :src="getFirstUrl.url" :style="{opacity:haveLoadImg?1:0}" @load="load" class="img" mode="scaleToFill" lazy-load="true"></image>
-			<image v-if="!haveLoadImg" src="../../../static/images/home_page/timg.gif" class="loading"></image>
+			<image v-if="!haveLoadImg" :src="image+timg.gif" class="loading"></image>
 			<image v-if="haveLoadImg||getFirstUrl.currentResource=='video'" :src="getFirstUrl.currentResource=='video'?'../../../static/images/home_page/video.png':'../../../static/images/home_page/img.png'" class="icon"></image>
 <!-- 			<video src="" class="video"></video> -->
             <video v-if="getFirstUrl.currentResource=='video'"
@@ -161,7 +161,8 @@
 				responseToUserMsgId:"",
 				posterShow:false,
 				haveCollect:false,
-				currentMsgInfo:{}
+				currentMsgInfo:{},
+				image:configUrl.imagesUrl
 			}
 		},
 		components: {
@@ -293,7 +294,7 @@
 							resTotal:0,
 							userId:res.userId
 						}
-						this.msgRes.push(newMsg)
+						this.msgRes.unshift(newMsg)
 					}) 
 					.catch(e=>{
 						console.log(e)
@@ -425,7 +426,7 @@
 			setCurrentSelectMsg(data){
 				data["inivitationid"] = this.invitationId;
 				this.selectMsg = data;
-				this.detailType = true;
+				this.detailType = true; 
 			},
 			changeDetailTypeValue(type){
 				this.detailType = type;
@@ -489,49 +490,49 @@
 		margin-top: 10upx;
 		background: #FFF;
 		.avatar{
-			width:70upx;
-			height:70upx;
-			border-radius: 100px;
-		}
-		.user-data{
-			display: flex;
-			flex-direction: column;
-			justify-content: space-between;
-			margin-left: 20upx;
-			height: 100%;
-			width: calc(100% - 135upx);
-			.user-content{
+				width:70upx;
+				height:70upx;
+				border-radius: 100px;
+			}
+			.user-data{
 				display: flex;
-				flex-direction: row;
-				align-items: center;
-				height: 40upx;
-				.nick-name{
-					font-size: 26upx;
-					color:$uni-app-font-color;
+				flex-direction: column;
+				justify-content: space-between;
+				margin-left: 20upx;
+				height: 100%;
+				width: calc(100% - 135upx);
+				.user-content{
+					display: flex;
+					flex-direction: row;
+					align-items: center;
+					height: 40upx;
+					.nick-name{
+						font-size: 26upx;
+						color:$uni-app-font-color;
+					}
+					.sex-icon{
+						margin-left: 10upx;
+						width:25upx;
+						height: 25upx;
+					}
 				}
-				.sex-icon{
-					margin-left: 10upx;
-					width:25upx;
-					height: 25upx;
+				.come-data{
+					height: 30upx;
+					display: flex;
+					flex-direction: row;
+					align-items: center;
+					.come-text{
+						font-size: 24upx;
+						color:#999;
+						margin-right: 10upx;
+					}
 				}
 			}
-			.come-data{
-				height: 30upx;
-				display: flex;
-				flex-direction: row;
-				align-items: center;
-				.come-text{
-					font-size: 24upx;
-					color:#999;
-					margin-right: 10upx;
-				}
+			.turn-icon{
+				width:45upx;
+				height: 45upx;
 			}
 		}
-		.turn-icon{
-			width:45upx;
-			height: 45upx;
-		}
-	}
 	.imgVideoContent{
 		width:100%;
 		height:360upx;

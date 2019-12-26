@@ -2,16 +2,16 @@
 	 <view class="big-container">                    
         <view class="invitation_basic_container">    
 		    <view :class="['invitation_check_group']" @tap="checkedHandler" data-type="1"> 
-				<image class="list-icon" src="../../../static/images/add/定位.png"></image>  
+				<image class="list-icon" src="../../../static/images/add/dingwei.png"></image>
 				<check-down :btnValue="currentLoc.name" ></check-down> 
 			</view>  
 			<view :class="['invitation_check_group']" @tap="checkedHandler" data-type="2">  
-				<image class="list-icon" src="../../../static/images/add/钱袋.png"></image> 
+				<image class="list-icon" src="../../../static/images/add/qiandai.png"></image> 
 				<check-down :btnValue="budget > 0?budget+'元':'预算'" :selected="popData.visible"></check-down> 
 			</view>   
 			<picker mode="date" :value="indate.date" :start="startDate" :end="endDate" @change="bindDateChange" @cancel="cancelChange"> 
 				<view :class="['invitation_check_group']" @tap="checkedHandler" data-type="3">   
-				<image class="list-icon" src="../../../static/images/add/时间.png"></image> 
+				<image class="list-icon" src="../../../static/images/add/shijian.png"></image>
 					<check-down :btnValue="indate.date!=''?indate.date:'期望入住时间'" :selected="inDateSelected"></check-down> 
 				</view> 
 			</picker>    
