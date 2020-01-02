@@ -68,7 +68,7 @@
 								
 							</view>
 							<!-- 右-头像 -->
-							<view class="right">
+							<view class="right" @tap="goUserDetail(row.msg.userinfo.uid)">
 								<image :src="row.msg.userinfo.face"></image>
 							</view>
 						</view>

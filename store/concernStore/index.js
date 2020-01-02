@@ -10,17 +10,18 @@ const concernStore = {
 	
     }, 
     actions:{
-		concernActions({commit,dispatch},payload){
-			let {userid,toUserId,type} = payload;
-			return RestApi.request(`/app/user/concern/${userid}/save/record/${type}/${toUserId}`,null,"POST");
+		concernActions({commit,dispatch},payload){ 
+			let {userid,toUserId,type,concernType} = payload;
+			console.log(concernType)
+			return RestApi.request(`/app/user/concern/${userid}/save/record/${type}/${toUserId}?concernType=${concernType}`,null,"POST");
 		},
 		findConcernState(action,payload){
-			let {userid,toUserId} = payload;
-			return RestApi.request(`/app/user/concern/${userid}/find/concern/state`,{toUserid:toUserId},"GET");
+			let {userId,toUserId,concernType} = payload;
+			return RestApi.request(`/app/user/concern/${userId}/find/concern/state?concernType=${concernType}`,{toUserid:toUserId},"GET");
 		},
 		getConcernDetail(action,payload){
-			let {userid,toUserId} = payload;
-			return RestApi.request(`/app/user/concern/${userid}/find/nums`,{toUserid:toUserId},"GET");
+			let {userid,toUserId,concernType} = payload;
+			return RestApi.request(`/app/user/concern/${userid}/find/nums?concernType=${concernType}`,{toUserid:toUserId},"GET");
 		}
     }
 }

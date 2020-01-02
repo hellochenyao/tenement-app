@@ -73,6 +73,7 @@
 	import configUrl from "../../utils/config_utils.js"
 	import minModal from '@/components/min-modal/min-modal'
 	import RestApi from "../../utils/restApi/index.js";
+	import info from "../../utils/info.js"
 	export default {
 		data() { 
 			return {
@@ -126,6 +127,7 @@
 				})
 				.catch(e=>{
 					console.log(e)
+					info.toast(e.msg)
 				})
 			},
 			goBack(){
@@ -138,15 +140,17 @@
 				})
 				.catch(e=>{
 					console.log(e)
+					info.toast(e.msg)
 				});
 			},
 			getConcernDetail(userId,fromUserId){
-				this.$store.dispatch("getConcernDetail",{userId,toUserId:fromUserId})
+				this.$store.dispatch("getConcernDetail",{userId,toUserId:fromUserId,concernType:"USER"})
 				.then(res=>{
 					this.concernInfo = res;
 				})
-				.catch(e=>{
+				.catch(e=>{ 
 					console.log(e)
+					info.toast(e.msg)
 				})
 			},
 			gotoDetailMsg(nickName){
@@ -168,34 +172,37 @@
 						}, 
 						],
 						success: (res) => {
-						  if (res.id==1) {
-							this.$store.dispatch("concernActions",{userid,toUserId,type})
-							.then(res=>{
-								this.getConcernDetail(userid,toUserId);
-								this.findConcernState(userid,toUserId);
-							}).catch(e=>{
-								console.log(e)
-							})
+						  if (res.id==1) { 
+								this.$store.dispatch("concernActions",{userid,toUserId,type,concernType:"USER"})
+								.then(res=>{
+									this.getConcernDetail(userid,toUserId);
+									this.findConcernState(userid,toUserId);
+								}).catch(e=>{
+									console.log(e)
+									info.toast(e.msg)
+								})
 						  }
 						}
 					  })
 				}else{
-					this.$store.dispatch("concernActions",{userid,toUserId,type})
+					this.$store.dispatch("concernActions",{userid,toUserId,type,concernType:"USER"})
 					.then(res=>{
 						this.getConcernDetail(userid,toUserId);
 						this.findConcernState(userid,toUserId);
 					}).catch(e=>{
 						console.log(e)
+						info.toast(e.msg)
 					})
 				}
 			},
 			findConcernState(userId,fromUserId){
-				this.$store.dispatch("findConcernState",{userId,toUserId:fromUserId})
+				this.$store.dispatch("findConcernState",{userId,toUserId:fromUserId,concernType:"USER"})
 				.then(res=>{
 					this.isConcernType = res;
 				})
 				.catch(e=>{
 					console.log(e)
+					info.toast(e.msg)
 				})
 			}
 		}

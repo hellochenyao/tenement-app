@@ -6,7 +6,7 @@
 		 @touchend="handletouchend"
 		 @tap="gotoDetailMsg(info.fromUserid,info.fromUserNickName)" 
 	 >
-		<image :src="info.fromUserAvatar" class="avatar"></image>
+		<image :src="info.fromUserAvatar" @tap.stop="goUserDetail(info.fromUserid)" class="avatar"></image>
 		<view class="detail">
 			<text class="user-name">{{info.fromUserNickName}}</text>
 			<text class="msg">{{info.descText}}</text>
@@ -73,6 +73,11 @@
 		    this.lastX = currentX;
 		    this.lastY = currentY;
 		    this.text = text;
+		 },
+		 goUserDetail(userId){ 
+		 	uni.navigateTo({
+		 		url:"../../../../ucenter/personal?fromUserId="+userId
+		 	});
 		 },
 		 handletouchstart(event) {
 		    // console.log(event)

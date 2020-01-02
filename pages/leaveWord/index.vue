@@ -7,13 +7,13 @@
 			<view class="wordcontent" v-for="(item,index) in dataList">
 				<view class="user-info">
 					<image class="avatar" :src="item.userAvatr"></image>
-					<view class="user-data"> 
+					<view class="user-data">
 						<view class="user-content">
 							<text class="nick-name">{{item.userNickName}}</text>
-							<image class="sex-icon" :src="item.gender==0?'../../../static/images/home_page/boy.png':'../../../static/images/home_page/girl.png'"></image>
+							<image class="sex-icon" :src="detail.gender==0?'../../../static/images/home_page/boy.png':'../../../static/images/home_page/girl.png'"></image>
 						</view>
 					<view class="come-data">
-						<text class="come-text">{{item.createTime?calDate(item.createTime):""}}</text>
+						<text class="come-text">{{detail.lastLoginTime?calLoginDate(detail.lastLoginTime):""}}</text>
 					</view>
 				</view> 
 			</view>
@@ -21,7 +21,7 @@
 				<text class="user">回复{{item.answerUserNickName}}:</text>
 				<text class="content">{{item.content}}</text>
 			</view>
-			<view class="textValue" @tap="goInvitationWord(item.invitationId,item.id)">
+			<view class="textValue">
 				<text class="user">{{item.answerUserNickName}}:</text>
 				<text class="content">{{item.responseContent}}</text>
 			</view>
@@ -31,12 +31,11 @@
 	</view>
 </template>
 
-<script> 
+<script>
 	import RestApi from "../../utils/restApi/index.js";
 	import getStorage from "../../utils/getStorage.js"
 	import uniListItem from "../../components/uni-list-item/uni-list-item.vue"
 	import uniList from "../../components/uni-list/uni-list.vue"
-	import {calloginDate} from "../../utils/calDateDiff.js"
 	import uniLoadMore from "@/components/uni-load-more/uni-load-more.vue"
 	import {  
 	    mapState,  
@@ -85,17 +84,6 @@
 		onShow(event) {	
 		},
 		methods: {
-			goInvitationWord(invitationId,id){
-				uni.navigateTo({
-					url: "../home_page/content/index?msgId="+id+"&id="+invitationId
-				});
-			},
-			calDate(date){
-				if(date){
-					date = date.toString().replace(/-/g, '/')
-				}
-				return calloginDate(new Date(date),new Date());	
-			},
 			downReachBottom(){
 				let pageNo = this.pageNo;
 				let pageSize = this.pageSize;
