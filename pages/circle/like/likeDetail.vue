@@ -44,6 +44,7 @@
 			if(!this.showLike){
 				this.getLikeDetail()
 				this.getComent()
+				this.getState()
 			}
 		},
 		onUnload() {

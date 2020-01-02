@@ -21,7 +21,7 @@
 			<view v-if="current==0" class="swiper-item-tab" :key="index" v-for="(data,index) in invitationList">
 				<invitation-component  class="invitationId" :type="current" :dat="data" :showType="'content'"></invitation-component>
 			</view>
-			<view v-if="current==1" class="swiper-item-tab uni-bg-green" :key="index" v-for="(data,index) in invitationList">
+			<view v-if="current==1" class="swiper-item-tab uni-bg-green" :key="index" v-for="(data,index) in invitationData">
 				<invitation-component  class="invitationId" :type="current" :dat="data" :showType="'content'"></invitation-component>
 			</view>
 		</mescroll-uni>
@@ -79,6 +79,7 @@
 				topHeight:0,
 				refreshType:0,
 				invitationList:[],
+				invitationData:[],
 				haveAgreedType:false,
 				titleHeight:0,
 				invitationHeight:0,
@@ -180,8 +181,9 @@
 			},
 			selectChangeHandler(event){
 				this.current = event;
-				this.downCallback();
-				this.invitationList = [];
+				if(this.invitationData.length==0&&event==1||this.invitationList.length==0&&event==0){
+					this.downCallback();
+				}
 			},
 			selectCityHandler() { 
 				uni.navigateTo({
@@ -225,13 +227,27 @@
 					this.mescroll.endErr();
 				}else{
 					if(this.mescroll.num === 1){
-						this.invitationList = [];
+						if(this.current==0){
+							this.invitationList = [];
+						}else{
+							this.invitationData = [];
+						}
 					}
-					this.invitationList = this.invitationList.concat(val.data);
-					if(this.invitationList.length==val.total){
+					if(this.current==0){
+						this.invitationList = this.invitationList.concat(val.data);
+					}else{
+						this.invitationData = this.invitationData.concat(val.data);
+					}
+					if(this.current==0&&this.invitationList.length==val.total){
+						haveNext = false;
+					}else if(this.current==1&&this.invitationData.length==val.total){
 						haveNext = false;
 					}
-					this.mescroll.endSuccess(this.invitationList.length, haveNext);
+					if(this.current==0){
+						this.mescroll.endSuccess(this.invitationList.length, haveNext);
+					}else{
+						this.mescroll.endSuccess(this.invitationData.length, haveNext);
+					}
 				}
 			}
 		}
