@@ -159,7 +159,6 @@
 		 			"navigationBarTitleText":"消息",
 		 			"backgroundColorTop":"#cf3c35",
 		 			"backgroundColorBottom":"#fff",
-					"enablePullDownRefresh": false,
 					"app-plus":{
 						"titleNView":{
 							"buttons":[
@@ -187,7 +186,16 @@
 						"bounce":"none"
 			        }
 		        } 
-		},
+		},{
+		   "path" : "pages/chat/serch",
+		        "style" : {
+					"navigationBarBackgroundColor":"#59c298",
+					"navigationBarTextStyle":"white",
+					"navigationBarTitleText":"消息",
+					"backgroundColorTop":"#cf3c35",
+					"backgroundColorBottom":"#fff"
+			    }
+		 },
 		{
 		    "path" : "pages/live/index", 
 		        "style" : {

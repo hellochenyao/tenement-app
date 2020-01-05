@@ -22,7 +22,16 @@ const concernStore = {
 		getConcernDetail(action,payload){
 			let {userid,toUserId,concernType} = payload;
 			return RestApi.request(`/app/user/concern/${userid}/find/nums?concernType=${concernType}`,{toUserid:toUserId},"GET");
+		},
+		getFans(action,payload){
+			let {userid,concernType,type,pageNo,pageSize} = payload;
+			return RestApi.request(`/app/user/concern/${userid}/find/concern/list/${type}`,{concernType,pageNo,pageSize},"GET");
+		},
+		getUser(action,payload){
+			let {content,userId} = payload
+			return RestApi.request(`/app/user/${userId}/friend`,{content},"GET");
 		}
+		
     }
 }
 export {concernStore};

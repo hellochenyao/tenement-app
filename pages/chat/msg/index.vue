@@ -1,21 +1,31 @@
 <template>
-	<view class="msg-contain"
-		 :style="{marginLeft:wid}"
-		 @touchmove="handletouchmove" 
-		 @touchstart="handletouchstart"
-		 @touchend="handletouchend"
-		 @tap="gotoDetailMsg(info.fromUserid,info.fromUserNickName)" 
-	 >
-		<image :src="info.fromUserAvatar" @tap.stop="goUserDetail(info.fromUserid)" class="avatar"></image>
-		<view class="detail">
-			<text class="user-name">{{info.fromUserNickName}}</text>
-			<text class="msg">{{info.descText}}</text>
+	<view>
+		<view class="msg-contain"
+			 :style="{marginLeft:wid}"
+			 @touchmove="handletouchmove" 
+			 @touchstart="handletouchstart"
+			 @touchend="handletouchend"
+			 @tap="gotoDetailMsg(info.fromUserid,info.fromUserNickName)" 
+		 >
+			<image :src="info.fromUserAvatar" mode="widthFix" @tap.stop="goUserDetail(info.fromUserid)" class="avatar"></image>
+			<view class="content">
+				<view class="detail">
+					<text class="user-name">{{info.fromUserNickName}}</text>
+					<text class="msg">{{info.descText}}</text>
+				</view>
+				<view class="other" v-if="type==0">
+					<text class="date">{{createTimeStr}}</text>
+					<uni-badge :text="info.noReadNums" v-if="info.noReadNums>0" type="error"></uni-badge>
+				</view> 
+				<view class="other" @tap.stop="concern(info.fromUserid,0)" v-if="type!=0&&state==0">
+					<text class="concern">+关注</text>
+				</view>
+				<view class="other" @tap.stop="cancel(info.fromUserid)" v-if="type!=0&&(state==1||state==2)">
+					<text class="concernHave">{{state==1?"已关注":"互关"}}</text>
+				</view>
+			</view>
+			<view class="delete-btn" @tap.stop="deleteMsg(info.fromUserid)">删除</view>
 		</view>
-		<view class="other">
-			<text class="date">{{createTimeStr}}</text>
-			<uni-badge :text="info.noReadNums" v-if="info.noReadNums>0" type="error"></uni-badge>
-		</view>
-		<view class="delete-btn" @tap.stop="deleteMsg(info.fromUserid)">删除</view>
 	</view>
 </template> 
 
@@ -31,7 +41,9 @@
 				    text: '',
 				    lastX: 0,
 				    lastY: 0,
-					wid:0
+					wid:0,
+					state:0,
+					toUserId:0
 			};
 		},
 		computed:{
@@ -42,9 +54,15 @@
 			}
 		}, 
 		props:{
-			info:Object
+			info:Object,
+			type:0,
+			changeConcern:false
 		},
-
+		mounted() {
+			if(this.type==1){
+				this.getConcernState();
+			}
+		},
 		methods: {
 		   handletouchmove(event) {
 		            // console.log(event)
@@ -79,10 +97,40 @@
 		 		url:"../../../../ucenter/personal?fromUserId="+userId
 		 	});
 		 },
+		 cancel(toUserId){
+			 console.log("aaa")
+			 this.toUserId = toUserId;
+			 this.$emit("cancel",{toUserId})
+		 },
+		 concern(toUserId,type){
+			 let userId = getStorage('userId');
+			 this.$store.dispatch("concernActions",{userid:userId,toUserId,type,concernType:"USER"})
+			 .then(res=>{
+				    if(type == 1){
+						this.$emit("changeFilterUserId",{userId:toUserId,type:0})
+					}
+			 		this.getConcernState();
+			 }).catch(e=>{
+			 	console.log(e)
+			 	info.toast(e.msg)
+			 })
+		 },
 		 handletouchstart(event) {
 		    // console.log(event)
 		    this.lastX = event.touches[0].pageX;
 		    this.lastY = event.touches[0].pageY;
+		},
+		getConcernState(){
+			let userId = getStorage('userId');
+			this.$store.dispatch("findConcernState",{userId,toUserId:this.info.fromUserid,concernType:"USER"})
+			.then(res=>{
+				console.log(res)
+				this.state= res;
+			})
+			.catch(e=>{
+				console.log(e)
+				info.toast(e.msg)
+			})
 		},
 		deleteMsg(fromUserid){
 			let _this = this;
@@ -120,7 +168,6 @@
 			this.$store.dispatch("read",{userId,receiverUserId:toUserId})
 			.then(res=>{
 				console.log(res)
-				_this.$emit("getUsers",userId)
 			})
 			.catch(e=>{
 				console.log(e)
@@ -141,6 +188,15 @@
 	},
 	components:{
 		uniBadge
+	},
+	watch:{
+		changeConcern(v){
+			let toUserId = this.toUserId;
+			this.concern(toUserId,1)
+		},
+		info(v){
+			this.getConcernState()
+		}
 	}
 } 
 </script>
@@ -157,9 +213,10 @@
 		position: relative;
 		box-sizing:border-box;
 		transition:all 0.3s;
+		border-bottom-color:#eaeaea;
+		border-width:1;
 		.avatar{
 			width:100upx;
-			height:100upx;
 			border-radius: 100%;
 		}
 		.detail{
@@ -204,5 +261,22 @@
 			background:rgb(221,82,77);
 			color:#FFF;
 		}
+	}
+	.concern{
+		color:#59c298;
+		font-size: 30upx;
+	}
+	.content{
+		width:100%;
+		height:100%;
+		display: flex;
+		flex-direction: row;
+		justify-content: space-between;
+		align-items: center;
+		border-bottom: 1px solid #f7f7f7;
+	}
+	.concernHave{
+		color:#8A8A8F;
+		font-size: 30upx;
 	}
 </style>
