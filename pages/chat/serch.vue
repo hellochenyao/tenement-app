@@ -2,20 +2,26 @@
 	<view>
 		<view class="search">
 			<template>
-				<input maxlength="20" focus type="text" confirm-type="search" @confirm="searchStart()" placeholder="请输入关键词搜索"  v-model.trim="searchText"/>
+				<input maxlength="20" focus type="text" confirm-type="search" @confirm="searchStart()" placeholder="请输入用户ID或昵称搜索"  v-model.trim="searchText"/>
 			</template>
 			<image src="../../static/zy-search/search.svg" mode="widthFix" @click="searchStart()" class="search-icon"></image>
 		</view>
 		<msg-detail  
-		:changeConcern="changeConcern" 
-		@cancel="cancel" 
-		v-for="(item,index) in users" 
-		:key="index"
-		@getUsers="getUsers" 
-		:info ="item" 
-		type="1"
+			:changeConcern="changeConcern" 
+			@cancel="cancel" 
+			v-for="(item,index) in users" 
+			:key="index"
+			@getUsers="getUsers" 
+			:optUserId="optUserId"
+			:info ="item" 
+			type="1"
 		></msg-detail>
 		<uni-load-more :loadingType="1" :status="downMoreStatus" :content-text="downMoreOptions"></uni-load-more>
+		<min-action-sheet ref="as1">
+			  <view style="padding: 32rpx">
+				<view style="font-size: 32rpx">确定不再关注？</view>
+			</view>
+		</min-action-sheet>
 	</view>
 </template>
 
@@ -28,6 +34,7 @@
 	import msgDetail from "./msg/index";
 	import info from "../../utils/info.js"
 	import getStorage from "../../utils/getStorage.js"
+	import minActionSheet from '@/components/min-action-sheet/min-action-sheet'
 	import uniLoadMore from "@/components/uni-load-more/uni-load-more.vue"
 	export default {
 		data() {
@@ -42,14 +49,17 @@
 				},
 				users:[],
 				searchText:"",
-				total:0
+				total:0,
+				optUserId:0,
+				changeConcern:false
 			};
 		},
 		computed:{
 		},
 		components: {
 			uniLoadMore,
-			msgDetail
+			msgDetail,
+			minActionSheet
 		},
 		onShow(){
 		},
@@ -64,9 +74,10 @@
 		methods:{
 			getUser(content,isRefresh){
 				let userId = getStorage("userId")
-				this.$store.dispatch("getUser",{userId,content})
+				this.$store.dispatch("getUser",{userId,content,pageNo:this.pageNo,pageSize:this.pageSize})
 				.then(res=>{
 					console.log(res)
+					uni.hideLoading()
 					if(res.data.length==this.pageSize){
 						this.pageNo = this.pageNo+1;
 					}
@@ -92,19 +103,46 @@
 				})
 				.catch(e=>{
 					console.log(e)
+					uni.hideLoading()
 					info.toast(e.msg)
 				})
 			},
+			cancel({toUserId}){
+				this.$refs.as1.handleShow({
+					actions: [
+						{
+						  name: '确定'
+						}
+					],
+					success: (res) => {
+						switch (res.id) {
+						     // -1代表取消按钮
+						  case -1:
+						    console.log(res)
+						   break
+						  case 0:
+						   this.optUserId = toUserId;
+						    this.changeConcern = !this.changeConcern;
+						     break
+						 }
+					}
+				})
+			},
 			searchStart(){
+				this.pageNo = 1;
+				uni.showLoading({
+					title: '加载中'
+				});
 				let content = this.searchText
 				this.getUser(content,true)
 			},
 			downReachBottom(){
+				console.log("a")
 				if(this.changeDownMoreStatus()){
 					return;
 				}
 				let content = this.searchText
-				this.getUser(searchText)
+				this.getUser(content)
 			},
 			changeDownMoreStatus(){
 				let data = this.users,
@@ -127,6 +165,10 @@
 </script>
 
 <style lang="scss">
+	page{
+		width:100%;
+		background: #FFF!important;
+	}
 	.search{
 		width: 95%;
 		margin: 10upx auto 30upx;

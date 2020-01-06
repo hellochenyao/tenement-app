@@ -56,7 +56,8 @@
 		props:{
 			info:Object,
 			type:0,
-			changeConcern:false
+			changeConcern:false,
+			optUserId:0
 		},
 		mounted() {
 			if(this.type==1){
@@ -88,7 +89,7 @@
 					this.wid=0;
 		        }
 		    }//将当前坐标进行保存以进行下一次计算
-		    this.lastX = currentX;
+		    this.lastX = currentX; 
 		    this.lastY = currentY;
 		    this.text = text;
 		 },
@@ -98,7 +99,6 @@
 		 	});
 		 },
 		 cancel(toUserId){
-			 console.log("aaa")
 			 this.toUserId = toUserId;
 			 this.$emit("cancel",{toUserId})
 		 },
@@ -106,10 +106,13 @@
 			 let userId = getStorage('userId');
 			 this.$store.dispatch("concernActions",{userid:userId,toUserId,type,concernType:"USER"})
 			 .then(res=>{
-				    if(type == 1){
-						this.$emit("changeFilterUserId",{userId:toUserId,type:0})
-					}
-			 		this.getConcernState();
+				 if(type == 1){
+					info.toast("取关成功")
+					this.$emit("changeFilterUserId",{userId:toUserId,type:0})
+				}else{
+					info.toast("关注成功")
+				}
+			 	this.getConcernState();
 			 }).catch(e=>{
 			 	console.log(e)
 			 	info.toast(e.msg)
@@ -124,7 +127,6 @@
 			let userId = getStorage('userId');
 			this.$store.dispatch("findConcernState",{userId,toUserId:this.info.fromUserid,concernType:"USER"})
 			.then(res=>{
-				console.log(res)
 				this.state= res;
 			})
 			.catch(e=>{
@@ -182,7 +184,6 @@
 		},
 		formateDate(dateStr){
 			dateStr = dateStr.replace(/-/g, '/')
-			console.log(dateStr)
 			return formatDate(new Date(dateStr),0)
 		}
 	},
@@ -191,8 +192,11 @@
 	},
 	watch:{
 		changeConcern(v){
-			let toUserId = this.toUserId;
-			this.concern(toUserId,1)
+			if(this.optUserId==this.toUserId){
+				let toUserId = this.toUserId;
+				this.concern(toUserId,1)
+				
+			}	
 		},
 		info(v){
 			this.getConcernState()

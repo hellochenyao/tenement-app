@@ -3,7 +3,7 @@
 		<view class="choose">
 			<view class="search">
 				<template>
-					<input maxlength="20" focus="false" disabled="true" type="text" @tap="search()"  placeholder="请输入关键词搜索"/>
+					<input maxlength="20" focus="false" disabled="true" type="text" @tap="search()"/>
 				</template>
 				<image src="../../static/zy-search/search.svg" mode="widthFix" @click="searchStart()" class="search-icon"></image>
 			</view>
@@ -31,11 +31,11 @@
 			<uni-load-more :loadingType="1" :status="downMoreStatus" :content-text="downMoreOptions"></uni-load-more>
 		</swiper-item>
 		<swiper-item class="swiper-item" id="swiper">
-			<msg-detail v-if="filterUserId.indexOf(item.fromUserid)==-1" :changeConcern="changeConcern" @cancel="cancel" v-for="(item,index) in concernUsers" @changeFilterUserId="changeFilterUserId" :key="index" @getUsers="getUsers" :info ="item" type="1"></msg-detail>
+			<msg-detail v-if="filterUserId.indexOf(item.fromUserid)==-1" :optUserId="optUserId" :changeConcern="changeConcern" @cancel="cancel" v-for="(item,index) in concernUsers" @changeFilterUserId="changeFilterUserId" :key="index" @getUsers="getUsers" :info ="item" type="1"></msg-detail>
 			<uni-load-more :loadingType="1" :status="downMoreStatus" :content-text="downMoreOptions"></uni-load-more>
 		</swiper-item>
 		<swiper-item class="swiper-item" id="swiper">
-			<msg-detail v-for="(item,index) in fans" :changeConcern="changeConcern" @cancel="cancel" @changeFilterUserId="changeFilterUserId" :key="index" @getUsers="getUsers" :info ="item" type="2"></msg-detail>
+			<msg-detail v-for="(item,index) in fans" :optUserId="optUserId" :changeConcern="changeConcern" @cancel="cancel" @changeFilterUserId="changeFilterUserId" :key="index" @getUsers="getUsers" :info ="item" type="2"></msg-detail>
 			<uni-load-more :loadingType="1" :status="downMoreStatus" :content-text="downMoreOptions"></uni-load-more>
 		</swiper-item>
 	</swiper>
@@ -87,7 +87,8 @@
 				},
 				filterUserId:[],
 				changeConcern:false,
-				init:false
+				init:false,
+				optUserId:0
 			};
 		},
 		computed:{
@@ -191,7 +192,7 @@
 					url: "./serch"
 				});
 			},
-			cancel(toUserId){
+			cancel({toUserId}){
 				this.$refs.as1.handleShow({
 					actions: [
 						{
@@ -205,6 +206,7 @@
 						    console.log(res)
 						   break
 						  case 0:
+						   this.optUserId = toUserId;
 						    this.changeConcern = !this.changeConcern;
 						     break
 						 }

@@ -28,8 +28,8 @@ const concernStore = {
 			return RestApi.request(`/app/user/concern/${userid}/find/concern/list/${type}`,{concernType,pageNo,pageSize},"GET");
 		},
 		getUser(action,payload){
-			let {content,userId} = payload
-			return RestApi.request(`/app/user/${userId}/friend`,{content},"GET");
+			let {content,userId,pageNo,pageSize} = payload
+			return RestApi.request(`/app/user/${userId}/friend`,{content,pageNo,pageSize},"GET");
 		}
 		
     }
