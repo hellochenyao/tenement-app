@@ -1,26 +1,34 @@
 <template> 
-	<uni-list>
-	    <uni-list-item title="标题文字" :show-arrow="false"></uni-list-item>
-	    <uni-list-item title="标题文字"></uni-list-item>
-	    <uni-list-item title="标题文字" :show-badge="true" badge-text="12"></uni-list-item>
-	    <uni-list-item title="禁用状态" :disabled="true" :show-badge="true" badge-text="12"></uni-list-item>
-	</uni-list>
+     <view>
+		<cmdCellItem title="昵称" addon="Slimmer" arrow @tap="goAdd"></cmdCellItem> 
+	 </view>
 </template>
 
 <script>
-	import uniList from "@/components/uni-list/uni-list.vue"
-	import uniListItem from "@/components/uni-list-item/uni-list-item.vue"
+	import cmdCellItem from '@/components/cmd-cell-item/cmd-cell-item.vue'
 	export default {
 		data() {
 			return {
 	
 			};
 		},
-		components: {uniList,uniListItem},
+		components: {cmdCellItem},
 		methods:{
+			goAdd(){
+				
+			}
 		}
 	}
 </script>
 
 <style>
+	input{
+		width:100%;
+		box-sizing: border-box;
+		background: #F7F7F7;
+		height: 70upx;
+		padding-left: 20upx;
+		line-height: 70upx;
+		font-size: 30upx;
+	}
 </style>
