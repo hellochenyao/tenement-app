@@ -15,7 +15,9 @@
 		components: {cmdCellItem},
 		methods:{
 			goAdd(){
-				
+				uni.navigateTo({
+					url:"./editInfo"
+				})
 			}
 		}
 	}

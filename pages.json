@@ -215,6 +215,12 @@
 		            "navigationBarTitleText":"圈子",
 		            "navigationBarBackgroundColor":"#59c298"
 		        }
+		},{
+		    "path" : "pages/ucenter/editInfo",
+		        "style" : {
+		            "navigationBarTitleText":"信息",
+		            "navigationBarBackgroundColor":"#59c298"
+		        }
 		},
 		{
 		    "path" : "pages/ucenter/personal",
