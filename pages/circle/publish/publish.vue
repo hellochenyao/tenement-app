@@ -4,38 +4,38 @@
 			<view class="uni-textarea">
 				<textarea placeholder="这一刻的想法..." v-model="input_content" />
 				</view>
-			<view class="uni-list list-pd">
-				<view class="uni-list-cell cell-pd">
-					<view class="uni-uploader">
-						<view class="uni-uploader-head">
-							<view class="uni-uploader-title"></view>
-							<view class="uni-uploader-info">{{imageList.length}}/9</view>
-						</view>
-						<view class="uni-uploader-body">
-							<view class="uni-uploader__files">
-								<block v-for="(image,index) in imageList" :key="index">
-									<view class="uni-uploader__file" style="position: relative;">
-										<image class="uni-uploader__img" mode="aspectFill" :src="image" :data-src="image" @tap="previewImage"></image>
-										<view class="close-view" @click="close(index)">×</view>
-									</view>
-								</block>
-								<view class="uni-uploader__input-box" v-show="imageList.length < 9">
-									<view class="uni-uploader__input" @tap="chooseImage"></view>
-								</view>
-							</view>
-						</view>
-					</view>
-				</view>
+			<view class="feedback-body feedback-uploader">
+			    <view class="uni-uploader">
+			        <view class="uni-uploader-head">
+			            <view class="uni-uploader-title">点击预览图片</view>
+			            <view class="uni-uploader-info">{{imageList.length}}/8</view>
+			        </view>
+			        <view class="uni-uploader-body">
+			            <view class="uni-uploader__files">
+			                <block v-for="(image,index) in imageList" :key="index">
+			                    <view class="uni-uploader__file" style="position: relative;">
+			                        <image class="uni-uploader__img" :src="image" @tap="previewImage"></image>
+			                        <view class="close-view" @click="close(index)">x</view>
+			                    </view>
+			                </block>
+			                <view class="uni-uploader__input-box" v-show="imageList.length < 8">
+			                	<view class="uni-uploader__input" @tap="chooseImg"></view>
+			                </view>
+			            </view>
+			        </view>
+			    </view>
 			</view>
 			
 			<view class="footer">
-				<button type="default" class="feedback-submit" @click="publish">提交</button>
+				<button type="default" class="feedback-submit" @click="send()">发布</button>
 			</view>
 		</form>
 	</view>
 </template>
 
-<script>
+<script> 
+	import getStorage from "../../../utils/getStorage.js"
+	import urlConfig from "../../../utils/config_utils.js"
 	import image from '@/common/image.js';
 	
 	var sourceType = [
@@ -54,9 +54,6 @@
 				// title: 'choose/previewImage',
 				input_content:'',
 				imageList: [],
-				
-				
-				
 				sourceTypeIndex: 2,
 				sourceType: ['拍照', '相册', '拍照或相册'],
 				sizeTypeIndex: 2,
@@ -69,6 +66,7 @@
 				movedX: 0, //横向移动的距离
 				endX: 0, //接触屏幕后移开时的位置
 				//end
+				images:[]
 			}
 		},
 		onUnload() {
@@ -81,53 +79,6 @@
 		},
 		
 		methods: {
-			async publish(){
-				if (!this.input_content) {
-					uni.showModal({ content: '内容不能为空', showCancel: false, });
-					return;
-				}
-				
-				uni.showLoading({title:'发布中'});
-				
-				var location = await this.getLocation();//位置信息,可删除,主要想记录一下异步转同步处理
-				var images = [];
-				for(var i = 0,len = this.imageList.length; i < len; i++){
-					var image_obj = {name:'image-'+i,uri:this.imageList[i]};
-					images.push(image_obj);
-				}
-				
-				uni.uploadFile({//该上传仅为示例,可根据自己业务修改或封装,注意:统一上传可能会导致服务器压力过大
-					url: 'moment/moments', //仅为示例，非真实的接口地址
-					files:images,//有files时,会忽略filePath和name
-					filePath: '',
-					name: '',
-					formData: {//后台以post方式接收
-						'user_id':'1',//自己系统中的用户id
-						'text': this.input_content,//moment文字部分
-						'longitude':location.longitude,//经度
-						'latitude':location.latitude//纬度
-					},
-					success: (uploadFileRes) => {
-						uni.hideLoading();
-						uni.showToast({
-							icon:'success',
-							title:"发布成功"
-						})
-						uni.navigateBack({//可根据实际情况使用其他路由方式
-							delta:1
-						});
-					},
-					fail: (e) => {
-						console.log("e: " + JSON.stringify(e));
-						uni.hideLoading();
-						uni.showToast({
-							icon:'none',
-							title:"发布失败,请检查网络"
-						})
-					}
-				});
-			},
-			
 			getLocation(){//h5中可能不支持,自己选择
 				return new Promise((resolve, reject) => {
 					uni.getLocation({
@@ -145,59 +96,69 @@
 			close(e){
 			    this.imageList.splice(e,1);
 			},
-			chooseImage: async function() {
-				if (this.imageList.length === 9) {
-					let isContinue = await this.isFullImg();
-					console.log("是否继续?", isContinue);
-					if (!isContinue) {
-						return;
-					}
-				}
-				uni.chooseImage({
-					sourceType: sourceType[this.sourceTypeIndex],
-					sizeType: sizeType[this.sizeTypeIndex],
-					count: this.imageList.length + this.count[this.countIndex] > 9 ? 9 - this.imageList.length : this.count[this.countIndex],
-					success: (res) => {
-
-						// #ifdef APP-PLUS
-						//提交压缩,因为使用了H5+ Api,所以自定义压缩目前仅支持APP平台
-						var compressd = cp_images=> {
-							this.imageList = this.imageList.concat(cp_images)//压缩后的图片路径
+			chooseImg() { //选择图片
+			    let userId = getStorage("userId");
+			    let userJWTandToken = uni.getStorageSync("userJWTandToken");
+			 	let jwt = userJWTandToken.split('/')[0];
+			    uni.chooseImage({
+			        sourceType: ["camera", "album"],
+			        sizeType: "compressed",
+			        count: 8 - this.imageList.length,
+			        success: (res) => {
+						console.log(res)
+						for(var i =0;i<res.tempFilePaths.length;i++){
+						    let img = res.tempFilePaths[i];
+							uni.uploadFile({
+								url: urlConfig.requestUrl+`/app/operation/${userId}/housing-resource/0/upload`, 
+								filePath: res.tempFilePaths[i],  
+								header:{
+									'Authorization': jwt
+								},
+								name: 'fileResource',  
+								success: (uploadFileRes) => {    
+									if(uploadFileRes.statusCode == 200){  
+										let i = JSON.parse(uploadFileRes.data);
+										this.imageList = this.imageList.concat(img);
+										this.images = this.images.concat(i.resourceUrl);
+									}
+								},
+								fail:(e)=>{
+									console.log(e)
+									info.toast(e.msg);
+								}
+							}); 
 						}
-						image.compress(res.tempFilePaths,compressd);
-						// #endif
-						
-						// #ifndef APP-PLUS
-						this.imageList = this.imageList.concat(res.tempFilePaths)//非APP平台不支持自定义压缩,暂时没有处理,可通过uni-app上传组件的sizeType属性压缩
-						// #endif
-						
-					}
-				})
+			        }
+			    }) 
 			},
-			isFullImg: function() {
-				return new Promise((res) => {
-					uni.showModal({
-						content: "已经有9张图片了,是否清空现有图片？",
-						success: (e) => {
-							if (e.confirm) {
-								this.imageList = [];
-								res(true);
-							} else {
-								res(false)
-							}
-						},
-						fail: () => {
-							res(false)
-						}
+			previewImage() { //预览图片
+			    uni.previewImage({
+			        urls: this.imageList
+			    });
+			},   
+			send() { //发送反馈 
+			    let userId = getStorage("userId");
+				uni.showLoading({title:'发布中'});
+			    this.$store.dispatch("sendDynamic",{
+					image:this.images.toString(),
+					circleId:1,
+					circleName:"USER",
+					content:this.input_content,
+					userId
+				}).then(res=>{
+					console.log(res) 
+					uni.hideLoading();
+					uni.showToast({
+						icon:'success',
+						title:"发布成功"
 					})
+					uni.switchTab({
+					    url: '../index/index?refresh='+true
+					});
 				})
-			},
-			previewImage: function(e) {
-				var current = e.target.dataset.src
-				uni.previewImage({
-					current: current,
-					urls: this.imageList
-				})
+				.catch(e=>{ 
+					console.log(e)
+				});
 			},
 			touchStart: function(e) {
 				this.startX = e.mp.changedTouches[0].pageX;
@@ -214,7 +175,7 @@
 </script>
 
 <style scoped>
-	
+	@import url("../../../common/index/index.css");
 	.footer {
 		margin-top: 80upx;
 	}
@@ -254,5 +215,168 @@
 	.page {
 		width: 750upx;
 		height: 100%;
+	}
+	@font-face {
+		font-family: uniicons;
+		font-weight: normal;
+		font-style: normal;
+		src: url('https://img-cdn-qiniu.dcloud.net.cn/fonts/uni.ttf') format('truetype');
+	}
+	page {
+	    background-color: #EFEFF4;
+	}
+	view{
+	    font-size: 28upx;
+	}
+	.input-view {
+	    font-size: 28upx;
+	}
+	.close-view{
+	    text-align: center;line-height:14px;height: 16px;width: 16px;border-radius: 50%;background: #FF5053;color: #FFFFFF;position: absolute;top: -6px;right: -4px;font-size: 12px;
+	}
+	/* 上传 */
+	.uni-uploader {
+		flex: 1;
+		flex-direction: column;
+	}
+	.uni-uploader-head {
+		display: flex;
+		flex-direction: row;
+		justify-content: space-between;
+	}
+	.uni-uploader-info {
+		color: #B2B2B2;
+	}
+	.uni-uploader-body {
+		margin-top: 16upx;
+	}
+	.uni-uploader__files {
+		display: flex;
+		flex-direction: row;
+		flex-wrap: wrap;
+	}
+	.uni-uploader__file {
+		margin: 10upx;
+		width: 210upx;
+		height: 210upx;
+	}
+	.uni-uploader__img {
+		display: block;
+		width: 210upx;
+		height: 210upx;
+	}
+	.uni-uploader__input-box {
+		position: relative;
+		margin:10upx;
+		width: 208upx;
+		height: 208upx;
+		border: 2upx solid #D9D9D9;
+	}
+	.uni-uploader__input-box:before,
+	.uni-uploader__input-box:after {
+		content: " ";
+		position: absolute;
+		top: 50%;
+		left: 50%;
+		-webkit-transform: translate(-50%, -50%);
+		transform: translate(-50%, -50%);
+		background-color: #D9D9D9;
+	}
+	.uni-uploader__input-box:before {
+		width: 4upx;
+		height: 79upx;
+	}
+	.uni-uploader__input-box:after {
+		width: 79upx;
+		height: 4upx;
+	}
+	.uni-uploader__input-box:active {
+		border-color: #999999;
+	}
+	.uni-uploader__input-box:active:before,
+	.uni-uploader__input-box:active:after {
+		background-color: #999999;
+	}
+	.uni-uploader__input {
+		position: absolute;
+		z-index: 1;
+		top: 0;
+		left: 0;
+		width: 100%;
+		height: 100%;
+		opacity: 0;
+	}
+	
+	/*问题反馈*/
+	.feedback-title {
+		display: flex;
+		flex-direction: row;
+		justify-content: space-between;
+		align-items: center;
+		padding: 20upx;
+		color: #8f8f94;
+		font-size: 28upx;
+	}
+	.feedback-star-view.feedback-title {
+		justify-content: flex-start;
+		margin: 0;
+	}
+	.feedback-quick {
+		position: relative;
+		padding-right: 40upx;
+	}
+	.feedback-quick:after {
+		font-family: uniicons;
+		font-size: 40upx;
+		content: '\e581';
+		position: absolute;
+		right: 0;
+		top: 50%;
+		color: #bbb;
+		-webkit-transform: translateY(-50%);
+		transform: translateY(-50%);
+	}
+	.feedback-body {
+		background: #fff;
+	}
+	.feedback-textare {
+		height: 200upx;
+		font-size: 34upx;
+		line-height: 50upx;
+		width: 100%;
+		box-sizing: border-box;
+		padding: 20upx 30upx 0;
+	}
+	.feedback-input {
+		font-size: 34upx;
+		height: 50upx;
+		min-height: 50upx;
+		padding: 15upx 20upx;
+		line-height: 50upx;
+	}
+	.feedback-uploader {
+		padding: 22upx 20upx;
+	}
+	.feedback-star {
+		font-family: uniicons;
+		font-size: 40upx;
+		margin-left: 6upx;
+	}
+	.feedback-star-view {
+		margin-left: 20upx;
+	}
+	.feedback-star:after {
+		content: '\e408';
+	}
+	.feedback-star.active {
+		color: #FFB400;
+	}
+	.feedback-star.active:after {
+		content: '\e438';
+	}
+	.feedback-submit {
+		background: #59c298;
+		color: #FFFFFF;
+		margin: 20upx;
 	}
 </style>

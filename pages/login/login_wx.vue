@@ -1,11 +1,11 @@
 <template>
 	<view>
 	<View class="title-content">
-		<text class="title-text">欢迎使用租租侠</text>
+		<text class="title-text">欢迎使用住住侠</text>
 	</view>
 	<button class="authorize-button" @getuserinfo="getUserInfo" open-type="getUserInfo">开始使用</button>
 	</view>
-</template>
+</template> 
 
 <script>
 	import getStorage from '../../utils/getStorage.js';

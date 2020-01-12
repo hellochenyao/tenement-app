@@ -2,9 +2,12 @@ import RestApi from "../../utils/restApi";
 import info from "../../utils/info";
 const userStore = {
 	state:{ 
+		userInfo:{}
     },
     mutations:{
-	
+		setUserInfo(state,info){
+			state.userInfo = info;
+		}
     },
     getters:{
 	
@@ -12,7 +15,13 @@ const userStore = {
     actions:{
 		requestUserInfo({commit,dispatch},payload){
 			let {userId} = payload;
-			return RestApi.request(`/app/user/${userId}/info`,null,"GET") 
+			RestApi.request(`/app/user/${userId}/info`,null,"GET")
+			.then(res=>{
+				commit("setUserInfo",res);
+			})
+			.catch(e=>{
+				console.log(e)
+			})
 		}
     }
 }

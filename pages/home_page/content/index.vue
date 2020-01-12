@@ -55,12 +55,29 @@
 					<text class="condition-value">{{(detail.roomRentType!='undefined'&&detail.roomRentType==0?'整租':detail.roomRentType==1?'短租':detail.roomRentType==2?'合租':'')}}</text>
 				</view>
 				<view class="publish">
-					<image class="img" src="../../../static/images/home_page/publish.png" mode="widthFix"></image>
+					<image class="img" src="../../../static/images/home_page/publish.png" mode="widthFix"></image> 
 					<text class="condition-name">发布于{{formatPublishDate}}</text>
 				</view>
+				<view class="publish" v-if="detail.acceptedMedium!=null&&detail.acceptedMedium!='undefined'&&detail.acceptedMedium==0">
+					<image class="img" src="../../../static/images/home_page/zhongjie.png" mode="widthFix"></image>
+					<text class="condition-name">中介勿扰</text>
+				</view> 
 				<view class="location">
 					<image class="img" src="../../../static/images/home_page/locationContent.png" mode="widthFix"></image>
 					<text class="condition-name">{{currentLoc.detail}}</text>
+				</view>
+				<view class="per" v-if="detail.showPersonalInfo==0&&user.school&&user.occupation">
+					<image class="img" src="../../../static/images/home_page/per.png" mode="widthFix"></image>
+					<view class="condition">
+						<view class="conditionTab">
+							<text class="condition-name">学校</text>
+							<text class="condition-value">{{user.school}}</text>
+						</view>
+						<view class="conditionTab">
+							<text class="condition-name">职业</text>
+							<text class="condition-value">{{user.occupation}}</text>
+						</view>
+					</view>
 				</view>
 			</view>
 			<view class="location-map"> 
@@ -97,6 +114,10 @@
 			<view v-if="!currentResponseUser.nickName" @tap="collect()" class="tab-content">
 				<image class="tab-img" :src="haveCollect?'../../../static/images/home_page/yishouchang.png':'../../../static/images/home_page/shouchang.png'"/>
 				<text class="tab-text" :style="{color:haveCollect?'#59c298':'#000'}">收藏</text>
+			</view>
+			<view v-if="!currentResponseUser.nickName&&detail.allowCallMe==1" class="tab-content phone" @tap="call()">
+				<image class="tab-img" src="../../../static/images/home_page/phone.png"/>
+				<text class="tab-text">联系TA</text>
 			</view>
 			<input v-if="currentResponseUser.nickName" class="response-input" :placeholder="'回复:'+(currentResponseUser.nickName?currentResponseUser.nickName:'')" v-model="res" />
 			<button class="return" @tap="resClick(detail.userId,detail.publisher)">{{!currentResponseUser.nickName?'回复ta':'发送'}}</button>
@@ -192,6 +213,7 @@
 				})
 				this.detailType = true;
 			}
+			this.getInfo()
 		},
 		onUnload(){
 			this.$store.commit("setLoading",false)
@@ -214,6 +236,9 @@
 			...mapState({ 
 				currentResponseUser:state=>state.invitateStore.currentResponseUser,
 				userinfo:state=>state.loginStore.userinfo,
+				user:state=>{
+					return state.userStore.userInfo
+				},
 			    responseMsg:state=>{
 					return state.invitateStore.responseMsg
 				}
@@ -278,6 +303,12 @@
 				}
 				this.getWriteMsg(invitationId,pageNo,pageSize);
 			},
+			call(){
+				console.log(this.user)
+				uni.makePhoneCall({
+				    phoneNumber: this.user.phone //仅为示例
+				});
+			},
 			addResponseContent(userId,msgId){
 				if(this.msgRes.length >= this.total){
 					this.$store.dispatch("getResponseMsgContent",{userId,msgId})
@@ -332,6 +363,10 @@
 				.catch(e=>{
 					console.log(e)
 				})
+			},
+			getInfo(){
+				let userId = getStorage('userId');
+				this.$store.dispatch("requestUserInfo",{userId})
 			},
 			changeDownMoreStatus(){
 				if(this.msgRes.length >= this.total){
@@ -653,10 +688,55 @@
 					height: 40upx;
 			     	margin-right: 10upx;
 				}
+				.condition{
+					display: flex;
+					flex-direction: column;
+					justify-content: flex-start;
+					align-items: flex-start;
+				}
+				.conditionTab{
+					display: flex;
+					flex-direction: row;
+					justify-content: flex-start;
+					align-items: flex-start;
+				}
 				.condition-name{
 					font-size:30upx;
 					color:#999;
-					margin-right: 10upx;
+					margin-right: 20upx;
+				}
+				.condition-value{
+					font-size: 30upx;
+					color:$uni-app-other-color;
+				}
+			}
+			.per{
+				display: flex;
+				flex-direction: row;
+				align-items: flex-start;
+				margin-top: 10upx;
+				margin-bottom: 26upx;
+				.img{
+					width:40upx;
+					height: 40upx;
+				 	margin-right: 10upx;
+				}
+				.condition{
+					display: flex;
+					flex-direction: column;
+					justify-content: flex-start;
+					align-items: flex-start;
+				}
+				.conditionTab{
+					display: flex;
+					flex-direction: row;
+					justify-content: flex-start;
+					align-items: flex-start;
+				}
+				.condition-name{
+					font-size:30upx;
+					color:#999;
+					margin-right: 20upx;
 				}
 				.condition-value{
 					font-size: 30upx;
@@ -740,6 +820,30 @@
 			height:60upx;
 			display: flex;
 			margin-right: 25upx;
+			flex-direction: row;
+			align-items: center;
+			position:relative;
+			.tab-img{
+				width:35upx;
+				height: 35upx;
+			}
+			.tab-text{
+				font-size:26upx;
+			}
+			.return{
+				width:100%;
+				height:100%;
+				position: absolute;
+				left:0;
+				top:0;
+				z-index: 1000;
+				opacity: 0;
+			}
+		}
+		.phone{
+			width:130upx;
+			height:60upx;
+			display: flex;
 			flex-direction: row;
 			justify-content: space-around;
 			align-items: center;

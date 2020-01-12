@@ -84,6 +84,10 @@ const loginStore = {
 				  console.log("getInfo",infoRes)
 			  }
 			});
+		},
+		modifyUserInfo({commit,dispatch},payload){
+			let {userId} = payload;
+			return RestApi.request(`/app/user/${userId}/modify`,payload,"PUT",true);
 		}
     }
 }

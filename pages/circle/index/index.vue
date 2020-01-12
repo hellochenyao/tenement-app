@@ -20,7 +20,7 @@
 					<!-- 相册 -->
 					<view class="thumbnails">
 						<view :class="post.content.images.length === 1?'my-gallery':'thumbnail'" v-for="(image, index_images) in post.content.images" :key="index_images">
-							<image class="gallery_img" lazy-load mode="aspectFill" :src="image" :data-src="image" @tap="previewImage(post.content.images,index_images)"></image>
+							<image class="gallery_img" lazy-load mode="aspectFill" :src="imgUrl+image" :data-src="image" @tap="previewImage(post.content.images,index_images)"></image>
 						</view>
 					</view> 
 					<!-- 资料条 -->
@@ -36,11 +36,13 @@
 			</view>
 			<uni-load-more :loadingType="1" :status="downMoreStatus" :content-text="downMoreOptions"></uni-load-more>
 		</view>
+		<image src="../../../static/images/home_page/dj_fabu.png" class="publish" @tap="goAdd()" mode="widthFix"></image>
 </view>
 </template> 
 
 <script>
 	import getStorage from "../../../utils/getStorage.js"
+	import configUrl from "../../../utils/config_utils.js"
 	import chatInput from '../../../components/im-chat/chatinput.vue'; //input框
 	import LikeDetail from "../like/likeDetail.vue"
 	import uniLoadMore from "@/components/uni-load-more/uni-load-more.vue"
@@ -86,7 +88,8 @@
 				total:0,
 				isChange:false,
 				cur:{},
-				changeComent:false
+				changeComent:false,
+				imgUrl:configUrl.uploadFileUrl
 				
 			}
 		},
@@ -101,7 +104,7 @@
 			// });
 
 		},
-		onLoad() {
+		onLoad(e) {
 			let userId = getStorage('userId');
 			uni.getSystemInfo({ //获取设备信息
 				success: (res) => {
@@ -130,6 +133,8 @@
 					}
 				}
 			});
+			this.refresh()
+			console.log("aaa")
 		},
 		onHide() {
 			uni.offWindowResize(); //取消监听窗口尺寸变化
@@ -272,6 +277,18 @@
 					url: url
 				});
 			},
+			refresh(){
+				let userId = getStorage('userId');
+				this.page = 1;
+				let params ={
+					pageNo:this.page,
+					pageSize:this.size,
+					userId,
+					type:this.type
+					
+				}
+				this.request(params,true);
+			},
 			changeDownMoreStatus(){ 
 				if(this.posts.length >= this.total){
 					this.downMoreStatus = "noMore";
@@ -282,6 +299,11 @@
 					return true;
 				}
 				return false 
+			},
+			goAdd(){
+				uni.navigateTo({
+					url: "../publish/publish"
+				})
 			},
 			like(dynamicId) {  
 				let userId = getStorage('userId');
@@ -466,8 +488,15 @@
 	.paragraph{
 		margin-bottom: 5upx;
 	}
-	.timestamp{
+	.timestamp{ 
 	color: #757575;
 	font-size: 22upx;
+	}
+	.publish{
+		width:160upx;
+		height:160upx;
+		position: fixed;
+		right:30upx;
+		top:70%;
 	}
 </style>

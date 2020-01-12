@@ -221,6 +221,18 @@
 		            "navigationBarTitleText":"信息",
 		            "navigationBarBackgroundColor":"#59c298"
 		        }
+		},{
+		    "path" : "pages/home_page/success",
+		        "style" : {
+		            "navigationBarTitleText":"发布成功",
+		            "navigationBarBackgroundColor":"#59c298"
+		        }
+		},{
+		    "path" : "pages/circle/publish/publish",
+		        "style" : {
+		            "navigationBarTitleText":"",
+		            "navigationBarBackgroundColor":"#59c298"
+		        }
 		},
 		{
 		    "path" : "pages/ucenter/personal",

@@ -51,22 +51,22 @@
 				</view>
 			</view>
 		</view>
-		<view class="user-bottom-list">
-			<view class="my-list-item">
+		<view class="user-bottom-list"> 
+	<!-- 		<view class="my-list-item">
 				<image class="list-img" src="../../static/grid/shezhi.png"></image>
 				<view class="list-text">我的设置</view>
 				<view class="list-text-left"><image class="list-img" src="../../static/images/home_page/right.png"></image></view>
-			</view>
+			</view> -->
 			<view class="my-list-item" @tap="goAdvice()">
 				<image class="list-img" src="../../static/grid/yijian.png"></image>
 				<view class="list-text">意见反馈</view>
 				<view class="list-text-left"><image class="list-img" src="../../static/images/home_page/right.png"></image></view>
 			</view>
-			<view class="my-list-item">
+<!-- 			<view class="my-list-item">
 				<image class="list-img" src="../../static/grid/kefu.png"></image>
 				<view class="list-text">联系客服</view>
 				<view class="list-text-left"><image class="list-img" src="../../static/images/home_page/right.png"></image></view>
-			</view>
+			</view> -->
 		</view>
 	</view>
 </template>
@@ -187,7 +187,7 @@
 
 	.container {
 		display: flex;
-		justify-content: center;
+		justify-content: flex-start;
 		align-items: center;
 		flex-direction: column;
 		position: absolute;
@@ -298,7 +298,7 @@
 		margin-bottom: 60upx;
 		background-color: #fff;
 		width: 92vw;
-		height: calc(50% - 165upx);
+		height: calc(30% - 165upx);
 		display: flex;
 		flex-direction: column;
 		justify-content: center;
@@ -312,7 +312,7 @@
 		font-size: 32upx;
 		padding-top: calc(10% / 4);
 		padding-bottom: calc(10% / 4);
-		border-bottom: 1px solid #f6f6f6;
+		// border-bottom: 1px solid #f6f6f6;
 		display: flex;
 		justify-content: space-between;
 		align-items: center;

@@ -37,6 +37,10 @@ const circleStore = {
 		getDynamicDetail({commit,dispatch},payload){
 			let {userId,dynamicId,type} = payload
 			return RestApi.request(`/app/user/dynamic/${userId}/query/dynamic`,{dynamicId,type},"GET");
+		},
+		sendDynamic({commit,dispatch},payload){
+			let {userId} = payload
+			return RestApi.request(`/app/user/dynamic/${userId}/create/dynamic`,payload,"POST");
 		}
     }
 }

@@ -48,8 +48,11 @@ const invitateStore = {
 			commit("publishMutions",false);
 			RestApi.request(`/app/operation/${payload.id}/item/${payload.type}/publish`,payload,'POST',)
 			.then(res=>{
-				commit("publishMutions",true);
-				info.toast("发布成功！");
+				commit("publishMutions",true); 
+				uni.navigateTo({ 
+					url:"../../home_page/success?id="+res.id
+				})
+				// info.toast("发布成功！");
 			})
 			.catch(err=>{
 				console.log(err)
